@@ -811,73 +811,32 @@ body {
   margin-bottom: 12px;
 }
 /* ── Overlay objects ── */
-.edit-obj {
-  position: absolute;
-  box-sizing: border-box;
-}
-.edit-obj:hover {
-  outline: 1.5px dashed #aaa;
-}
-.edit-obj.selected {
-  outline: 2px dashed #1a73e8;
-}
-.edit-obj-text {
-  background: transparent;
-  overflow: hidden;
-}
-.edit-obj-textcontent {
-  display: block;
-  min-height: 1em;
-}
-.edit-obj-image {
-  overflow: hidden;
-}
+.edit-obj { position: absolute; box-sizing: border-box; }
+.edit-obj:hover { outline: 1.5px dashed #aaa; }
+.edit-obj.selected { outline: 2px dashed #1a73e8; }
+.edit-obj-text { background: transparent; }
+.edit-obj-textcontent { display: block; min-height: 1em; }
 
 /* ── Object control buttons ── */
 .obj-btn {
-  position: absolute;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 1;
-  z-index: 20;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-  transition: background 0.12s;
+  position: absolute; border: none; border-radius: 50%;
+  width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 12px; line-height: 1; z-index: 20;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3); transition: background 0.12s;
+  display: none; /* Ẩn mặc định */
 }
-.obj-btn-del {
-  top: -10px;
-  right: -10px;
-  background: #e53935;
-  color: #fff;
-}
+.obj-btn-del { top: -10px; right: -10px; background: #e53935; color: #fff; }
 .obj-btn-del:hover { background: #c62828; }
-.obj-btn-drag {
-  top: -10px;
-  left: -10px;
-  background: #555;
-  color: #fff;
-  cursor: grab;
-  font-size: 10px;
-}
-.obj-btn-drag:hover  { background: #111; }
-.obj-btn-drag:active { cursor: grabbing; }
 
 /* ── Resize handles ── */
 .obj-resize-handle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: #fff;
-  border: 2px solid #1a73e8;
-  border-radius: 50%;
-  z-index: 15;
+  position: absolute; width: 10px; height: 10px; background: #fff;
+  border: 2px solid #1a73e8; border-radius: 50%; z-index: 15;
+  display: none; /* Ẩn mặc định */
 }
+.edit-obj.selected .obj-btn { display: flex; }
+.edit-obj.selected .obj-resize-handle { display: block; }
+
 .rh-n  { top: -5px;  left: 50%; transform: translateX(-50%); cursor: n-resize; }
 .rh-s  { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
 .rh-w  { left: -5px;  top: 50%; transform: translateY(-50%); cursor: w-resize; }
