@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Barcode Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav id="sidebar">
+  <div id="sidebar-logo">
+    <img src="HP_Logo_Header.svg" alt="Logo" id="logo-img" />
+  </div>
+  <div id="sidebar-nav">
+    <button class="nav-btn active" data-type="EAN13">EAN 13</button>
+    <button class="nav-btn" data-type="UPCA">UPC-A</button>
+    <button class="nav-btn" data-type="ITF14">ITF 14</button>
+    <button class="nav-btn" data-type="CODE128">Code 128</button>
+    <button class="nav-btn" data-type="QR">QR Code</button>
+  </div>
+</nav>
+
+<div id="main">
+
+  <!-- ── Input panel ── -->
+  <div id="input-panel">
+    <h2 id="input-label">Nhập EAN 13</h2>
+    <p class="input-hint" id="input-hint"></p>
+    <div class="inputs-list" id="inputs-list"></div>
+    <div class="add-btn-wrap">
+      <button class="add-btn" id="add-btn" title="Thêm mã">+</button>
+    </div>
+    <p class="error-msg" id="error-msg"></p>
+    <hr class="divider" />
+    <button id="download-btn">Download SVG</button>
+  </div>
+
+  <!-- ── Properties panel ── -->
+  <div id="props-panel">
+    <h2 class="props-title">Barcode Properties</h2>
+
+    <!-- Font family -->
+    <div class="prop-group">
+      <label class="prop-label">Font</label>
+      <div class="select-wrap">
+        <select id="prop-font">
+          <option value="Arial">Arial</option>
+          <option value="Helvetica">Helvetica</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="monospace">Monospace</option>
+        </select>
+        <span class="select-arrow">&#8964;</span>
+      </div>
+    </div>
+
+    <!-- Font size + Spacing -->
+    <div class="prop-row">
+      <div class="prop-group half">
+        <label class="prop-label">Font size</label>
+        <div class="spinner-wrap">
+          <input class="spinner-input" id="prop-fontsize" type="number" value="20" min="6" max="40" step="1" />
+          <div class="spinner-btns">
+            <button class="spin-btn" data-target="prop-fontsize" data-dir="up">&#9650;</button>
+            <button class="spin-btn" data-target="prop-fontsize" data-dir="down">&#9660;</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="prop-group half">
+        <label class="prop-label">Text margin</label>
+        <div class="spinner-wrap">
+          <input class="spinner-input" id="prop-textmargin" type="number" value="2" min="-10" max="20" step="1" />
+          <div class="spinner-btns">
+            <button class="spin-btn" data-target="prop-textmargin" data-dir="up">&#9650;</button>
+            <button class="spin-btn" data-target="prop-textmargin" data-dir="down">&#9660;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bar height + Bar width -->
+    <div class="prop-row">
+      <div class="prop-group half">
+        <label class="prop-label">Bar height</label>
+        <div class="spinner-wrap">
+          <input class="spinner-input" id="prop-barheight" type="number" value="80" min="20" max="300" step="2" />
+          <div class="spinner-btns">
+            <button class="spin-btn" data-target="prop-barheight" data-dir="up">&#9650;</button>
+            <button class="spin-btn" data-target="prop-barheight" data-dir="down">&#9660;</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="prop-group half">
+        <label class="prop-label">Bar width</label>
+        <div class="spinner-wrap">
+          <input class="spinner-input" id="prop-barwidth" type="number" value="2" min="1" max="6" step="0.5" />
+          <div class="spinner-btns">
+            <button class="spin-btn" data-target="prop-barwidth" data-dir="up">&#9650;</button>
+            <button class="spin-btn" data-target="prop-barwidth" data-dir="down">&#9660;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Margin -->
+    <div class="prop-row">
+      <div class="prop-group half">
+        <label class="prop-label">Margin</label>
+        <div class="spinner-wrap">
+          <input class="spinner-input" id="prop-margin" type="number" value="8" min="0" max="40" step="1" />
+          <div class="spinner-btns">
+            <button class="spin-btn" data-target="prop-margin" data-dir="up">&#9650;</button>
+            <button class="spin-btn" data-target="prop-margin" data-dir="down">&#9660;</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="prop-group half">
+        <label class="prop-label">QR size (px)</label>
+        <div class="spinner-wrap">
+          <input class="spinner-input" id="prop-qrsize" type="number" value="140" min="60" max="300" step="10" />
+          <div class="spinner-btns">
+            <button class="spin-btn" data-target="prop-qrsize" data-dir="up">&#9650;</button>
+            <button class="spin-btn" data-target="prop-qrsize" data-dir="down">&#9660;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Show text toggle -->
+    <div class="prop-group">
+      <label class="prop-label">Hiển thị chữ số</label>
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" id="prop-showtext" checked />
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-hint" id="showtext-hint">Bật</span>
+      </div>
+    </div>
+
+    <!-- Bar color + BG color -->
+    <div class="prop-row">
+      <div class="prop-group half">
+        <label class="prop-label">Màu vạch</label>
+        <div class="color-wrap">
+          <input type="color" id="prop-linecolor" value="#000000" class="color-swatch" />
+          <span class="color-hex" id="linecolor-hex">#000000</span>
+        </div>
+      </div>
+
+      <div class="prop-group half">
+        <label class="prop-label">Màu nền</label>
+        <div class="color-wrap">
+          <input type="color" id="prop-bgcolor" value="#ffffff" class="color-swatch" />
+          <span class="color-hex" id="bgcolor-hex">#ffffff</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /props-panel -->
+
+  <!-- ── Preview panel ── -->
+  <div id="preview-panel">
+    <h2>Nam Viet Barcode Generator - Preview</h2>
+    <div id="a4-wrapper">
+      <div id="a4">
+        <div class="preview-placeholder" id="placeholder">Nhập mã barcode để xem trước</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script src="script.js"></script>
+</body>
+</html>
