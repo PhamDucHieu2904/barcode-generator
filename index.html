@@ -11,6 +11,14 @@
 <!-- PDF lib -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+</script>
+<!-- Google Fonts for Edit PDF -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -263,8 +271,98 @@
       <button class="pdf-download-btn" id="btn-merge">Download PDF</button>
     </div>
 
-    <!-- Placeholder right column (future features) -->
-    <div class="pdf-panel pdf-panel--empty" id="panel-future">
+    <!-- Edit PDF panel -->
+    <div class="pdf-panel pdf-panel--edit" id="panel-edit">
+      <h2 class="pdf-panel-title">Edit PDF</h2>
+
+      <!-- Drop zone for single PDF (then append images/PDFs) -->
+      <div class="drop-zone" id="dz-edit" data-accepts="pdf">
+        <div class="dz-inner" id="dz-edit-inner">
+          <div class="dz-placeholder" id="dz-edit-placeholder">
+            <div class="dz-plus" id="dz-edit-trigger">+</div>
+            <span class="dz-hint">Drag PDF file to edit</span>
+          </div>
+          <div class="dz-thumbs" id="dz-edit-thumbs"></div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="edit-action-row">
+        <button class="edit-action-btn" id="edit-btn-text">Add Text</button>
+        <button class="edit-action-btn" id="edit-btn-image">Add Img</button>
+      </div>
+
+      <!-- Text format controls -->
+      <div class="edit-format-row">
+        <label class="edit-fmt-label">Font</label>
+        <div class="select-wrap edit-font-wrap">
+          <select id="edit-font" disabled>
+            <option value="">-- Font --</option>
+          </select>
+          <span class="select-arrow">&#8964;</span>
+        </div>
+        <label class="edit-fmt-label">Size</label>
+        <div class="spinner-wrap edit-size-wrap">
+          <input class="spinner-input" id="edit-fontsize" type="number" value="16" min="6" max="120" step="1" disabled />
+          <div class="spinner-btns">
+            <button class="spin-btn" data-target="edit-fontsize" data-dir="up">&#9650;</button>
+            <button class="spin-btn" data-target="edit-fontsize" data-dir="down">&#9660;</button>
+          </div>
+        </div>
+      </div>
+      <div class="edit-format-row">
+        <div class="select-wrap edit-style-wrap">
+          <select id="edit-fontstyle" disabled>
+            <option value="normal">Regular</option>
+            <option value="bold">Bold</option>
+          </select>
+          <span class="select-arrow">&#8964;</span>
+        </div>
+        <label class="edit-fmt-label">Color</label>
+        <div class="color-wrap edit-color-wrap">
+          <input type="color" id="edit-fontcolor" value="#000000" class="color-swatch" disabled />
+          <span class="color-hex" id="edit-fontcolor-hex">#000000</span>
+        </div>
+      </div>
+
+      <!-- Paper size -->
+      <div class="edit-opt-row">
+        <label class="pdf-opt-label">Change paper size to</label>
+        <div class="select-wrap" style="flex:1">
+          <select id="edit-papersize">
+            <option value="none">None</option>
+            <option value="a4v">A4 Vertical</option>
+            <option value="a4h">A4 Horizontal</option>
+            <option value="a3v">A3 Vertical</option>
+            <option value="a3h">A3 Horizontal</option>
+          </select>
+          <span class="select-arrow">&#8964;</span>
+        </div>
+      </div>
+
+      <!-- Rotate -->
+      <div class="edit-rotate-row">
+        <span class="edit-rotate-label">Rotate</span>
+        <div class="edit-rotate-group">
+          <span class="edit-rotate-sub">Select page</span>
+          <button class="rotate-btn" id="edit-rotate-page">90°</button>
+          <button class="rotate-btn" id="edit-rotate-page-ccw">-90°</button>
+        </div>
+        <div class="edit-rotate-group">
+          <span class="edit-rotate-sub">All pages</span>
+          <button class="rotate-btn" id="edit-rotate-all">90°</button>
+          <button class="rotate-btn" id="edit-rotate-all-ccw">-90°</button>
+        </div>
+      </div>
+
+      <button class="pdf-download-btn" id="edit-download-btn">Download PDF</button>
+    </div>
+
+    <!-- Edit canvas area (right of panel) -->
+    <div class="edit-canvas-panel" id="panel-edit-canvas">
+      <div class="edit-canvas-area" id="edit-canvas-area">
+        <div class="edit-empty-hint">Chọn một trang để chỉnh sửa</div>
+      </div>
     </div>
 
   </section><!-- /section-pdf -->
@@ -275,6 +373,25 @@
 <script src="js/utils.js"></script>
 <script src="js/barcode.js"></script>
 <script src="js/pdf.js"></script>
+<script src="js/edit-pdf.js"></script>
 <script src="js/app.js"></script>
+<script>
+  // Populate font select after DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const fontSel = document.getElementById('edit-font');
+    if (fontSel) {
+      ['Arial','Helvetica','Georgia','Times New Roman','Courier New',
+       'Roboto','Open Sans','Lato','Montserrat','Raleway',
+       'Oswald','Playfair Display','Merriweather','Nunito','Poppins',
+       'Source Sans Pro','Ubuntu','PT Serif','Quicksand','Josefin Sans'
+      ].forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f; opt.textContent = f;
+        opt.style.fontFamily = f;
+        fontSel.appendChild(opt);
+      });
+    }
+  });
+</script>
 </body>
 </html>

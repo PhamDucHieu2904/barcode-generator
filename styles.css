@@ -400,7 +400,8 @@ body {
   flex: 1;
   display: none;
   flex-direction: row;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   background: #f0f0f0;
   padding: 28px 24px;
   gap: 20px;
@@ -485,8 +486,8 @@ body {
 
 /* thumb grid */
 .dz-thumbs {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   padding: 10px;
   align-content: flex-start;
@@ -495,8 +496,9 @@ body {
 /* individual thumb */
 .dz-thumb {
   position: relative;
-  width: 76px;
-  height: 76px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
   border-radius: 6px;
   overflow: visible;
   background: #f4f4f4;
@@ -623,3 +625,261 @@ body {
 }
 .pdf-download-btn:hover    { background: #333; }
 .pdf-download-btn:disabled { background: #999; cursor: not-allowed; }
+/* ══════════════════════════════════════════
+   EDIT PDF PANEL
+   ══════════════════════════════════════════ */
+.pdf-panel--edit {
+  width: 320px;
+  min-width: 290px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.pdf-panel--edit .drop-zone {
+  flex: 1;
+  min-height: 200px;
+  max-height: none;
+}
+
+/* ── Edit action buttons (Add Text / Add Img) ── */
+.edit-action-row {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 10px;
+}
+.edit-action-btn {
+  flex: 1;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background 0.15s;
+}
+.edit-action-btn:hover { background: #333; }
+
+/* ── Text format rows ── */
+.edit-format-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.edit-fmt-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+}
+.edit-font-wrap  { flex: 1; }
+.edit-size-wrap  { width: 90px; flex-shrink: 0; }
+.edit-style-wrap { flex: 1; }
+.edit-color-wrap { flex: 1; cursor: pointer; }
+
+/* ── Paper size / opt rows ── */
+.edit-opt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.edit-opt-row .pdf-opt-label {
+  font-size: 11.5px;
+  white-space: nowrap;
+  min-width: 110px;
+}
+
+/* ── Rotate row ── */
+.edit-rotate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.edit-rotate-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.edit-rotate-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.edit-rotate-sub {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}
+.rotate-btn {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rotate-btn:hover { background: #444; }
+
+/* ── Edit thumbnail selected state ── */
+.edit-thumb.selected {
+  box-shadow: 0 0 0 2.5px #111, 0 0 0 4px rgba(0,0,0,0.08);
+}
+
+/* ══════════════════════════════════════════
+   EDIT CANVAS PANEL (right side)
+   ══════════════════════════════════════════ */
+.edit-canvas-panel {
+  flex: 1;
+  background: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.edit-canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+  padding: 24px;
+  position: relative;
+}
+.edit-empty-hint {
+  color: #bbb;
+  font-size: 14px;
+  align-self: center;
+  justify-self: center;
+  margin: auto;
+  pointer-events: none;
+  letter-spacing: 0.02em;
+  margin-top: 80px;
+}
+
+/* ── Page canvas (the editable page) ── */
+.edit-page-canvas {
+  position: relative;
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  border: 1px solid #ccc;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+  transform-origin: top center;
+}
+.edit-bg-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.edit-page-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fdfdfd;
+  color: #888;
+  font-size: 16px;
+  font-weight: bold;
+  pointer-events: none;
+  border: 2px dashed #ddd;
+  margin: 16px;
+}
+.edit-page-hint::before {
+  content: '📄'; /* Thêm icon tài liệu */
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+/* ── Overlay objects ── */
+.edit-obj {
+  position: absolute;
+  box-sizing: border-box;
+}
+.edit-obj:hover {
+  outline: 1.5px dashed #aaa;
+}
+.edit-obj.selected {
+  outline: 2px dashed #1a73e8;
+}
+.edit-obj-text {
+  background: transparent;
+  overflow: hidden;
+}
+.edit-obj-textcontent {
+  display: block;
+  min-height: 1em;
+}
+.edit-obj-image {
+  overflow: hidden;
+}
+
+/* ── Object control buttons ── */
+.obj-btn {
+  position: absolute;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  z-index: 20;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  transition: background 0.12s;
+}
+.obj-btn-del {
+  top: -10px;
+  right: -10px;
+  background: #e53935;
+  color: #fff;
+}
+.obj-btn-del:hover { background: #c62828; }
+.obj-btn-drag {
+  top: -10px;
+  left: -10px;
+  background: #555;
+  color: #fff;
+  cursor: grab;
+  font-size: 10px;
+}
+.obj-btn-drag:hover  { background: #111; }
+.obj-btn-drag:active { cursor: grabbing; }
+
+/* ── Resize handles ── */
+.obj-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 2px solid #1a73e8;
+  border-radius: 50%;
+  z-index: 15;
+}
+.rh-n  { top: -5px;  left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.rh-s  { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.rh-w  { left: -5px;  top: 50%; transform: translateY(-50%); cursor: w-resize; }
+.rh-e  { right: -5px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
+.rh-se { bottom: -5px; right: -5px; cursor: nwse-resize; border-radius: 2px; background: #1a73e8; }

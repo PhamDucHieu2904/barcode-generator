@@ -42,4 +42,5 @@
   /* ── Bootstrap all modules ── */
   initBarcode();   // barcode.js
   initPDF();       // pdf.js
+  initEditPDF();   // edit-pdf.js
 })();

@@ -441,4 +441,4 @@ function initBarcode() {
   renderInputs();
   renderPreview();
   initBarcodeDownload();
-}   
+}
