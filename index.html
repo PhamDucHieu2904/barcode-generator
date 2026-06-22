@@ -4,180 +4,277 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Barcode Generator</title>
+
+<!-- Barcode / QR libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- PDF lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- ── Sidebar ── -->
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+     ══════════════════════════════════════════ -->
 <nav id="sidebar">
   <div id="sidebar-logo">
     <img src="HP_Logo_Header.svg" alt="Logo" id="logo-img" />
   </div>
   <div id="sidebar-nav">
-    <button class="nav-btn active" data-type="EAN13">EAN 13</button>
-    <button class="nav-btn" data-type="UPCA">UPC-A</button>
-    <button class="nav-btn" data-type="ITF14">ITF 14</button>
-    <button class="nav-btn" data-type="CODE128">Code 128</button>
-    <button class="nav-btn" data-type="QR">QR Code</button>
+    <!-- Barcode group -->
+    <button class="nav-btn active" data-section="barcode" data-type="EAN13">EAN 13</button>
+    <button class="nav-btn"        data-section="barcode" data-type="UPCA">UPC-A</button>
+    <button class="nav-btn"        data-section="barcode" data-type="ITF14">ITF 14</button>
+    <button class="nav-btn"        data-section="barcode" data-type="CODE128">Code 128</button>
+    <button class="nav-btn"        data-section="barcode" data-type="QR">QR Code</button>
+
+    <!-- Divider -->
+    <div class="nav-divider"></div>
+
+    <!-- PDF group -->
+    <button class="nav-btn" data-section="pdf" data-type="PDF">PDF</button>
   </div>
 </nav>
 
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════ -->
 <div id="main">
 
-  <!-- ── Input panel ── -->
-  <div id="input-panel">
-    <h2 id="input-label">Nhập EAN 13</h2>
-    <p class="input-hint" id="input-hint"></p>
-    <div class="inputs-list" id="inputs-list"></div>
-    <div class="add-btn-wrap">
-      <button class="add-btn" id="add-btn" title="Thêm mã">+</button>
-    </div>
-    <p class="error-msg" id="error-msg"></p>
-    <hr class="divider" />
-    <button id="download-btn">Download SVG</button>
-  </div>
+  <!-- ─── BARCODE SECTION ─── -->
+  <section id="section-barcode" class="app-section active">
 
-  <!-- ── Properties panel ── -->
-  <div id="props-panel">
-    <h2 class="props-title">Barcode Properties</h2>
-
-    <!-- Font family -->
-    <div class="prop-group">
-      <label class="prop-label">Font</label>
-      <div class="select-wrap">
-        <select id="prop-font">
-          <option value="Arial">Arial</option>
-          <option value="Helvetica">Helvetica</option>
-          <option value="Courier New">Courier New</option>
-          <option value="Times New Roman">Times New Roman</option>
-          <option value="monospace">Monospace</option>
-        </select>
-        <span class="select-arrow">&#8964;</span>
+    <!-- Input panel -->
+    <div id="input-panel">
+      <h2 id="input-label">Nhập EAN 13</h2>
+      <p class="input-hint" id="input-hint"></p>
+      <div class="inputs-list" id="inputs-list"></div>
+      <div class="add-btn-wrap">
+        <button class="add-btn" id="add-btn" title="Thêm mã">+</button>
       </div>
+      <p class="error-msg" id="error-msg"></p>
+      <hr class="divider" />
+      <button id="download-btn">Download SVG</button>
     </div>
 
-    <!-- Font size + Spacing -->
-    <div class="prop-row">
-      <div class="prop-group half">
-        <label class="prop-label">Font size</label>
-        <div class="spinner-wrap">
-          <input class="spinner-input" id="prop-fontsize" type="number" value="20" min="6" max="40" step="1" />
-          <div class="spinner-btns">
-            <button class="spin-btn" data-target="prop-fontsize" data-dir="up">&#9650;</button>
-            <button class="spin-btn" data-target="prop-fontsize" data-dir="down">&#9660;</button>
+    <!-- Properties panel -->
+    <div id="props-panel">
+      <h2 class="props-title">Barcode Properties</h2>
+
+      <div class="prop-group">
+        <label class="prop-label">Font</label>
+        <div class="select-wrap">
+          <select id="prop-font">
+            <option value="Arial">Arial</option>
+            <option value="Helvetica">Helvetica</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="monospace">Monospace</option>
+          </select>
+          <span class="select-arrow">&#8964;</span>
+        </div>
+      </div>
+
+      <div class="prop-row">
+        <div class="prop-group half">
+          <label class="prop-label">Font size</label>
+          <div class="spinner-wrap">
+            <input class="spinner-input" id="prop-fontsize" type="number" value="20" min="6" max="40" step="1" />
+            <div class="spinner-btns">
+              <button class="spin-btn" data-target="prop-fontsize" data-dir="up">&#9650;</button>
+              <button class="spin-btn" data-target="prop-fontsize" data-dir="down">&#9660;</button>
+            </div>
+          </div>
+        </div>
+        <div class="prop-group half">
+          <label class="prop-label">Text margin</label>
+          <div class="spinner-wrap">
+            <input class="spinner-input" id="prop-textmargin" type="number" value="2" min="-10" max="20" step="1" />
+            <div class="spinner-btns">
+              <button class="spin-btn" data-target="prop-textmargin" data-dir="up">&#9650;</button>
+              <button class="spin-btn" data-target="prop-textmargin" data-dir="down">&#9660;</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="prop-group half">
-        <label class="prop-label">Text margin</label>
-        <div class="spinner-wrap">
-          <input class="spinner-input" id="prop-textmargin" type="number" value="2" min="-10" max="20" step="1" />
-          <div class="spinner-btns">
-            <button class="spin-btn" data-target="prop-textmargin" data-dir="up">&#9650;</button>
-            <button class="spin-btn" data-target="prop-textmargin" data-dir="down">&#9660;</button>
+      <div class="prop-row">
+        <div class="prop-group half">
+          <label class="prop-label">Bar height</label>
+          <div class="spinner-wrap">
+            <input class="spinner-input" id="prop-barheight" type="number" value="80" min="20" max="300" step="2" />
+            <div class="spinner-btns">
+              <button class="spin-btn" data-target="prop-barheight" data-dir="up">&#9650;</button>
+              <button class="spin-btn" data-target="prop-barheight" data-dir="down">&#9660;</button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Bar height + Bar width -->
-    <div class="prop-row">
-      <div class="prop-group half">
-        <label class="prop-label">Bar height</label>
-        <div class="spinner-wrap">
-          <input class="spinner-input" id="prop-barheight" type="number" value="80" min="20" max="300" step="2" />
-          <div class="spinner-btns">
-            <button class="spin-btn" data-target="prop-barheight" data-dir="up">&#9650;</button>
-            <button class="spin-btn" data-target="prop-barheight" data-dir="down">&#9660;</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="prop-group half">
-        <label class="prop-label">Bar width</label>
-        <div class="spinner-wrap">
-          <input class="spinner-input" id="prop-barwidth" type="number" value="2" min="1" max="6" step="0.5" />
-          <div class="spinner-btns">
-            <button class="spin-btn" data-target="prop-barwidth" data-dir="up">&#9650;</button>
-            <button class="spin-btn" data-target="prop-barwidth" data-dir="down">&#9660;</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Margin -->
-    <div class="prop-row">
-      <div class="prop-group half">
-        <label class="prop-label">Margin</label>
-        <div class="spinner-wrap">
-          <input class="spinner-input" id="prop-margin" type="number" value="8" min="0" max="40" step="1" />
-          <div class="spinner-btns">
-            <button class="spin-btn" data-target="prop-margin" data-dir="up">&#9650;</button>
-            <button class="spin-btn" data-target="prop-margin" data-dir="down">&#9660;</button>
+        <div class="prop-group half">
+          <label class="prop-label">Bar width</label>
+          <div class="spinner-wrap">
+            <input class="spinner-input" id="prop-barwidth" type="number" value="2" min="1" max="6" step="0.5" />
+            <div class="spinner-btns">
+              <button class="spin-btn" data-target="prop-barwidth" data-dir="up">&#9650;</button>
+              <button class="spin-btn" data-target="prop-barwidth" data-dir="down">&#9660;</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="prop-group half">
-        <label class="prop-label">QR size (px)</label>
-        <div class="spinner-wrap">
-          <input class="spinner-input" id="prop-qrsize" type="number" value="140" min="60" max="300" step="10" />
-          <div class="spinner-btns">
-            <button class="spin-btn" data-target="prop-qrsize" data-dir="up">&#9650;</button>
-            <button class="spin-btn" data-target="prop-qrsize" data-dir="down">&#9660;</button>
+      <div class="prop-row">
+        <div class="prop-group half">
+          <label class="prop-label">Margin</label>
+          <div class="spinner-wrap">
+            <input class="spinner-input" id="prop-margin" type="number" value="8" min="0" max="40" step="1" />
+            <div class="spinner-btns">
+              <button class="spin-btn" data-target="prop-margin" data-dir="up">&#9650;</button>
+              <button class="spin-btn" data-target="prop-margin" data-dir="down">&#9660;</button>
+            </div>
+          </div>
+        </div>
+        <div class="prop-group half">
+          <label class="prop-label">QR size (px)</label>
+          <div class="spinner-wrap">
+            <input class="spinner-input" id="prop-qrsize" type="number" value="140" min="60" max="300" step="10" />
+            <div class="spinner-btns">
+              <button class="spin-btn" data-target="prop-qrsize" data-dir="up">&#9650;</button>
+              <button class="spin-btn" data-target="prop-qrsize" data-dir="down">&#9660;</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Show text toggle -->
-    <div class="prop-group">
-      <label class="prop-label">Hiển thị chữ số</label>
-      <div class="toggle-wrap">
-        <label class="toggle">
-          <input type="checkbox" id="prop-showtext" checked />
-          <span class="toggle-slider"></span>
-        </label>
-        <span class="toggle-hint" id="showtext-hint">Bật</span>
-      </div>
-    </div>
-
-    <!-- Bar color + BG color -->
-    <div class="prop-row">
-      <div class="prop-group half">
-        <label class="prop-label">Màu vạch</label>
-        <div class="color-wrap">
-          <input type="color" id="prop-linecolor" value="#000000" class="color-swatch" />
-          <span class="color-hex" id="linecolor-hex">#000000</span>
+      <div class="prop-group">
+        <label class="prop-label">Hiển thị chữ số</label>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="prop-showtext" checked />
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-hint" id="showtext-hint">Bật</span>
         </div>
       </div>
 
-      <div class="prop-group half">
-        <label class="prop-label">Màu nền</label>
-        <div class="color-wrap">
-          <input type="color" id="prop-bgcolor" value="#ffffff" class="color-swatch" />
-          <span class="color-hex" id="bgcolor-hex">#ffffff</span>
+      <div class="prop-row">
+        <div class="prop-group half">
+          <label class="prop-label">Màu vạch</label>
+          <div class="color-wrap">
+            <input type="color" id="prop-linecolor" value="#000000" class="color-swatch" />
+            <span class="color-hex" id="linecolor-hex">#000000</span>
+          </div>
+        </div>
+        <div class="prop-group half">
+          <label class="prop-label">Màu nền</label>
+          <div class="color-wrap">
+            <input type="color" id="prop-bgcolor" value="#ffffff" class="color-swatch" />
+            <span class="color-hex" id="bgcolor-hex">#ffffff</span>
+          </div>
+        </div>
+      </div>
+    </div><!-- /props-panel -->
+
+    <!-- Preview panel -->
+    <div id="preview-panel">
+      <h2>Nam Viet Barcode Generator - Preview</h2>
+      <div id="a4-wrapper">
+        <div id="a4">
+          <div class="preview-placeholder" id="placeholder">Nhập mã barcode để xem trước</div>
         </div>
       </div>
     </div>
 
-  </div><!-- /props-panel -->
+  </section><!-- /section-barcode -->
 
-  <!-- ── Preview panel ── -->
-  <div id="preview-panel">
-    <h2>Nam Viet Barcode Generator - Preview</h2>
-    <div id="a4-wrapper">
-      <div id="a4">
-        <div class="preview-placeholder" id="placeholder">Nhập mã barcode để xem trước</div>
+  <!-- ─── PDF SECTION ─── -->
+  <section id="section-pdf" class="app-section">
+
+    <!-- Combine images → PDF -->
+    <div class="pdf-panel" id="panel-combine">
+      <h2 class="pdf-panel-title">Combine images to PDF</h2>
+
+      <div class="drop-zone" id="dz-images" data-accepts="image">
+        <div class="dz-inner" id="dz-images-inner">
+          <div class="dz-placeholder" id="dz-images-placeholder">
+            <div class="dz-plus" id="dz-images-trigger">+</div>
+            <span class="dz-hint">Drag images to combine</span>
+          </div>
+          <div class="dz-thumbs" id="dz-images-thumbs"></div>
+        </div>
       </div>
+
+      <div class="pdf-options">
+        <div class="pdf-opt-row">
+          <label class="pdf-opt-label">Paper size</label>
+          <div class="select-wrap">
+            <select id="opt-papersize">
+              <option value="fit">Fit to image</option>
+              <option value="a4v">A4 Vertical</option>
+              <option value="a4h">A4 Horizontal</option>
+            </select>
+            <span class="select-arrow">&#8964;</span>
+          </div>
+        </div>
+        <div class="pdf-opt-row">
+          <label class="pdf-opt-label">Reduce quality</label>
+          <div class="select-wrap">
+            <select id="opt-quality">
+              <option value="none">None</option>
+              <option value="medium" selected>Medium</option>
+              <option value="strong">Strong</option>
+            </select>
+            <span class="select-arrow">&#8964;</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="pdf-download-btn" id="btn-combine">Download PDF</button>
     </div>
-  </div>
+
+    <!-- Merge PDFs -->
+    <div class="pdf-panel" id="panel-merge">
+      <h2 class="pdf-panel-title">Merge PDFs File</h2>
+
+      <div class="drop-zone" id="dz-pdfs" data-accepts="pdf">
+        <div class="dz-inner" id="dz-pdfs-inner">
+          <div class="dz-placeholder" id="dz-pdfs-placeholder">
+            <div class="dz-plus" id="dz-pdfs-trigger">+</div>
+            <span class="dz-hint">Drag PDFs file to merge</span>
+          </div>
+          <div class="dz-thumbs" id="dz-pdfs-thumbs"></div>
+        </div>
+      </div>
+
+      <div class="pdf-options">
+        <div class="pdf-opt-row">
+          <label class="pdf-opt-label">Compress PDF</label>
+          <div class="select-wrap">
+            <select id="opt-compress">
+              <option value="none" selected>None</option>
+              <option value="medium">Medium</option>
+              <option value="strong">Strong</option>
+            </select>
+            <span class="select-arrow">&#8964;</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="pdf-download-btn" id="btn-merge">Download PDF</button>
+    </div>
+
+    <!-- Placeholder right column (future features) -->
+    <div class="pdf-panel pdf-panel--empty" id="panel-future">
+    </div>
+
+  </section><!-- /section-pdf -->
 
 </div><!-- /main -->
 
-<script src="script.js"></script>
+<!-- ── Module scripts (order matters) ── -->
+<script src="js/utils.js"></script>
+<script src="js/barcode.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

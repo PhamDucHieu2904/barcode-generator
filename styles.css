@@ -9,7 +9,7 @@ body {
 }
 
 /* ══════════════════════════════════════════
-   SIDEBAR  (160 × 1.3 ≈ 208px)
+   SIDEBAR
    ══════════════════════════════════════════ */
 #sidebar {
   width: 208px;
@@ -20,7 +20,6 @@ body {
   overflow: hidden;
 }
 
-/* Logo area */
 #sidebar-logo {
   padding: 20px 16px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.12);
@@ -30,14 +29,12 @@ body {
   min-height: 80px;
   flex-shrink: 0;
 }
-
 #logo-img {
   max-width: 100%;
   max-height: 54px;
   object-fit: contain;
 }
 
-/* Nav buttons area */
 #sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -52,7 +49,7 @@ body {
   color: #fff;
   border: 2px solid #fff;
   border-radius: 6px;
-  padding: 16px 10px;
+  padding: 14px 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -64,13 +61,33 @@ body {
 .nav-btn:hover  { background: #fff; color: #111; }
 .nav-btn.active { background: #fff; color: #111; }
 
+/* thin divider between barcode buttons and PDF button */
+.nav-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.20);
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+
 /* ══════════════════════════════════════════
    MAIN WRAPPER
    ══════════════════════════════════════════ */
 #main { flex: 1; display: flex; overflow: hidden; }
 
 /* ══════════════════════════════════════════
-   INPUT PANEL
+   SECTIONS (barcode / pdf)
+   ══════════════════════════════════════════ */
+.app-section {
+  display: none;
+  flex: 1;
+  overflow: hidden;
+}
+.app-section.active {
+  display: flex;
+}
+
+/* ══════════════════════════════════════════
+   BARCODE SECTION — INPUT PANEL
    ══════════════════════════════════════════ */
 #input-panel {
   width: 280px;
@@ -82,29 +99,21 @@ body {
   overflow-y: auto;
   border-right: 1px solid #ddd;
   background: #fff;
+  flex-shrink: 0;
 }
-
 #input-panel h2 {
   font-size: 16px;
   font-weight: 700;
   color: #111;
   margin-bottom: 4px;
 }
-
 .input-hint {
   font-size: 11.5px;
   color: #888;
   margin-bottom: 14px;
   line-height: 1.5;
 }
-
-.inputs-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
+.inputs-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; }
 .input-row { display: flex; flex-direction: column; gap: 3px; }
 .input-row-inner { display: flex; align-items: center; gap: 8px; }
 
@@ -160,12 +169,7 @@ body {
 }
 .remove-btn:hover { color: #e53935; }
 
-.add-btn-wrap {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 4px;
-  margin-bottom: 2px;
-}
+.add-btn-wrap { display: flex; justify-content: flex-end; margin-top: 4px; margin-bottom: 2px; }
 .add-btn {
   background: #eee;
   border: 1.5px solid #ccc;
@@ -179,19 +183,8 @@ body {
 }
 .add-btn:hover { background: #ddd; }
 
-.divider {
-  border: none;
-  border-top: 1.5px solid #e8e8e8;
-  margin: 20px 0 16px;
-}
-
-.error-msg {
-  color: #e53935;
-  font-size: 11.5px;
-  margin-top: 2px;
-  margin-bottom: 4px;
-  min-height: 16px;
-}
+.divider { border: none; border-top: 1.5px solid #e8e8e8; margin: 20px 0 16px; }
+.error-msg { color: #e53935; font-size: 11.5px; margin-top: 2px; margin-bottom: 4px; min-height: 16px; }
 
 #download-btn {
   background: #111;
@@ -211,7 +204,7 @@ body {
 #download-btn:disabled { background: #999; cursor: not-allowed; }
 
 /* ══════════════════════════════════════════
-   PROPERTIES PANEL
+   BARCODE SECTION — PROPERTIES PANEL
    ══════════════════════════════════════════ */
 #props-panel {
   width: 260px;
@@ -223,43 +216,22 @@ body {
   overflow-y: auto;
   border-right: 1px solid #ddd;
   background: #fff;
+  flex-shrink: 0;
 }
-
 .props-title {
   font-size: 16px;
   font-weight: 700;
   color: #111;
-  margin-bottom: 0;
   padding-bottom: 12px;
   border-bottom: 1.5px solid #e8e8e8;
 }
-
-/* group = label + control stacked */
-.prop-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.prop-group { display: flex; flex-direction: column; gap: 6px; }
 .prop-group.half { flex: 1; min-width: 0; }
-
-/* two controls side by side */
-.prop-row {
-  display: flex;
-  gap: 14px;
-}
-
-.prop-label {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+.prop-row { display: flex; gap: 14px; }
+.prop-label { font-size: 11.5px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
 
 /* ── Select ── */
-.select-wrap {
-  position: relative;
-}
+.select-wrap { position: relative; }
 .select-wrap select {
   width: 100%;
   appearance: none;
@@ -277,8 +249,7 @@ body {
 .select-wrap select:focus { border-color: #333; background: #fff; }
 .select-arrow {
   position: absolute;
-  right: 10px;
-  top: 50%;
+  right: 10px; top: 50%;
   transform: translateY(-50%);
   font-size: 14px;
   color: #888;
@@ -295,7 +266,6 @@ body {
   transition: border-color 0.15s;
 }
 .spinner-wrap:focus-within { border-color: #333; background: #fff; }
-
 .spinner-input {
   flex: 1;
   border: none;
@@ -310,12 +280,7 @@ body {
 }
 .spinner-input::-webkit-outer-spin-button,
 .spinner-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-.spinner-btns {
-  display: flex;
-  flex-direction: column;
-  border-left: 1.5px solid #e0e0e0;
-}
+.spinner-btns { display: flex; flex-direction: column; border-left: 1.5px solid #e0e0e0; }
 .spin-btn {
   flex: 1;
   background: #f4f4f4;
@@ -327,26 +292,15 @@ body {
   line-height: 1;
   transition: background 0.12s, color 0.12s;
 }
-.spin-btn:hover { background: #ddd; color: #111; }
+.spin-btn:hover  { background: #ddd; color: #111; }
 .spin-btn:active { background: #ccc; }
 
 /* ── Toggle ── */
-.toggle-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.toggle {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 22px;
-  flex-shrink: 0;
-}
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.toggle { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: #ccc;
   border-radius: 22px;
   cursor: pointer;
@@ -368,9 +322,7 @@ body {
 
 /* ── Color picker ── */
 .color-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: flex; align-items: center; gap: 8px;
   border: 1.5px solid #ccc;
   border-radius: 7px;
   padding: 5px 10px;
@@ -379,29 +331,17 @@ body {
   transition: border-color 0.15s;
 }
 .color-wrap:hover { border-color: #999; }
-
 .color-swatch {
-  width: 22px;
-  height: 22px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  padding: 0;
-  background: none;
-  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border: none; border-radius: 4px;
+  cursor: pointer; padding: 0; background: none; flex-shrink: 0;
 }
 .color-swatch::-webkit-color-swatch-wrapper { padding: 0; }
 .color-swatch::-webkit-color-swatch { border: none; border-radius: 3px; }
-
-.color-hex {
-  font-size: 12px;
-  font-family: 'Courier New', monospace;
-  color: #444;
-  letter-spacing: 0.04em;
-}
+.color-hex { font-size: 12px; font-family: 'Courier New', monospace; color: #444; letter-spacing: 0.04em; }
 
 /* ══════════════════════════════════════════
-   PREVIEW PANEL
+   BARCODE SECTION — PREVIEW PANEL
    ══════════════════════════════════════════ */
 #preview-panel {
   flex: 1;
@@ -411,17 +351,15 @@ body {
   overflow: hidden;
   background: #f0f0f0;
 }
-
 #preview-panel h2 {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: #666;
+  color: #888;
   margin-bottom: 16px;
   text-align: center;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-
 #a4-wrapper {
   flex: 1;
   display: flex;
@@ -429,7 +367,6 @@ body {
   justify-content: center;
   overflow: auto;
 }
-
 #a4 {
   background: #fff;
   border: 1px solid #c8c8c8;
@@ -445,29 +382,244 @@ body {
   overflow: hidden;
   position: relative;
 }
-
-.barcode-preview-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
+.barcode-preview-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .barcode-preview-item svg,
 .barcode-preview-item canvas,
-.barcode-preview-item img {
-  display: block;
-  max-width: 260px;
+.barcode-preview-item img { display: block; max-width: 260px; }
+.preview-placeholder {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #ccc; font-size: 14px;
+  pointer-events: none; letter-spacing: 0.02em;
 }
 
-.preview-placeholder {
+/* ══════════════════════════════════════════
+   PDF SECTION
+   ══════════════════════════════════════════ */
+#section-pdf {
+  flex: 1;
+  display: none;
+  flex-direction: row;
+  overflow: hidden;
+  background: #f0f0f0;
+  padding: 28px 24px;
+  gap: 20px;
+}
+#section-pdf.active { display: flex; }
+
+/* Each panel card */
+.pdf-panel {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 20px 20px;
+  width: 320px;
+  min-width: 280px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.pdf-panel--empty {
+  flex: 1;
+  background: transparent;
+  border: none;
+}
+
+.pdf-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 14px;
+  padding-bottom: 0;
+}
+
+/* ── Drop zone ── */
+.drop-zone {
+  flex: 1;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.18s, background 0.18s;
+  min-height: 260px;
+  cursor: pointer;
+}
+.drop-zone.dragover {
+  border-color: #111;
+  background: #f5f5f5;
+}
+.dz-inner {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* placeholder (visible when empty) */
+.dz-placeholder {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #ccc;
-  font-size: 14px;
+  gap: 12px;
   pointer-events: none;
-  letter-spacing: 0.02em;
 }
+.dz-placeholder.hidden { display: none; }
+.dz-plus {
+  width: 64px; height: 64px;
+  border: 3px solid #d0d0d0;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  color: #ccc;
+  cursor: pointer;
+  pointer-events: all;
+  transition: border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+.dz-plus:hover { border-color: #888; color: #888; }
+.dz-hint { font-size: 12px; color: #bbb; }
+
+/* thumb grid */
+.dz-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+  align-content: flex-start;
+}
+
+/* individual thumb */
+.dz-thumb {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 6px;
+  overflow: visible;
+  background: #f4f4f4;
+  border: 1px solid #e0e0e0;
+  cursor: grab;
+  user-select: none;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.dz-thumb:active { cursor: grabbing; }
+.dz-thumb.dragging {
+  opacity: 0.5;
+  transform: scale(0.96);
+}
+.dz-thumb.drag-over {
+  box-shadow: 0 0 0 2.5px #111;
+}
+
+.dz-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+  pointer-events: none;
+}
+
+/* PDF thumb (no image preview, just filename) */
+.dz-thumb-pdf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 4px;
+}
+.dz-thumb-pdf .pdf-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+.dz-thumb-pdf .pdf-name {
+  font-size: 9px;
+  color: #555;
+  text-align: center;
+  word-break: break-all;
+  line-height: 1.2;
+  max-height: 28px;
+  overflow: hidden;
+}
+
+/* page number badge (bottom-left) */
+.dz-page-num {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+/* remove button (top-right) */
+.dz-remove {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #333;
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.dz-remove:hover { background: #e53935; }
+
+/* ── PDF options ── */
+.pdf-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+.pdf-opt-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+.pdf-opt-label {
+  font-size: 12.5px;
+  color: #444;
+  white-space: nowrap;
+  min-width: 90px;
+}
+.pdf-opt-row .select-wrap { flex: 1; }
+
+/* ── PDF download button ── */
+.pdf-download-btn {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 13px 0;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  letter-spacing: 0.04em;
+  transition: background 0.18s;
+  margin-top: auto;
+}
+.pdf-download-btn:hover    { background: #333; }
+.pdf-download-btn:disabled { background: #999; cursor: not-allowed; }
