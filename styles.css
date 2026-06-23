@@ -642,44 +642,7 @@ body {
   max-height: none;
 }
 
-/* ── Edit action buttons (Add Text / Add Img) ── */
-.edit-action-row {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0 10px;
-}
-.edit-action-btn {
-  flex: 1;
-  background: #111;
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  padding: 10px 0;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.03em;
-  transition: background 0.15s;
-}
-.edit-action-btn:hover { background: #333; }
-
-/* ── Text format rows ── */
-.edit-format-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.edit-fmt-label {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #555;
-  white-space: nowrap;
-}
-.edit-font-wrap  { flex: 1; }
-.edit-size-wrap  { width: 90px; flex-shrink: 0; }
-.edit-style-wrap { flex: 1; }
-.edit-color-wrap { flex: 1; cursor: pointer; }
+/* ── (edit-action-row và edit-format-row đã bỏ — chuyển lên top/left toolbar) ── */
 
 /* ── Paper size / opt rows ── */
 .edit-opt-row {
@@ -755,6 +718,169 @@ body {
   overflow: hidden;
   min-width: 0;
 }
+
+/* ── TOP TOOLBAR ── */
+.edit-top-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Giảm khoảng cách giữa các khối */
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 6px 12px; /* Giảm padding trên/dưới */
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  min-height: 34px; /* Giảm 30% chiều cao tổng thể (từ 48px xuống 34px) */
+}
+
+/* Làm mỏng các dropdown và ô nhập liệu (Giảm ~30% chiều cao) */
+.edit-top-toolbar .select-wrap select,
+.edit-top-toolbar .spinner-wrap,
+.edit-top-toolbar .color-wrap {
+  height: 24px; /* Giảm từ 32px xuống 24px */
+  align-items: center;
+}
+.edit-top-toolbar .select-wrap select {
+  padding: 0 20px 0 6px;
+  font-size: 11px; /* Nhỏ chữ lại để vừa khung */
+}
+.edit-top-toolbar .select-arrow {
+  right: 6px;
+  font-size: 10px;
+}
+.edit-top-toolbar .spinner-input {
+  padding: 0 4px;
+  height: 100%;
+  font-size: 11px;
+}
+
+.etb-label {
+  font-size: 11px; /* Nhỏ chữ lại */
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Giảm 30% chiều rộng của tất cả các khung để không bị tràn thanh cuộn */
+.etb-font-wrap  { width: 100px; flex-shrink: 0; }
+.etb-style-wrap { width: 75px;  flex-shrink: 0; }
+.etb-size-wrap  { width: 75px;  flex-shrink: 0; }
+.etb-strokestyle-wrap { width: 60px; flex-shrink: 0; }
+.etb-strokewidth-wrap { width: 65px; flex-shrink: 0; }
+.etb-color-wrap { 
+  flex-shrink: 0; 
+  cursor: pointer; 
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 2px 6px;
+  justify-content: center;
+}
+.etb-color-wrap .color-swatch {
+  width: 16px; 
+  height: 16px; /* Nút chọn màu cũng nhỏ lại */
+}
+.etb-divider {
+  width: 1px;
+  height: 16px; /* Ngắn lại */
+  background: #d5d5d5;
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
+/* Định dạng Mũi tên Ngang (Trái - Phải) */
+.spinner-btns.horizontal {
+  flex-direction: row;
+  border-left: 1px solid #e0e0e0;
+  height: 100%;
+}
+.spinner-btns.horizontal .spin-btn {
+  padding: 0 6px;
+  font-size: 8px;
+  height: 100%;
+  border-left: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spinner-btns.horizontal .spin-btn:first-child {
+  border-right: 1px solid #e0e0e0;
+}
+.strokewidth-unit {
+  font-size: 10px;
+  padding-right: 6px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  user-select: none;
+}
+
+/* ── MAIN ROW (left toolbar + canvas) ── */
+.edit-canvas-main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+
+/* ── LEFT TOOLBAR (Nổi) ── */
+.edit-left-toolbar-wrapper {
+  padding: 20px 0 20px 0px; /* Cách lề trên và trái */
+  flex-shrink: 0;
+  z-index: 10;
+}
+.edit-left-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  width: 46px;
+}
+.elb-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #111;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.elb-btn svg {
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+.elb-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+.elb-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.elb-btn.active {
+  background: #111;
+  color: #fff;
+}
+.elb-divider {
+  width: 20px;
+  height: 1px;
+  background: #e0e0e0;
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+
+/* ── CANVAS AREA ── */
 .edit-canvas-area {
   flex: 1;
   display: flex;
@@ -763,16 +889,6 @@ body {
   overflow: auto;
   padding: 24px;
   position: relative;
-}
-.edit-empty-hint {
-  color: #bbb;
-  font-size: 14px;
-  align-self: center;
-  justify-self: center;
-  margin: auto;
-  pointer-events: none;
-  letter-spacing: 0.02em;
-  margin-top: 80px;
 }
 
 /* ── Page canvas (the editable page) ── */

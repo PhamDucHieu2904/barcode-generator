@@ -5,17 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Barcode Generator</title>
 
-<!-- Barcode / QR libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<!-- PDF lib -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 </script>
-<!-- Google Fonts for Edit PDF -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -23,38 +20,27 @@
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     SIDEBAR
-     ══════════════════════════════════════════ -->
 <nav id="sidebar">
   <div id="sidebar-logo">
     <img src="HP_Logo_Header.svg" alt="Logo" id="logo-img" />
   </div>
   <div id="sidebar-nav">
-    <!-- Barcode group -->
     <button class="nav-btn active" data-section="barcode" data-type="EAN13">EAN 13</button>
     <button class="nav-btn"        data-section="barcode" data-type="UPCA">UPC-A</button>
     <button class="nav-btn"        data-section="barcode" data-type="ITF14">ITF 14</button>
     <button class="nav-btn"        data-section="barcode" data-type="CODE128">Code 128</button>
     <button class="nav-btn"        data-section="barcode" data-type="QR">QR Code</button>
 
-    <!-- Divider -->
     <div class="nav-divider"></div>
 
-    <!-- PDF group -->
     <button class="nav-btn" data-section="pdf" data-type="PDF">PDF</button>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════════
-     MAIN CONTENT
-     ══════════════════════════════════════════ -->
 <div id="main">
 
-  <!-- ─── BARCODE SECTION ─── -->
   <section id="section-barcode" class="app-section active">
 
-    <!-- Input panel -->
     <div id="input-panel">
       <h2 id="input-label">Nhập EAN 13</h2>
       <p class="input-hint" id="input-hint"></p>
@@ -67,7 +53,6 @@
       <button id="download-btn">Download SVG</button>
     </div>
 
-    <!-- Properties panel -->
     <div id="props-panel">
       <h2 class="props-title">Barcode Properties</h2>
 
@@ -181,10 +166,7 @@
           </div>
         </div>
       </div>
-    </div><!-- /props-panel -->
-
-    <!-- Preview panel -->
-    <div id="preview-panel">
+    </div><div id="preview-panel">
       <h2>Nam Viet Barcode Generator - Preview</h2>
       <div id="a4-wrapper">
         <div id="a4">
@@ -193,15 +175,10 @@
       </div>
     </div>
 
-  </section><!-- /section-barcode -->
+  </section><section id="section-pdf" class="app-section">
 
-  <!-- ─── PDF SECTION ─── -->
-  <section id="section-pdf" class="app-section">
-
-    <!-- Combine images → PDF -->
     <div class="pdf-panel" id="panel-combine">
       <h2 class="pdf-panel-title">Combine images to PDF</h2>
-
       <div class="drop-zone" id="dz-images" data-accepts="image">
         <div class="dz-inner" id="dz-images-inner">
           <div class="dz-placeholder" id="dz-images-placeholder">
@@ -211,7 +188,6 @@
           <div class="dz-thumbs" id="dz-images-thumbs"></div>
         </div>
       </div>
-
       <div class="pdf-options">
         <div class="pdf-opt-row">
           <label class="pdf-opt-label">Paper size</label>
@@ -236,14 +212,11 @@
           </div>
         </div>
       </div>
-
       <button class="pdf-download-btn" id="btn-combine">Download PDF</button>
     </div>
 
-    <!-- Merge PDFs -->
     <div class="pdf-panel" id="panel-merge">
       <h2 class="pdf-panel-title">Merge PDFs File</h2>
-
       <div class="drop-zone" id="dz-pdfs" data-accepts="pdf">
         <div class="dz-inner" id="dz-pdfs-inner">
           <div class="dz-placeholder" id="dz-pdfs-placeholder">
@@ -253,7 +226,6 @@
           <div class="dz-thumbs" id="dz-pdfs-thumbs"></div>
         </div>
       </div>
-
       <div class="pdf-options">
         <div class="pdf-opt-row">
           <label class="pdf-opt-label">Compress PDF</label>
@@ -267,15 +239,11 @@
           </div>
         </div>
       </div>
-
       <button class="pdf-download-btn" id="btn-merge">Download PDF</button>
     </div>
 
-    <!-- Edit PDF panel -->
     <div class="pdf-panel pdf-panel--edit" id="panel-edit">
       <h2 class="pdf-panel-title">Edit PDF</h2>
-
-      <!-- Drop zone for single PDF (then append images/PDFs) -->
       <div class="drop-zone" id="dz-edit" data-accepts="pdf">
         <div class="dz-inner" id="dz-edit-inner">
           <div class="dz-placeholder" id="dz-edit-placeholder">
@@ -285,48 +253,8 @@
           <div class="dz-thumbs" id="dz-edit-thumbs"></div>
         </div>
       </div>
-
-      <!-- Action buttons -->
-      <div class="edit-action-row">
-        <button class="edit-action-btn" id="edit-btn-text">Add Text</button>
-        <button class="edit-action-btn" id="edit-btn-image">Add Img</button>
-      </div>
-
-      <!-- Text format controls -->
-      <div class="edit-format-row">
-        <label class="edit-fmt-label">Font</label>
-        <div class="select-wrap edit-font-wrap">
-          <select id="edit-font" disabled>
-            <option value="">-- Font --</option>
-          </select>
-          <span class="select-arrow">&#8964;</span>
-        </div>
-        <label class="edit-fmt-label">Size</label>
-        <div class="spinner-wrap edit-size-wrap">
-          <input class="spinner-input" id="edit-fontsize" type="number" value="16" min="6" max="120" step="1" disabled />
-          <div class="spinner-btns">
-            <button class="spin-btn" data-target="edit-fontsize" data-dir="up">&#9650;</button>
-            <button class="spin-btn" data-target="edit-fontsize" data-dir="down">&#9660;</button>
-          </div>
-        </div>
-      </div>
-      <div class="edit-format-row">
-        <div class="select-wrap edit-style-wrap">
-          <select id="edit-fontstyle" disabled>
-            <option value="normal">Regular</option>
-            <option value="bold">Bold</option>
-          </select>
-          <span class="select-arrow">&#8964;</span>
-        </div>
-        <label class="edit-fmt-label">Color</label>
-        <div class="color-wrap edit-color-wrap">
-          <input type="color" id="edit-fontcolor" value="#000000" class="color-swatch" disabled />
-          <span class="color-hex" id="edit-fontcolor-hex">#000000</span>
-        </div>
-      </div>
-
-      <!-- Paper size -->
-      <div class="edit-opt-row">
+      
+      <div class="edit-opt-row" style="margin-top: 15px;">
         <label class="pdf-opt-label">Change paper size to</label>
         <div class="select-wrap" style="flex:1">
           <select id="edit-papersize">
@@ -340,37 +268,130 @@
         </div>
       </div>
 
-      <!-- Rotate -->
-      <div class="edit-rotate-row">
-        <span class="edit-rotate-label">Rotate</span>
-        <div class="edit-rotate-group">
-          <span class="edit-rotate-sub">Select page</span>
-          <button class="rotate-btn" id="edit-rotate-page">90°</button>
-          <button class="rotate-btn" id="edit-rotate-page-ccw">-90°</button>
-        </div>
-        <div class="edit-rotate-group">
-          <span class="edit-rotate-sub">All pages</span>
-          <button class="rotate-btn" id="edit-rotate-all">90°</button>
-          <button class="rotate-btn" id="edit-rotate-all-ccw">-90°</button>
+      <div style="margin-bottom: 20px;">
+        <div class="edit-rotate-label" style="margin-bottom: 10px; display: block;">ROTATE</div>
+        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <div class="edit-rotate-group">
+            <span class="edit-rotate-sub">Select page</span>
+            <button class="rotate-btn" id="edit-rotate-page">90°</button>
+            <button class="rotate-btn" id="edit-rotate-page-ccw">-90°</button>
+          </div>
+          <div class="edit-rotate-group">
+            <span class="edit-rotate-sub">All pages</span>
+            <button class="rotate-btn" id="edit-rotate-all">90°</button>
+            <button class="rotate-btn" id="edit-rotate-all-ccw">-90°</button>
+          </div>
         </div>
       </div>
 
       <button class="pdf-download-btn" id="edit-download-btn">Download PDF</button>
     </div>
 
-    <!-- Edit canvas area (right of panel) -->
     <div class="edit-canvas-panel" id="panel-edit-canvas">
-      <div class="edit-canvas-area" id="edit-canvas-area">
-        <div class="edit-empty-hint">Chọn một trang để chỉnh sửa</div>
+
+      <div class="edit-top-toolbar">
+        <label class="etb-label">Font</label>
+        <div class="select-wrap etb-font-wrap">
+          <select id="edit-font" disabled>
+            <option value="">Arial</option>
+          </select>
+          <span class="select-arrow">&#8964;</span>
+        </div>
+
+        <div class="select-wrap etb-style-wrap">
+          <select id="edit-fontstyle" disabled>
+            <option value="normal">Regular</option>
+            <option value="bold">Bold</option>
+          </select>
+          <span class="select-arrow">&#8964;</span>
+        </div>
+
+        <div class="etb-divider"></div>
+
+        <label class="etb-label">Size</label>
+        <div class="spinner-wrap etb-size-wrap">
+          <input class="spinner-input" id="edit-fontsize" type="number" value="16" min="6" max="120" step="1" disabled />
+          <div class="spinner-btns horizontal">
+            <button class="spin-btn" data-target="edit-fontsize" data-dir="down">&#9664;</button>
+            <button class="spin-btn" data-target="edit-fontsize" data-dir="up">&#9654;</button>
+          </div>
+        </div>
+
+        <div class="etb-divider"></div>
+
+        <label class="etb-label">Color</label>
+        <div class="color-wrap etb-color-wrap">
+          <input type="color" id="edit-fontcolor" value="#000000" class="color-swatch" disabled />
+          <span class="color-hex" id="edit-fontcolor-hex" style="display:none;">#000000</span>
+        </div>
+
+        <div class="etb-divider"></div>
+
+        <label class="etb-label">Stroke</label>
+        <div class="select-wrap etb-strokestyle-wrap">
+          <select id="edit-strokestyle" disabled style="padding-right: 20px; font-weight: bold;">
+            <option value="none">━━</option>
+            <option value="dashed">---</option>
+          </select>
+          <span class="select-arrow">&#8964;</span>
+        </div>
+        <div class="spinner-wrap etb-strokewidth-wrap">
+          <input class="spinner-input" id="edit-strokewidth" type="number" value="1" min="0" max="10" step="1" disabled style="padding-right: 0;" />
+          <span class="strokewidth-unit">pt</span>
+          <div class="spinner-btns horizontal">
+            <button class="spin-btn" data-target="edit-strokewidth" data-dir="down">&#9664;</button>
+            <button class="spin-btn" data-target="edit-strokewidth" data-dir="up">&#9654;</button>
+          </div>
+        </div>
       </div>
-    </div>
+      <div class="edit-canvas-main">
+        
+        <div class="edit-left-toolbar-wrapper">
+          <div class="edit-left-toolbar">
+            <button class="elb-btn active" id="edit-btn-text" title="Add Text">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 17H6.5L10 6h3l3.5 11h-2.5l-1-3.5h-4L9 17zm.7-5.5h3L11.5 8h-.1l-1.6 3.5z M18 8v3h-3v2h3v3h2v-3h3v-2h-3V8h-2z"/>
+              </svg>
+            </button>
 
-  </section><!-- /section-pdf -->
+            <button class="elb-btn" id="edit-btn-image" title="Add Image">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 19V5h10V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-6h-2v6H4zm4-5l2.5 3.5 3.5-4.5 4.5 6H5l3-5z M18 3v3h-3v2h3v3h2V8h3V6h-3V3h-2z"/>
+              </svg>
+            </button>
 
-</div><!-- /main -->
+            <div class="elb-divider"></div>
 
-<!-- ── Module scripts (order matters) ── -->
-<script src="js/utils.js"></script>
+            <button class="elb-btn elb-shape-btn" title="Rectangle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="5" width="14" height="14" rx="1"/>
+              </svg>
+            </button>
+
+            <button class="elb-btn elb-shape-btn" title="Triangle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                <polygon points="12,4 21,19 3,19"/>
+              </svg>
+            </button>
+
+            <button class="elb-btn elb-shape-btn" title="Ellipse">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="8"/>
+              </svg>
+            </button>
+
+            <button class="elb-btn elb-shape-btn" title="Line">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="4" y1="20" x2="20" y2="4"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="edit-canvas-area" id="edit-canvas-area">
+          <div class="edit-empty-hint">Chọn một trang để chỉnh sửa</div>
+        </div>
+
+      </div></div></section></div><script src="js/utils.js"></script>
 <script src="js/barcode.js"></script>
 <script src="js/pdf.js"></script>
 <script src="js/edit-pdf.js"></script>

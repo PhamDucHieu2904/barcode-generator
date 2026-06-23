@@ -91,7 +91,7 @@ async function _handleEditFileDrop(files) {
   } else {
     for (const img of imageFiles) {
       const dataURL = await readFileAsDataURL(img);
-      editPages.push({ id: uid(), pdfBytes: null, imageDataURL: dataURL, renderURL: dataURL, rotation: 0, widthPt: 595, heightPt: 842, overlayObjects: [] });
+      editPages.push({ id: uid(), pdfBytes: null, imageDataURL: dataURL, renderURL: dataURL, rotation: 0, widthPt: 595, heightPt: 842, origWidthPt: 595, origHeightPt: 842, overlayObjects: [] });
     }
     for (const pf of pdfFiles) {
       const bytes = await readFileAsArrayBuffer(pf);
@@ -99,7 +99,7 @@ async function _handleEditFileDrop(files) {
       for (let i = 0; i < doc.getPageCount(); i++) {
         const { width, height } = doc.getPage(i).getSize();
         const renderUrl = await _renderPdfPageToDataURL(bytes, i);
-        editPages.push({ id: uid(), pdfBytes: bytes, pdfPageIndex: i, imageDataURL: null, renderURL: renderUrl, rotation: 0, widthPt: width, heightPt: height, overlayObjects: [] });
+        editPages.push({ id: uid(), pdfBytes: bytes, pdfPageIndex: i, imageDataURL: null, renderURL: renderUrl, rotation: 0, widthPt: width, heightPt: height, origWidthPt: width, origHeightPt: height, overlayObjects: [] });
       }
     }
   }
@@ -113,7 +113,7 @@ async function _loadPdfPages(arrayBuffer) {
     for (let i = 0; i < doc.getPageCount(); i++) {
       const { width, height } = doc.getPage(i).getSize();
       const renderUrl = await _renderPdfPageToDataURL(arrayBuffer, i);
-      editPages.push({ id: uid(), pdfBytes: arrayBuffer, pdfPageIndex: i, renderURL: renderUrl, rotation: 0, widthPt: width, heightPt: height, overlayObjects: [] });
+      editPages.push({ id: uid(), pdfBytes: arrayBuffer, pdfPageIndex: i, renderURL: renderUrl, rotation: 0, widthPt: width, heightPt: height, origWidthPt: width, origHeightPt: height, overlayObjects: [] });
     }
   } catch(e) { alert('Lỗi file PDF: ' + e.message); }
 }
@@ -174,6 +174,59 @@ async function _renderEditThumbs() {
   }
 }
 
+function _openPageEditor(pg) {
+  const area = document.getElementById('edit-canvas-area');
+  if (!area) return;
+  area.innerHTML = ''; editSelectedObj = null;
+
+  const areaW = area.clientWidth || 600, areaH = area.clientHeight || 700;
+  
+  // 1. Nhận diện kích thước thật khi bị xoay (Đảo chiều Rộng/Cao)
+  const isRotated = pg.rotation === 90 || pg.rotation === 270;
+  const logicalW = isRotated ? pg.heightPt : pg.widthPt;
+  const logicalH = isRotated ? pg.widthPt : pg.heightPt;
+  
+  // Tính tỷ lệ thu phóng dựa trên kích thước thật đã xoay
+  editorScale = Math.min((areaW - 32) / logicalW, (areaH - 32) / logicalH, 1.5);
+
+  // 2. Tạo một lớp Wrapper để giữ chỗ cho Layout không bị tràn
+  const wrapper = document.createElement('div');
+  wrapper.style.width = Math.round(logicalW * editorScale) + 'px';
+  wrapper.style.height = Math.round(logicalH * editorScale) + 'px';
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.justifyContent = 'center';
+
+  // 3. Render trang PDF như bình thường
+  const pageEl = document.createElement('div');
+  pageEl.className = 'edit-page-canvas';
+  pageEl.style.width = Math.round(pg.widthPt * editorScale) + 'px';
+  pageEl.style.height = Math.round(pg.heightPt * editorScale) + 'px';
+  pageEl.style.transform = `rotate(${pg.rotation}deg)`;
+  pageEl.style.transformOrigin = 'center center';
+  const bgLayer = document.createElement('div');
+  bgLayer.className = 'edit-bg-layer'; bgLayer.style.width = '100%'; bgLayer.style.height = '100%';
+
+  if (pg.renderURL) {
+    const bgImg = document.createElement('img'); bgImg.src = pg.renderURL; bgImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+    bgLayer.appendChild(bgImg);
+  }
+
+  pageEl.appendChild(bgLayer);
+  const overlayEl = document.createElement('div');
+  overlayEl.className = 'edit-overlay'; overlayEl.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
+  pageEl.appendChild(overlayEl);
+
+  pg.overlayObjects.forEach(obj => _renderOverlayObject(obj, overlayEl, pg));
+
+  pageEl.addEventListener('mousedown', e => { if (e.target === pageEl || e.target === bgLayer || e.target === overlayEl) _deselectAll(pg); });
+  
+  // Chèn Page vào Wrapper, rồi mới chèn vào màn hình
+  wrapper.appendChild(pageEl);
+  area.appendChild(wrapper);
+  area._currentPg = pg; area._overlayEl = overlayEl;
+}
+
 function _bindEditThumbDrag(thumbEl, id) {
   thumbEl.addEventListener('dragstart', e => { editDragSrcId = id; thumbEl.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); e.stopPropagation(); });
   thumbEl.addEventListener('dragend', () => { thumbEl.classList.remove('dragging'); document.querySelectorAll('.edit-thumb').forEach(t => t.classList.remove('drag-over')); });
@@ -194,38 +247,39 @@ function _clearEditor() {
   editSelectedObj = null; _updateTextControls(null);
 }
 
-function _openPageEditor(pg) {
-  const area = document.getElementById('edit-canvas-area');
-  if (!area) return;
-  area.innerHTML = ''; editSelectedObj = null;
+function _bindObjectMove(el, obj, pg) {
+  let startX, startY, startOX, startOY;
+  el.addEventListener('mousedown', e => {
+    if (e.target.closest('.obj-btn-del') || e.target.closest('.obj-resize-handle')) return;
+    if (el.querySelector('[contenteditable="true"]')) return;
 
-  const areaW = area.clientWidth || 600, areaH = area.clientHeight || 700;
-  editorScale = Math.min((areaW - 32) / pg.widthPt, (areaH - 32) / pg.heightPt, 1.5);
+    e.preventDefault(); e.stopPropagation();
+    _selectObject(obj, pg);
 
-  const pageEl = document.createElement('div');
-  pageEl.className = 'edit-page-canvas';
-  pageEl.style.width = Math.round(pg.widthPt * editorScale) + 'px';
-  pageEl.style.height = Math.round(pg.heightPt * editorScale) + 'px';
-  pageEl.style.transform = `rotate(${pg.rotation}deg)`;
+    startX = e.clientX; startY = e.clientY; startOX = obj.x; startOY = obj.y;
 
-  const bgLayer = document.createElement('div');
-  bgLayer.className = 'edit-bg-layer'; bgLayer.style.width = '100%'; bgLayer.style.height = '100%';
+    function onMove(e2) {
+      let dx = e2.clientX - startX;
+      let dy = e2.clientY - startY;
+      let localDx = dx, localDy = dy;
 
-  if (pg.renderURL) {
-    const bgImg = document.createElement('img'); bgImg.src = pg.renderURL; bgImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-    bgLayer.appendChild(bgImg);
-  }
+      // Xử lý dịch tọa độ khi canvas bị xoay
+      if (pg.rotation === 90) {
+        localDx = -dy; localDy = dx;
+      } else if (pg.rotation === 180) {
+        localDx = -dx; localDy = -dy;
+      } else if (pg.rotation === 270) {
+        localDx = dy; localDy = -dx;
+      }
 
-  pageEl.appendChild(bgLayer);
-  const overlayEl = document.createElement('div');
-  overlayEl.className = 'edit-overlay'; overlayEl.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
-  pageEl.appendChild(overlayEl);
-
-  pg.overlayObjects.forEach(obj => _renderOverlayObject(obj, overlayEl, pg));
-
-  pageEl.addEventListener('mousedown', e => { if (e.target === pageEl || e.target === bgLayer || e.target === overlayEl) _deselectAll(pg); });
-  area.appendChild(pageEl);
-  area._currentPg = pg; area._overlayEl = overlayEl;
+      obj.x = Math.max(0, startOX + localDx); 
+      obj.y = Math.max(0, startOY + localDy);
+      el.style.left = obj.x + 'px'; 
+      el.style.top = obj.y + 'px';
+    }
+    function onUp() { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+    document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+  });
 }
 
 function _renderOverlayObject(obj, overlayEl, pg) {
@@ -343,8 +397,23 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
   handleEl.addEventListener('mousedown', e => {
     e.preventDefault(); e.stopPropagation();
     const startX = e.clientX, startY = e.clientY, startW = obj.w, startH = obj.h, startOX = obj.x, startOY = obj.y, MIN = 20;
+    
     function onMove(e2) {
-      const dx = e2.clientX - startX, dy = e2.clientY - startY;
+      let dx = e2.clientX - startX;
+      let dy = e2.clientY - startY;
+      
+      // Áp dụng dịch tọa độ cho Resize khi xoay
+      const pg = _getCurrentPg();
+      if (pg) {
+        if (pg.rotation === 90) {
+          const tmp = dx; dx = -dy; dy = tmp;
+        } else if (pg.rotation === 180) {
+          dx = -dx; dy = -dy;
+        } else if (pg.rotation === 270) {
+          const tmp = dx; dx = dy; dy = -tmp;
+        }
+      }
+
       if (dir === 'se') { obj.w = Math.max(MIN, startW + dx); obj.h = Math.max(MIN, startH + dy); }
       else if (dir === 'e') { obj.w = Math.max(MIN, startW + dx); }
       else if (dir === 'w') { const nw = Math.max(MIN, startW - dx); obj.x = startOX + (startW - nw); obj.w = nw; }
@@ -358,53 +427,100 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
 }
 
 function _bindEditButtons() {
-  document.getElementById('edit-btn-text').addEventListener('click', () => {
-    const pg = _getCurrentPg();
-    if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
-    const obj = {
-      id: uid(), type: 'text', x: Math.round(pg.widthPt * editorScale * 0.3), y: Math.round(pg.heightPt * editorScale * 0.4),
-      w: 200, h: 60, content: 'Nhập text tại đây', fontFamily: 'Arial', fontSize: 16, fontWeight: 'normal', color: '#000000', selected: false,
-    };
-    pg.overlayObjects.push(obj);
-    const area = document.getElementById('edit-canvas-area');
-    if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg); // FIX LỖI TÀNG HÌNH Ở ĐÂY
-    _selectObject(obj, pg);
-  });
+  const btnText = document.getElementById('edit-btn-text');
+  if (btnText) {
+    btnText.addEventListener('click', () => {
+      // Đổi active state ở left menu
+      document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+      btnText.classList.add('active');
 
-  document.getElementById('edit-btn-image').addEventListener('click', () => {
-    const pg = _getCurrentPg();
-    if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
-    const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
-    input.addEventListener('change', async () => {
-      if (!input.files[0]) return;
-      const dataURL = await readFileAsDataURL(input.files[0]);
+      const pg = _getCurrentPg();
+      if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
       const obj = {
-        id: uid(), type: 'image', x: Math.round(pg.widthPt * editorScale * 0.2), y: Math.round(pg.heightPt * editorScale * 0.2),
-        w: 200, h: 150, dataURL, selected: false,
+        id: uid(), type: 'text', x: Math.round(pg.widthPt * editorScale * 0.3), y: Math.round(pg.heightPt * editorScale * 0.4),
+        w: 200, h: 60, content: 'Nhập text tại đây', fontFamily: 'Arial', fontSize: 16, fontWeight: 'normal', color: '#000000',
+        stroke: 'none', strokeWidth: 1, selected: false,
       };
       pg.overlayObjects.push(obj);
       const area = document.getElementById('edit-canvas-area');
-      if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg); // FIX LỖI TÀNG HÌNH Ở ĐÂY
+      if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg);
       _selectObject(obj, pg);
     });
-    input.click();
-  });
+  }
 
-  document.getElementById('edit-papersize').addEventListener('change', e => { const pg = _getCurrentPg(); const preset = PAPER_SIZES[e.target.value]; if (preset && pg) { pg.widthPt = preset.w; pg.heightPt = preset.h; _openPageEditor(pg); } });
-  document.getElementById('edit-rotate-page').addEventListener('click', () => { const pg = _getCurrentPg(); if (pg) { pg.rotation = ((pg.rotation || 0) + 90) % 360; _openPageEditor(pg); _renderEditThumbs(); } });
-  document.getElementById('edit-rotate-page-ccw').addEventListener('click', () => { const pg = _getCurrentPg(); if (pg) { pg.rotation = ((pg.rotation || 0) - 90 + 360) % 360; _openPageEditor(pg); _renderEditThumbs(); } });
-  document.getElementById('edit-rotate-all').addEventListener('click', () => { editPages.forEach(p => { p.rotation = ((p.rotation || 0) + 90) % 360; }); const pg = _getCurrentPg(); if (pg) _openPageEditor(pg); _renderEditThumbs(); });
-  document.getElementById('edit-rotate-all-ccw').addEventListener('click', () => { editPages.forEach(p => { p.rotation = ((p.rotation || 0) - 90 + 360) % 360; }); const pg = _getCurrentPg(); if (pg) _openPageEditor(pg); _renderEditThumbs(); });
-  document.getElementById('edit-download-btn').addEventListener('click', async () => {
-    const btn = document.getElementById('edit-download-btn');
-    if (!editPages.length) { alert('Chưa có trang nào.'); return; }
-    btn.disabled = true; btn.textContent = 'Đang xử lý…';
-    try { await _buildAndDownloadEditPDF(); } catch(e) { alert('Lỗi: ' + e.message); } finally { btn.disabled = false; btn.textContent = 'Download PDF'; }
-  });
+  const btnImg = document.getElementById('edit-btn-image');
+  if (btnImg) {
+    btnImg.addEventListener('click', () => {
+      document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+      btnImg.classList.add('active');
+
+      const pg = _getCurrentPg();
+      if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
+      const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
+      input.addEventListener('change', async () => {
+        if (!input.files[0]) return;
+        const dataURL = await readFileAsDataURL(input.files[0]);
+        const obj = {
+          id: uid(), type: 'image', x: Math.round(pg.widthPt * editorScale * 0.2), y: Math.round(pg.heightPt * editorScale * 0.2),
+          w: 200, h: 150, dataURL, selected: false,
+        };
+        pg.overlayObjects.push(obj);
+        const area = document.getElementById('edit-canvas-area');
+        if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg);
+        _selectObject(obj, pg);
+      });
+      input.click();
+    });
+  }
+
+  // Tùy chọn Rotate/PaperSize đã bị ẩn khỏi UI theo thiết kế, nhưng giữ an toàn ở đây nếu sau này cần dùng lại
+  const paperSizeEl = document.getElementById('edit-papersize');
+  if (paperSizeEl) {
+    paperSizeEl.addEventListener('change', e => { 
+      const pg = _getCurrentPg(); 
+      if (!pg) return;
+      
+      if (e.target.value === 'none') {
+        // Khôi phục lại kích thước gốc của trang
+        pg.widthPt = pg.origWidthPt || pg.widthPt;
+        pg.heightPt = pg.origHeightPt || pg.heightPt;
+      } else {
+        // Đổi sang kích thước chuẩn (A4, A3...)
+        const preset = PAPER_SIZES[e.target.value]; 
+        if (preset) { 
+          pg.widthPt = preset.w; 
+          pg.heightPt = preset.h; 
+        } 
+      }
+      _openPageEditor(pg); 
+    });
+  }
+  
+  const dlBtn = document.getElementById('edit-download-btn');
+  // Khôi phục các nút Rotate
+  const rotatePage = document.getElementById('edit-rotate-page');
+  if (rotatePage) rotatePage.addEventListener('click', () => { const pg = _getCurrentPg(); if (pg) { pg.rotation = ((pg.rotation || 0) + 90) % 360; _openPageEditor(pg); _renderEditThumbs(); } });
+
+  const rotatePageCcw = document.getElementById('edit-rotate-page-ccw');
+  if (rotatePageCcw) rotatePageCcw.addEventListener('click', () => { const pg = _getCurrentPg(); if (pg) { pg.rotation = ((pg.rotation || 0) - 90 + 360) % 360; _openPageEditor(pg); _renderEditThumbs(); } });
+
+  const rotateAll = document.getElementById('edit-rotate-all');
+  if (rotateAll) rotateAll.addEventListener('click', () => { editPages.forEach(p => { p.rotation = ((p.rotation || 0) + 90) % 360; }); const pg = _getCurrentPg(); if (pg) _openPageEditor(pg); _renderEditThumbs(); });
+
+  const rotateAllCcw = document.getElementById('edit-rotate-all-ccw');
+  if (rotateAllCcw) rotateAllCcw.addEventListener('click', () => { editPages.forEach(p => { p.rotation = ((p.rotation || 0) - 90 + 360) % 360; }); const pg = _getCurrentPg(); if (pg) _openPageEditor(pg); _renderEditThumbs(); });
+  if (dlBtn) {
+    dlBtn.addEventListener('click', async () => {
+      if (!editPages.length) { alert('Chưa có trang nào.'); return; }
+      dlBtn.disabled = true; dlBtn.textContent = 'Đang xử lý…';
+      try { await _buildAndDownloadEditPDF(); } catch(e) { alert('Lỗi: ' + e.message); } finally { dlBtn.disabled = false; dlBtn.textContent = 'Download PDF'; }
+    });
+  }
 }
 
+// Bổ sung lắng nghe sự kiện cho Stroke
 function _bindTextFormatControls() {
-  ['edit-font', 'edit-fontsize', 'edit-fontstyle', 'edit-fontcolor'].forEach(id => {
+  ['edit-font', 'edit-fontsize', 'edit-fontstyle', 'edit-fontcolor', 'edit-strokestyle', 'edit-strokewidth'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.addEventListener('input', () => _applyTextFormat()); el.addEventListener('change', () => _applyTextFormat()); }
   });
@@ -416,13 +532,20 @@ function _applyTextFormat() {
   const obj = pg.overlayObjects.find(o => o.id === editSelectedObj);
   if (!obj || obj.type !== 'text') return;
 
-  const font = document.getElementById('edit-font'), size = document.getElementById('edit-fontsize'), style = document.getElementById('edit-fontstyle'), colorEl = document.getElementById('edit-fontcolor');
+  const font = document.getElementById('edit-font'), 
+        size = document.getElementById('edit-fontsize'), 
+        style = document.getElementById('edit-fontstyle'), 
+        colorEl = document.getElementById('edit-fontcolor'),
+        stroke = document.getElementById('edit-strokestyle'),
+        strokeW = document.getElementById('edit-strokewidth');
+
   if (font) obj.fontFamily = font.value;
   if (size) obj.fontSize = parseInt(size.value) || 16;
   if (style) obj.fontWeight = style.value === 'bold' ? 'bold' : 'normal';
   if (colorEl) obj.color = colorEl.value;
+  if (stroke) obj.stroke = stroke.value;
+  if (strokeW) obj.strokeWidth = parseInt(strokeW.value) || 0;
 
-  // CẬP NHẬT TRỰC TIẾP CSS MÀ KHÔNG LÀM MẤT CON TRỎ CHUỘT
   const area = document.getElementById('edit-canvas-area');
   if (area && area._overlayEl) {
     const el = area._overlayEl.querySelector(`[data-obj-id="${obj.id}"]`);
@@ -433,21 +556,34 @@ function _applyTextFormat() {
         textDiv.style.fontSize = `${obj.fontSize}px`;
         textDiv.style.fontWeight = obj.fontWeight;
         textDiv.style.color = obj.color;
+        // Áp dụng CSS Stroke trực tiếp lên text
+        if (obj.stroke !== 'none' && obj.strokeWidth > 0) {
+          textDiv.style.webkitTextStroke = `${obj.strokeWidth}px #000`; // Dùng viền đen mặc định
+        } else {
+          textDiv.style.webkitTextStroke = '0';
+        }
       }
     }
   }
-  _updateFontColorHex(colorEl ? colorEl.value : '#000000');
 }
 
 function _updateTextControls(obj) {
-  const font = document.getElementById('edit-font'), size = document.getElementById('edit-fontsize'), style = document.getElementById('edit-fontstyle'), colorEl = document.getElementById('edit-fontcolor');
+  const font = document.getElementById('edit-font'), 
+        size = document.getElementById('edit-fontsize'), 
+        style = document.getElementById('edit-fontstyle'), 
+        colorEl = document.getElementById('edit-fontcolor'),
+        stroke = document.getElementById('edit-strokestyle'),
+        strokeW = document.getElementById('edit-strokewidth');
+
   const isText = obj && obj.type === 'text';
-  [font, size, style, colorEl].forEach(el => { if (el) el.disabled = !isText; });
+  [font, size, style, colorEl, stroke, strokeW].forEach(el => { if (el) el.disabled = !isText; });
   if (isText && obj) {
     if (font) font.value = obj.fontFamily || 'Arial';
     if (size) size.value = obj.fontSize || 16;
     if (style) style.value = obj.fontWeight === 'bold' ? 'bold' : 'normal';
-    if (colorEl) { colorEl.value = obj.color || '#000000'; _updateFontColorHex(colorEl.value); }
+    if (stroke) stroke.value = obj.stroke || 'none';
+    if (strokeW) strokeW.value = obj.strokeWidth || 1;
+    if (colorEl) { colorEl.value = obj.color || '#000000'; }
   }
 }
 
