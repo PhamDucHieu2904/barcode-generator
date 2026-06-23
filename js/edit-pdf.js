@@ -474,25 +474,51 @@ function _bindEditButtons() {
   }
 
   // Tùy chọn Rotate/PaperSize đã bị ẩn khỏi UI theo thiết kế, nhưng giữ an toàn ở đây nếu sau này cần dùng lại
+// ── Xử lý Paper Size và nút Toggle "All" ──
   const paperSizeEl = document.getElementById('edit-papersize');
+  const paperSizeAllBtn = document.getElementById('edit-papersize-all');
+  let isPaperSizeAll = false; // Trạng thái mặc định: Tắt
+
+  // Bật/tắt trạng thái "All"
+  if (paperSizeAllBtn) {
+    paperSizeAllBtn.addEventListener('click', () => {
+      isPaperSizeAll = !isPaperSizeAll;
+      paperSizeAllBtn.classList.toggle('active', isPaperSizeAll);
+    });
+  }
+
+  // Khi chọn khổ giấy trong Dropdown
   if (paperSizeEl) {
     paperSizeEl.addEventListener('change', e => { 
-      const pg = _getCurrentPg(); 
-      if (!pg) return;
+      const currentPg = _getCurrentPg(); 
+      if (!currentPg && editPages.length === 0) return; // Không có trang nào
       
-      if (e.target.value === 'none') {
-        // Khôi phục lại kích thước gốc của trang
-        pg.widthPt = pg.origWidthPt || pg.widthPt;
-        pg.heightPt = pg.origHeightPt || pg.heightPt;
-      } else {
-        // Đổi sang kích thước chuẩn (A4, A3...)
-        const preset = PAPER_SIZES[e.target.value]; 
-        if (preset) { 
+      const val = e.target.value;
+      const preset = PAPER_SIZES[val];
+
+      // Hàm áp dụng khổ giấy cho 1 trang cụ thể
+      const applySizeToPage = (pg) => {
+        if (val === 'none') {
+          pg.widthPt = pg.origWidthPt || pg.widthPt;
+          pg.heightPt = pg.origHeightPt || pg.heightPt;
+        } else if (preset) {
           pg.widthPt = preset.w; 
           pg.heightPt = preset.h; 
-        } 
+        }
+      };
+
+      // Nếu nút All đang bật -> Áp dụng cho toàn bộ mảng editPages
+      if (isPaperSizeAll) {
+        editPages.forEach(pg => applySizeToPage(pg));
+      } 
+      // Nếu tắt -> Chỉ áp dụng cho trang hiện tại
+      else if (currentPg) {
+        applySizeToPage(currentPg);
       }
-      _openPageEditor(pg); 
+      
+      // Vẽ lại trang đang xem và cập nhật lại toàn bộ Thumbnails
+      if (currentPg) _openPageEditor(currentPg); 
+      _renderEditThumbs(); 
     });
   }
   
@@ -534,14 +560,20 @@ function _applyTextFormat() {
 
   const font = document.getElementById('edit-font'), 
         size = document.getElementById('edit-fontsize'), 
-        style = document.getElementById('edit-fontstyle'), 
+        style = document.getElementById('edit-fontstyle'), // Dropdown mới có Italic
         colorEl = document.getElementById('edit-fontcolor'),
         stroke = document.getElementById('edit-strokestyle'),
         strokeW = document.getElementById('edit-strokewidth');
 
   if (font) obj.fontFamily = font.value;
   if (size) obj.fontSize = parseInt(size.value) || 16;
-  if (style) obj.fontWeight = style.value === 'bold' ? 'bold' : 'normal';
+  
+  // LOGIC MỚI CHO FONT STYLE
+  if (style) {
+    obj.fontWeight = (style.value === 'bold') ? 'bold' : 'normal';
+    obj.fontStyle  = (style.value === 'italic') ? 'italic' : 'normal';
+  }
+  
   if (colorEl) obj.color = colorEl.value;
   if (stroke) obj.stroke = stroke.value;
   if (strokeW) obj.strokeWidth = parseInt(strokeW.value) || 0;
@@ -555,10 +587,11 @@ function _applyTextFormat() {
         textDiv.style.fontFamily = `"${obj.fontFamily}", sans-serif`;
         textDiv.style.fontSize = `${obj.fontSize}px`;
         textDiv.style.fontWeight = obj.fontWeight;
+        textDiv.style.fontStyle  = obj.fontStyle; // Cập nhật style
         textDiv.style.color = obj.color;
-        // Áp dụng CSS Stroke trực tiếp lên text
+        
         if (obj.stroke !== 'none' && obj.strokeWidth > 0) {
-          textDiv.style.webkitTextStroke = `${obj.strokeWidth}px #000`; // Dùng viền đen mặc định
+          textDiv.style.webkitTextStroke = `${obj.strokeWidth}px #000`;
         } else {
           textDiv.style.webkitTextStroke = '0';
         }
@@ -577,10 +610,14 @@ function _updateTextControls(obj) {
 
   const isText = obj && obj.type === 'text';
   [font, size, style, colorEl, stroke, strokeW].forEach(el => { if (el) el.disabled = !isText; });
-  if (isText && obj) {
+if (isText && obj) {
     if (font) font.value = obj.fontFamily || 'Arial';
     if (size) size.value = obj.fontSize || 16;
-    if (style) style.value = obj.fontWeight === 'bold' ? 'bold' : 'normal';
+    if (style) {
+      if (obj.fontStyle === 'italic') style.value = 'italic';
+      else style.value = (obj.fontWeight === 'bold') ? 'bold' : 'normal';
+    }
+    
     if (stroke) stroke.value = obj.stroke || 'none';
     if (strokeW) strokeW.value = obj.strokeWidth || 1;
     if (colorEl) { colorEl.value = obj.color || '#000000'; }
@@ -631,9 +668,30 @@ async function _buildAndDownloadEditPDF() {
 
       if (obj.type === 'text') {
         try {
-          const font2 = await outDoc.embedFont(obj.fontWeight === 'bold' ? StandardFonts.HelveticaBold : StandardFonts.Helvetica);
+          // LOGIC CHỌN FONT CẬP NHẬT: HỖ TRỢ BOLD + ITALIC
+          let fontType = StandardFonts.Helvetica;
+          const isBold = obj.fontWeight === 'bold';
+          const isItalic = obj.fontStyle === 'italic';
+
+          if (isBold && isItalic) fontType = StandardFonts.HelveticaBoldOblique;
+          else if (isBold) fontType = StandardFonts.HelveticaBold;
+          else if (isItalic) fontType = StandardFonts.HelveticaOblique;
+          else fontType = StandardFonts.Helvetica;
+
+          const font2 = await outDoc.embedFont(fontType);
           const hexColor = (obj.color || '#000000').replace('#', '');
-          page.drawText(obj.content || '', { x: pdfX, y: pdfY + pdfH * 0.25, size: Math.max(4, obj.fontSize || 16), font: font2, color: rgb(parseInt(hexColor.slice(0,2), 16) / 255, parseInt(hexColor.slice(2,4), 16) / 255, parseInt(hexColor.slice(4,6), 16) / 255), maxWidth: pdfW });
+          const r = parseInt(hexColor.slice(0,2), 16) / 255;
+          const g = parseInt(hexColor.slice(2,4), 16) / 255;
+          const b = parseInt(hexColor.slice(4,6), 16) / 255;
+          
+          page.drawText(obj.content || '', { 
+            x: pdfX, 
+            y: pdfY + pdfH * 0.25, 
+            size: Math.max(4, obj.fontSize || 16), 
+            font: font2, 
+            color: rgb(r, g, b), 
+            maxWidth: pdfW 
+          });
         } catch(e2) {}
       } else if (obj.type === 'image' && obj.dataURL) {
         try {

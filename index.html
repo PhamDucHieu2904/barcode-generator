@@ -13,10 +13,14 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 </script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="global.css">
+<link rel="stylesheet" href="barcode.css">
+<link rel="stylesheet" href="pdf.css">
+<link rel="stylesheet" href="responsive.css">
 </head>
 <body>
 
@@ -254,9 +258,9 @@
         </div>
       </div>
       
-      <div class="edit-opt-row" style="margin-top: 15px;">
-        <label class="pdf-opt-label">Change paper size to</label>
-        <div class="select-wrap" style="flex:1">
+      <div class="edit-opt-row">
+        <label class="pdf-opt-label">Change paper size</label>
+        <div class="select-wrap">
           <select id="edit-papersize">
             <option value="none">None</option>
             <option value="a4v">A4 Vertical</option>
@@ -266,18 +270,19 @@
           </select>
           <span class="select-arrow">&#8964;</span>
         </div>
+        <button id="edit-papersize-all" class="opt-toggle-btn" title="Áp dụng cho tất cả các trang">All</button>
       </div>
 
-      <div style="margin-bottom: 20px;">
-        <div class="edit-rotate-label" style="margin-bottom: 10px; display: block;">ROTATE</div>
-        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+      <div class="edit-rotate-container">
+        <div class="edit-rotate-label">ROTATE</div>
+        <div class="edit-rotate-actions">
           <div class="edit-rotate-group">
-            <span class="edit-rotate-sub">Select page</span>
+            <span class="edit-rotate-sub">Selected page</span>
             <button class="rotate-btn" id="edit-rotate-page">90°</button>
             <button class="rotate-btn" id="edit-rotate-page-ccw">-90°</button>
           </div>
           <div class="edit-rotate-group">
-            <span class="edit-rotate-sub">All pages</span>
+            <span class="edit-rotate-sub">All</span>
             <button class="rotate-btn" id="edit-rotate-all">90°</button>
             <button class="rotate-btn" id="edit-rotate-all-ccw">-90°</button>
           </div>
@@ -302,6 +307,7 @@
           <select id="edit-fontstyle" disabled>
             <option value="normal">Regular</option>
             <option value="bold">Bold</option>
+            <option value="italic">Italic</option>
           </select>
           <span class="select-arrow">&#8964;</span>
         </div>

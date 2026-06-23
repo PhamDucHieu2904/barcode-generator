@@ -1,0 +1,48 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Arial', sans-serif; display: flex; height: 100vh; overflow: hidden; background: #f0f0f0; }
+
+/* ── SIDEBAR ── */
+#sidebar { width: clamp(150px, 15vw, 208px); background: #111; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+#sidebar-logo { padding: 16px 12px 12px; border-bottom: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; min-height: 70px; flex-shrink: 0; }
+#logo-img { max-width: 100%; max-height: 48px; object-fit: contain; }
+#sidebar-nav { display: flex; flex-direction: column; padding: 14px 12px; gap: 10px; overflow-y: auto; flex: 1; }
+.nav-btn { background: transparent; color: #fff; border: 1px solid #8d8d8d; border-radius: 6px; padding: 10px 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.18s, color 0.18s; text-align: center; letter-spacing: 0.02em; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-btn:hover { background: #fff; color: #111; }
+.nav-btn.active { background: #fff; color: #111; }
+.nav-divider { height: 1px; background: rgba(255,255,255,0.20); margin: 4px 0; flex-shrink: 0; }
+
+/* ── MAIN WRAPPER & SECTIONS ── */
+#main { flex: 1; display: flex; overflow: hidden; }
+.app-section { display: none; flex: 1; overflow: hidden; }
+.app-section.active { display: flex; }
+
+/* ── SHARED UI COMPONENTS (Select, Spinner, Toggle, Color Picker) ── */
+.select-wrap { position: relative; }
+.select-wrap select { width: 100%; appearance: none; border: 1.5px solid #ccc; border-radius: 7px; padding: 8px 30px 8px 10px; font-size: 13px; font-family: 'Arial', sans-serif; background: #fafafa; color: #222; cursor: pointer; outline: none; transition: border-color 0.15s; }
+.select-wrap select:focus { border-color: #333; background: #fff; }
+.select-arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #888; pointer-events: none; }
+
+.spinner-wrap { display: flex; border: 1.5px solid #ccc; border-radius: 7px; overflow: hidden; background: #fafafa; transition: border-color 0.15s; }
+.spinner-wrap:focus-within { border-color: #333; background: #fff; }
+.spinner-input { flex: 1; border: none; outline: none; padding: 8px 8px; font-size: 13px; font-family: 'Courier New', monospace; background: transparent; color: #222; min-width: 0; -moz-appearance: textfield; }
+.spinner-input::-webkit-outer-spin-button, .spinner-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.spinner-btns { display: flex; flex-direction: column; border-left: 1.5px solid #e0e0e0; }
+.spin-btn { flex: 1; background: #f4f4f4; border: none; cursor: pointer; font-size: 8px; color: #666; padding: 0 7px; line-height: 1; transition: background 0.12s, color 0.12s; }
+.spin-btn:hover { background: #ddd; color: #111; }
+.spin-btn:active { background: #ccc; }
+
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.toggle { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: #ccc; border-radius: 22px; cursor: pointer; transition: background 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.toggle input:checked + .toggle-slider { background: #111; }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+.toggle-hint { font-size: 12px; color: #666; }
+
+.color-wrap { display: flex; align-items: center; gap: 8px; border: 1.5px solid #ccc; border-radius: 7px; padding: 5px 10px; background: #fafafa; cursor: pointer; transition: border-color 0.15s; }
+.color-wrap:hover { border-color: #999; }
+.color-swatch { width: 22px; height: 22px; border: none; border-radius: 4px; cursor: pointer; padding: 0; background: none; flex-shrink: 0; }
+.color-swatch::-webkit-color-swatch-wrapper { padding: 0; }
+.color-swatch::-webkit-color-swatch { border: none; border-radius: 3px; }
+.color-hex { font-size: 12px; font-family: 'Courier New', monospace; color: #444; letter-spacing: 0.04em; }
