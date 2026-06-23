@@ -403,8 +403,8 @@ body {
   overflow-x: auto;
   overflow-y: hidden;
   background: #f0f0f0;
-  padding: 28px 24px;
-  gap: 20px;
+  padding: 20px; /* MỚI: Thu gọn lề ngoài */
+  gap: 16px;     /* MỚI: Thu gọn khoảng cách giữa các cột */
 }
 #section-pdf.active { display: flex; }
 
@@ -415,10 +415,14 @@ body {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  padding: 22px 20px 20px;
-  width: 320px;
-  min-width: 280px;
-  flex-shrink: 0;
+  padding: 16px; /* MỚI: Giảm lề trong card */
+  
+  /* MỚI: Thuật toán tự động co giãn thông minh */
+  width: 20%; 
+  min-width: 210px; 
+  max-width: 320px;
+  flex-shrink: 1; 
+  
   overflow: hidden;
 }
 .pdf-panel--empty {
@@ -601,10 +605,10 @@ body {
   justify-content: space-between;
 }
 .pdf-opt-label {
-  font-size: 12.5px;
+  font-size: 11.5px; /* MỚI: Nhỏ lại một chút */
   color: #444;
   white-space: nowrap;
-  min-width: 90px;
+  min-width: 75px; /* MỚI: Giảm từ 90px */
 }
 .pdf-opt-row .select-wrap { flex: 1; }
 
@@ -629,9 +633,12 @@ body {
    EDIT PDF PANEL
    ══════════════════════════════════════════ */
 .pdf-panel--edit {
-  width: 320px;
-  min-width: 290px;
-  flex-shrink: 0;
+  /* MỚI: Bỏ thông số fix cứng, áp dụng thông số co giãn */
+  width: 20%;
+  min-width: 210px;
+  max-width: 320px;
+  flex-shrink: 1;
+  
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -653,9 +660,10 @@ body {
   margin-bottom: 8px;
 }
 .edit-opt-row .pdf-opt-label {
-  font-size: 11.5px;
-  white-space: nowrap;
-  min-width: 110px;
+  font-size: 11px;
+  white-space: normal; /* MỚI: Cho phép text rớt dòng nếu cột bị ép nhỏ */
+  min-width: 80px; /* MỚI: Giảm từ 110px */
+  line-height: 1.2;
 }
 
 /* ── Rotate row ── */
@@ -712,11 +720,11 @@ body {
    ══════════════════════════════════════════ */
 .edit-canvas-panel {
   flex: 1;
+  min-width: 400px; /* MỚI: Đảm bảo Canvas LUÔN LUÔN rộng ít nhất 400px */
   background: #f0f0f0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-width: 0;
 }
 
 /* ── TOP TOOLBAR ── */
