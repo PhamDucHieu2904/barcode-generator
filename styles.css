@@ -12,26 +12,30 @@ body {
    SIDEBAR
    ══════════════════════════════════════════ */
 #sidebar {
-  width: 208px;
-  min-width: 208px;
+  /* MỚI: Tự động co giãn theo chiều ngang màn hình */
+  width: 14vw; 
+  min-width: 140px; /* Cho phép ép nhỏ tối đa xuống 140px trên Laptop */
+  max-width: 208px; /* Giới hạn to tối đa 208px trên PC */
+  
   background: #111;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 #sidebar-logo {
-  padding: 20px 16px 16px;
+  padding: 16px 12px 12px; /* MỚI: Thu gọn lề logo */
   border-bottom: 1px solid rgba(255,255,255,0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 80px;
+  min-height: 70px; /* MỚI: Thu gọn chiều cao */
   flex-shrink: 0;
 }
 #logo-img {
   max-width: 100%;
-  max-height: 54px;
+  max-height: 48px; /* MỚI: Hình logo nhỏ lại một chút */
   object-fit: contain;
 }
 
@@ -47,16 +51,21 @@ body {
 .nav-btn {
   background: transparent;
   color: #fff;
-  border: 2px solid #fff;
+  border: 1px solid #8d8d8d;
   border-radius: 6px;
-  padding: 14px 10px;
-  font-size: 14px;
+  padding: 10px 6px; /* MỚI: Giảm lề trên/dưới và trái/phải của nút */
+  font-size: 13px; /* MỚI: Cỡ chữ nhỏ lại xíu để không bị tràn */
   font-weight: 600;
   cursor: pointer;
   transition: background 0.18s, color 0.18s;
   text-align: center;
   letter-spacing: 0.02em;
   width: 100%;
+  
+  /* MỚI: Nếu chữ dài quá sẽ tự cắt thành dấu 3 chấm thay vì rớt dòng */
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .nav-btn:hover  { background: #fff; color: #111; }
 .nav-btn.active { background: #fff; color: #111; }
@@ -403,7 +412,7 @@ body {
   overflow-x: auto;
   overflow-y: hidden;
   background: #f0f0f0;
-  padding: 20px; /* MỚI: Thu gọn lề ngoài */
+  padding: 16px; /* MỚI: Thu gọn lề ngoài */
   gap: 16px;     /* MỚI: Thu gọn khoảng cách giữa các cột */
 }
 #section-pdf.active { display: flex; }
@@ -415,11 +424,11 @@ body {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  padding: 16px; /* MỚI: Giảm lề trong card */
+  padding: 16px 12px; /* MỚI: Giảm lề trong card */
   
   /* MỚI: Thuật toán tự động co giãn thông minh */
-  width: 20%; 
-  min-width: 210px; 
+  width: 17%; 
+  min-width: 170px; 
   max-width: 320px;
   flex-shrink: 1; 
   
@@ -719,8 +728,8 @@ body {
    EDIT CANVAS PANEL (right side)
    ══════════════════════════════════════════ */
 .edit-canvas-panel {
-  flex: 1;
-  min-width: 400px; /* MỚI: Đảm bảo Canvas LUÔN LUÔN rộng ít nhất 400px */
+  flex: 2.2;
+  min-width: 380px; /* MỚI: Đảm bảo Canvas LUÔN LUÔN rộng ít nhất 400px */
   background: #f0f0f0;
   display: flex;
   flex-direction: column;
