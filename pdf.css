@@ -64,24 +64,58 @@
 .edit-canvas-panel { flex: 2.2; min-width: 380px; background: #f0f0f0; display: flex; flex-direction: column; overflow: hidden; }
 
 /* ── TOP TOOLBAR ── */
-.edit-top-toolbar { display: flex; align-items: center; gap: 8px; background: #fff; border-bottom: 1px solid #e0e0e0; padding: 6px 12px; flex-shrink: 0; flex-wrap: nowrap; overflow-x: auto; min-height: 34px; }
+.edit-top-toolbar { 
+  display: flex; 
+  flex-direction: column; /* Xếp thành 2 dòng dọc */
+  align-items: stretch; 
+  gap: 8px; 
+  background: #fff; 
+  border-bottom: 1px solid #e0e0e0; 
+  padding: 10px 16px; 
+  flex-shrink: 0;
+}
+.etb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto; /* Cuộn ngang nếu màn hình quá bé */
+}
+
 .edit-top-toolbar .select-wrap select, .edit-top-toolbar .spinner-wrap, .edit-top-toolbar .color-wrap { height: 24px; align-items: center; }
 .edit-top-toolbar .select-wrap select { padding: 0 20px 0 6px; font-size: 11px; }
 .edit-top-toolbar .select-arrow { right: 6px; font-size: 10px; }
 .edit-top-toolbar .spinner-input { padding: 0 4px; height: 100%; font-size: 11px; }
 .etb-label { font-size: 11px; font-weight: 500; color: #333; white-space: nowrap; user-select: none; }
-.etb-font-wrap { width: 100px; flex-shrink: 0; }
-.etb-style-wrap { width: 75px; flex-shrink: 0; }
-.etb-size-wrap { width: 75px; flex-shrink: 0; }
-.etb-strokestyle-wrap { width: 60px; flex-shrink: 0; }
-.etb-strokewidth-wrap { width: 65px; flex-shrink: 0; }
+
+/* Trả lại kích thước to rộng hơn vì đã tách 2 hàng */
+.etb-font-wrap { flex: 1 1 120px; min-width: 80px; max-width: 180px; }
+.etb-style-wrap { flex: 1 1 80px; min-width: 70px; max-width: 100px; }
+.etb-size-wrap { flex: 1 1 75px; min-width: 60px; max-width: 90px; }
+.etb-strokestyle-wrap { flex: 1 1 60px; min-width: 50px; max-width: 80px; }
+.etb-strokewidth-wrap { flex: 1 1 70px; min-width: 60px; max-width: 90px; }
+
 .etb-color-wrap { flex-shrink: 0; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; padding: 2px 6px; justify-content: center; }
 .etb-color-wrap .color-swatch { width: 16px; height: 16px; }
-.etb-divider { width: 1px; height: 16px; background: #d5d5d5; flex-shrink: 0; margin: 0 2px; }
+.etb-divider { width: 1px; height: 16px; background: #d5d5d5; flex-shrink: 0; margin: 0 4px; }
 .spinner-btns.horizontal { flex-direction: row; border-left: 1px solid #e0e0e0; height: 100%; }
 .spinner-btns.horizontal .spin-btn { padding: 0 6px; font-size: 8px; height: 100%; border-left: none; display: flex; align-items: center; justify-content: center; }
 .spinner-btns.horizontal .spin-btn:first-child { border-right: 1px solid #e0e0e0; }
 .strokewidth-unit { font-size: 10px; padding-right: 6px; color: #555; display: flex; align-items: center; background: transparent; user-select: none; }
+
+/* ── Toolbar color group ── */
+.etb-color-group { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.etb-none-btn { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: #f4f4f4; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; color: #888; padding: 0; flex-shrink: 0; transition: all 0.13s; }
+.etb-none-btn:hover:not(:disabled) { background: #ffe0e0; border-color: #e53935; color: #e53935; }
+.etb-none-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.etb-none-btn.active { background: #e53935; border-color: #c62828; color: #fff; }
+
+/* ── Toolbar color group (color picker + none btn) ── */
+.etb-color-group { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.etb-none-btn { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: #f4f4f4; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; color: #888; padding: 0; flex-shrink: 0; transition: all 0.13s; }
+.etb-none-btn:hover:not(:disabled) { background: #ffe0e0; border-color: #e53935; color: #e53935; }
+.etb-none-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.etb-none-btn.active { background: #e53935; border-color: #c62828; color: #fff; }
 
 /* ── MAIN ROW (left toolbar + canvas) ── */
 .edit-canvas-main { flex: 1; display: flex; overflow: hidden; background: #f4f4f4; }
@@ -92,6 +126,7 @@
 .elb-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid transparent; border-radius: 4px; cursor: pointer; color: #111; transition: all 0.15s; flex-shrink: 0; }
 .elb-btn svg { width: 20px; height: 20px; pointer-events: none; }
 .elb-btn:hover:not(:disabled) { background: #f0f0f0; }
+.elb-btn:active:not(:disabled) { background: #111; color: #fff; }
 .elb-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .elb-btn.active { background: #111; color: #fff; }
 .elb-divider { width: 20px; height: 1px; background: #e0e0e0; margin: 4px 0; flex-shrink: 0; }
@@ -124,7 +159,48 @@
 .rh-w { left: -5px; top: 50%; transform: translateY(-50%); cursor: w-resize; }
 .rh-e { right: -5px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
 .rh-se { bottom: -5px; right: -5px; cursor: nwse-resize; border-radius: 2px; background: #1a73e8; }
-/* ── Toggle Button cho Paper Size (PC) ── */
+/* ── Paragraph align buttons ── */
+.etb-align-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.etb-align-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  transition: all 0.13s;
+  flex-shrink: 0;
+}
+.etb-align-btn:hover:not(:disabled) { background: #f0f0f0; color: #111; border-color: #ddd; }
+.etb-align-btn.active { background: #111; color: #fff; border-color: #111; }
+.etb-align-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── Combo button hint (sub-label nhỏ) ── */
+.elb-shape-combo-btn,
+.elb-line-combo-btn {
+  position: relative;
+}
+.elb-shape-combo-btn::after,
+.elb-line-combo-btn::after {
+  content: '⌃';
+  position: absolute;
+  bottom: 1px;
+  right: 2px;
+  font-size: 7px;
+  color: #aaa;
+  line-height: 1;
+  pointer-events: none;
+}
 .opt-toggle-btn {
   background: #fff;
   border: 1.5px solid #ccc;

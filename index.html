@@ -295,58 +295,92 @@
     <div class="edit-canvas-panel" id="panel-edit-canvas">
 
       <div class="edit-top-toolbar">
-        <label class="etb-label">Font</label>
-        <div class="select-wrap etb-font-wrap">
-          <select id="edit-font" disabled>
-            <option value="">Arial</option>
-          </select>
-          <span class="select-arrow">&#8964;</span>
-        </div>
+        <div class="etb-row">
+          <label class="etb-label">Font</label>
+          <div class="select-wrap etb-font-wrap">
+            <select id="edit-font" disabled>
+              <option value="">Arial</option>
+            </select>
+            <span class="select-arrow">&#8964;</span>
+          </div>
 
-        <div class="select-wrap etb-style-wrap">
-          <select id="edit-fontstyle" disabled>
-            <option value="normal">Regular</option>
-            <option value="bold">Bold</option>
-            <option value="italic">Italic</option>
-          </select>
-          <span class="select-arrow">&#8964;</span>
-        </div>
+          <div class="select-wrap etb-style-wrap">
+            <select id="edit-fontstyle" disabled>
+              <option value="normal">Regular</option>
+              <option value="bold">Bold</option>
+              <option value="italic">Italic</option>
+            </select>
+            <span class="select-arrow">&#8964;</span>
+          </div>
 
-        <div class="etb-divider"></div>
+          <div class="etb-divider"></div>
 
-        <label class="etb-label">Size</label>
-        <div class="spinner-wrap etb-size-wrap">
-          <input class="spinner-input" id="edit-fontsize" type="number" value="16" min="6" max="120" step="1" disabled />
-          <div class="spinner-btns horizontal">
-            <button class="spin-btn" data-target="edit-fontsize" data-dir="down">&#9664;</button>
-            <button class="spin-btn" data-target="edit-fontsize" data-dir="up">&#9654;</button>
+          <label class="etb-label">Size</label>
+          <div class="spinner-wrap etb-size-wrap">
+            <input class="spinner-input" id="edit-fontsize" type="number" value="16" min="6" max="120" step="1" disabled />
+            <div class="spinner-btns horizontal">
+              <button class="spin-btn" data-target="edit-fontsize" data-dir="down">&#9664;</button>
+              <button class="spin-btn" data-target="edit-fontsize" data-dir="up">&#9654;</button>
+            </div>
+          </div>
+
+          <div class="etb-divider"></div>
+
+          <div class="etb-align-group">
+            <button class="etb-align-btn active" id="edit-align-left" title="Align Left" data-align="left" disabled>
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <rect x="1" y="2" width="10" height="2" rx="1"/><rect x="1" y="6" width="14" height="2" rx="1"/><rect x="1" y="10" width="8" height="2" rx="1"/><rect x="1" y="14" width="12" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button class="etb-align-btn" id="edit-align-center" title="Align Center" data-align="center" disabled>
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <rect x="3" y="2" width="10" height="2" rx="1"/><rect x="1" y="6" width="14" height="2" rx="1"/><rect x="4" y="10" width="8" height="2" rx="1"/><rect x="2" y="14" width="12" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button class="etb-align-btn" id="edit-align-right" title="Align Right" data-align="right" disabled>
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <rect x="5" y="2" width="10" height="2" rx="1"/><rect x="1" y="6" width="14" height="2" rx="1"/><rect x="7" y="10" width="8" height="2" rx="1"/><rect x="3" y="14" width="12" height="2" rx="1"/>
+              </svg>
+            </button>
           </div>
         </div>
 
-        <div class="etb-divider"></div>
+        <div class="etb-row">
+          <label class="etb-label">Fill Color</label>
+          <div class="etb-color-group">
+            <div class="color-wrap etb-color-wrap">
+              <input type="color" id="edit-fillcolor" value="#000000" class="color-swatch" disabled />
+            </div>
+            <button class="etb-none-btn" id="edit-fillcolor-none" title="No fill" disabled>
+              <svg viewBox="0 0 16 16" width="14" height="14"><line x1="2" y1="14" x2="14" y2="2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="1" y="1" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </button>
+          </div>
 
-        <label class="etb-label">Color</label>
-        <div class="color-wrap etb-color-wrap">
-          <input type="color" id="edit-fontcolor" value="#000000" class="color-swatch" disabled />
-          <span class="color-hex" id="edit-fontcolor-hex" style="display:none;">#000000</span>
-        </div>
+          <div class="etb-divider"></div>
 
-        <div class="etb-divider"></div>
-
-        <label class="etb-label">Stroke</label>
-        <div class="select-wrap etb-strokestyle-wrap">
-          <select id="edit-strokestyle" disabled style="padding-right: 20px; font-weight: bold;">
-            <option value="none">━━</option>
-            <option value="dashed">---</option>
-          </select>
-          <span class="select-arrow">&#8964;</span>
-        </div>
-        <div class="spinner-wrap etb-strokewidth-wrap">
-          <input class="spinner-input" id="edit-strokewidth" type="number" value="1" min="0" max="10" step="1" disabled style="padding-right: 0;" />
-          <span class="strokewidth-unit">pt</span>
-          <div class="spinner-btns horizontal">
-            <button class="spin-btn" data-target="edit-strokewidth" data-dir="down">&#9664;</button>
-            <button class="spin-btn" data-target="edit-strokewidth" data-dir="up">&#9654;</button>
+          <label class="etb-label">Stroke</label>
+          <div class="etb-color-group">
+            <div class="color-wrap etb-color-wrap">
+              <input type="color" id="edit-strokecolor" value="#000000" class="color-swatch" disabled />
+            </div>
+            <button class="etb-none-btn" id="edit-strokecolor-none" title="No stroke" disabled>
+              <svg viewBox="0 0 16 16" width="14" height="14"><line x1="2" y1="14" x2="14" y2="2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="1" y="1" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </button>
+          </div>
+          <div class="select-wrap etb-strokestyle-wrap">
+            <select id="edit-strokestyle" disabled style="padding-right: 20px; font-weight: bold;">
+              <option value="solid">━━</option>
+              <option value="dashed">- -</option>
+            </select>
+            <span class="select-arrow">&#8964;</span>
+          </div>
+          <div class="spinner-wrap etb-strokewidth-wrap">
+            <input class="spinner-input" id="edit-strokewidth" type="number" value="2" min="0" max="20" step="1" disabled style="padding-right: 0;" />
+            <span class="strokewidth-unit">pt</span>
+            <div class="spinner-btns horizontal">
+              <button class="spin-btn" data-target="edit-strokewidth" data-dir="down">&#9664;</button>
+              <button class="spin-btn" data-target="edit-strokewidth" data-dir="up">&#9654;</button>
+            </div>
           </div>
         </div>
       </div>
@@ -354,7 +388,7 @@
         
         <div class="edit-left-toolbar-wrapper">
           <div class="edit-left-toolbar">
-            <button class="elb-btn active" id="edit-btn-text" title="Add Text">
+            <button class="elb-btn" id="edit-btn-text" title="Add Text">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M9 17H6.5L10 6h3l3.5 11h-2.5l-1-3.5h-4L9 17zm.7-5.5h3L11.5 8h-.1l-1.6 3.5z M18 8v3h-3v2h3v3h2v-3h3v-2h-3V8h-2z"/>
               </svg>
@@ -368,26 +402,31 @@
 
             <div class="elb-divider"></div>
 
-            <button class="elb-btn elb-shape-btn" title="Rectangle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Shape combo button: nhấn Ctrl để cycle rect→triangle→ellipse -->
+            <button class="elb-btn elb-shape-combo-btn" id="elb-shape-combo" title="Shape · Ctrl để đổi: Rect → Triangle → Ellipse">
+              <!-- icon rect (mặc định) -->
+              <svg id="elb-shape-icon-rect" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="5" y="5" width="14" height="14" rx="1"/>
               </svg>
-            </button>
-
-            <button class="elb-btn elb-shape-btn" title="Triangle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+              <!-- icon triangle (ẩn) -->
+              <svg id="elb-shape-icon-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" style="display:none">
                 <polygon points="12,4 21,19 3,19"/>
               </svg>
-            </button>
-
-            <button class="elb-btn elb-shape-btn" title="Ellipse">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <!-- icon ellipse (ẩn) -->
+              <svg id="elb-shape-icon-ellipse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
                 <circle cx="12" cy="12" r="8"/>
               </svg>
             </button>
 
-            <button class="elb-btn elb-shape-btn" title="Line">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <!-- Line combo button: nhấn Ctrl để swap line ↔ arrow -->
+            <button class="elb-btn elb-line-combo-btn" id="elb-line-combo" title="Line / Arrow · Ctrl để đổi loại">
+              <!-- icon arrow line (mặc định) -->
+              <svg id="elb-line-icon-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="20" x2="18" y2="6"/>
+                <polyline points="10,6 18,6 18,14"/>
+              </svg>
+              <!-- icon plain line (ẩn) -->
+              <svg id="elb-line-icon-plain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="display:none">
                 <line x1="4" y1="20" x2="20" y2="4"/>
               </svg>
             </button>
