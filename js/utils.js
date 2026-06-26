@@ -21,7 +21,32 @@ function triggerDownload(blob, filename) {
  * @param {File} file
  * @returns {Promise<string>}
  */
-function readFileAsDataURL(file) {
+async function readFileAsDataURL(file) {
+  const name = file.name.toLowerCase();
+  
+  // NẾU LÀ FILE TIFF -> Giải mã và ép sang PNG
+  if (name.endsWith('.tiff') || name.endsWith('.tif')) {
+    try {
+      const buffer = await readFileAsArrayBuffer(file);
+      const ifds = UTIF.decode(buffer);
+      UTIF.decodeImage(buffer, ifds[0]);
+      const rgba = UTIF.toRGBA8(ifds[0]);
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = ifds[0].width;
+      canvas.height = ifds[0].height;
+      const ctx = canvas.getContext('2d');
+      const imgData = new ImageData(new Uint8ClampedArray(rgba.buffer), canvas.width, canvas.height);
+      ctx.putImageData(imgData, 0, 0);
+      
+      return canvas.toDataURL('image/png'); // Trả về PNG an toàn
+    } catch (err) {
+      console.error("Lỗi khi đọc file TIFF:", err);
+      throw new Error("Không thể giải mã file TIFF này.");
+    }
+  }
+
+  // NẾU LÀ CÁC ẢNH BÌNH THƯỜNG -> Đọc bình thường
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload  = () => resolve(reader.result);

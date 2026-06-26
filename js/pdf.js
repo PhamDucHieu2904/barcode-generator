@@ -330,7 +330,7 @@ function initPDF() {
     triggerId:     'dz-images-trigger',
     thumbsId:      'dz-images-thumbs',
     placeholderId: 'dz-images-placeholder',
-    accept:        'image/*',
+    accept:        'image/*,.tiff,.tif',
     mode:          'image',
   });
 

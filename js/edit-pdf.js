@@ -655,7 +655,7 @@ function _bindEditButtons() {
 
       const pg = _getCurrentPg();
       if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
-      const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
+      const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*,.tiff,.tif';
       input.addEventListener('change', async () => {
         if (!input.files[0]) return;
         const dataURL = await readFileAsDataURL(input.files[0]);
