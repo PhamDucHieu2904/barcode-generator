@@ -323,58 +323,68 @@ function convertToPNG(dataURL) {
 /* ────────────────────────────────────────────
    INIT
    ──────────────────────────────────────────── */
+/* ────────────────────────────────────────────
+   INIT
+   ──────────────────────────────────────────── */
 function initPDF() {
-  /* Drop zones */
-  const imageDZ = new DropZone({
-    dzId:          'dz-images',
-    triggerId:     'dz-images-trigger',
-    thumbsId:      'dz-images-thumbs',
-    placeholderId: 'dz-images-placeholder',
-    accept:        'image/*,.tiff,.tif',
-    mode:          'image',
-  });
+  /* Drop zones (Combine Image) */
+  if (document.getElementById('dz-images')) {
+    const imageDZ = new DropZone({
+      dzId:          'dz-images',
+      triggerId:     'dz-images-trigger',
+      thumbsId:      'dz-images-thumbs',
+      placeholderId: 'dz-images-placeholder',
+      accept:        'image/*,.tiff,.tif',
+      mode:          'image',
+    });
 
-  const pdfDZ = new DropZone({
-    dzId:          'dz-pdfs',
-    triggerId:     'dz-pdfs-trigger',
-    thumbsId:      'dz-pdfs-thumbs',
-    placeholderId: 'dz-pdfs-placeholder',
-    accept:        '.pdf,application/pdf',
-    mode:          'pdf',
-  });
-
-  /* Combine button */
-  document.getElementById('btn-combine').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-combine');
-    btn.disabled = true;
-    btn.textContent = 'Đang xử lý…';
-    try {
-      const paperSize = document.getElementById('opt-papersize').value;
-      const quality   = document.getElementById('opt-quality').value;
-      await combineImagesToPDF(imageDZ.getItems(), paperSize, quality);
-    } catch(e) {
-      console.error(e);
-      alert('Có lỗi xảy ra: ' + e.message);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Download PDF';
+    const btnCombine = document.getElementById('btn-combine');
+    if (btnCombine) {
+      btnCombine.addEventListener('click', async () => {
+        btnCombine.disabled = true;
+        btnCombine.textContent = 'Đang xử lý…';
+        try {
+          const paperSize = document.getElementById('opt-papersize').value;
+          const quality   = document.getElementById('opt-quality').value;
+          await combineImagesToPDF(imageDZ.getItems(), paperSize, quality);
+        } catch(e) {
+          console.error(e);
+          alert('Có lỗi xảy ra: ' + e.message);
+        } finally {
+          btnCombine.disabled = false;
+          btnCombine.textContent = 'Download PDF';
+        }
+      });
     }
-  });
+  }
 
-  /* Merge button */
-  document.getElementById('btn-merge').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-merge');
-    btn.disabled = true;
-    btn.textContent = 'Đang xử lý…';
-    try {
-      const compress = document.getElementById('opt-compress').value;
-      await mergePDFs(pdfDZ.getItems(), compress);
-    } catch(e) {
-      console.error(e);
-      alert('Có lỗi xảy ra: ' + e.message);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Download PDF';
+  /* Drop zones (Merge PDF) */
+  if (document.getElementById('dz-pdfs')) {
+    const pdfDZ = new DropZone({
+      dzId:          'dz-pdfs',
+      triggerId:     'dz-pdfs-trigger',
+      thumbsId:      'dz-pdfs-thumbs',
+      placeholderId: 'dz-pdfs-placeholder',
+      accept:        '.pdf,application/pdf',
+      mode:          'pdf',
+    });
+
+    const btnMerge = document.getElementById('btn-merge');
+    if (btnMerge) {
+      btnMerge.addEventListener('click', async () => {
+        btnMerge.disabled = true;
+        btnMerge.textContent = 'Đang xử lý…';
+        try {
+          const compress = document.getElementById('opt-compress').value;
+          await mergePDFs(pdfDZ.getItems(), compress);
+        } catch(e) {
+          console.error(e);
+          alert('Có lỗi xảy ra: ' + e.message);
+        } finally {
+          btnMerge.disabled = false;
+          btnMerge.textContent = 'Download PDF';
+        }
+      });
     }
-  });
+  }
 }

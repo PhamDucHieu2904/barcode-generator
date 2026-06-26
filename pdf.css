@@ -51,13 +51,6 @@
 .edit-opt-row .select-wrap select { padding: 8px 16px 8px 8px; font-size: 13px; }
 
 /* ── Rotate row ── */
-.edit-rotate-container { margin-bottom: 16px; }
-.edit-rotate-label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 10px; display: block; }
-.edit-rotate-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.edit-rotate-group { display: flex; align-items: center; gap: 6px; }
-.edit-rotate-sub { font-size: 11px; color: #888; white-space: nowrap; }
-.rotate-btn { background: #111; color: #fff; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
-.rotate-btn:hover { background: #444; }
 .edit-thumb.selected { box-shadow: 0 0 0 2.5px #111, 0 0 0 4px rgba(0,0,0,0.08); }
 
 /* ── EDIT CANVAS PANEL (right side) ── */
@@ -102,13 +95,6 @@
 .spinner-btns.horizontal .spin-btn { padding: 0 6px; font-size: 8px; height: 100%; border-left: none; display: flex; align-items: center; justify-content: center; }
 .spinner-btns.horizontal .spin-btn:first-child { border-right: 1px solid #e0e0e0; }
 .strokewidth-unit { font-size: 10px; padding-right: 6px; color: #555; display: flex; align-items: center; background: transparent; user-select: none; }
-
-/* ── Toolbar color group ── */
-.etb-color-group { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
-.etb-none-btn { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: #f4f4f4; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; color: #888; padding: 0; flex-shrink: 0; transition: all 0.13s; }
-.etb-none-btn:hover:not(:disabled) { background: #ffe0e0; border-color: #e53935; color: #e53935; }
-.etb-none-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.etb-none-btn.active { background: #e53935; border-color: #c62828; color: #fff; }
 
 /* ── Toolbar color group (color picker + none btn) ── */
 .etb-color-group { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
@@ -222,4 +208,52 @@
   background: #111;
   color: #fff;
   border-color: #111;
+}
+/* ── BOTTOM TOOLBAR ── */
+.edit-bottom-toolbar {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+  padding: 10px 24px;
+  flex-shrink: 0;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.edit-bottom-toolbar .edit-opt-row { margin: 0; }
+.edit-bottom-toolbar .edit-rotate-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.opt-action-btn {
+  background: #fff;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  padding: 0 10px;
+  height: 33px;
+  font-size: 13px;
+  color: #111;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.opt-action-btn:hover { border-color: #111; background: #f9f9f9; }
+.opt-action-btn:active { background: #e0e0e0; }
+/* ── Export Image Section ── */
+.edit-export-img-section {
+  margin-top: 16px; /* Đẩy tách khỏi vùng kéo thả Dropzone */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.edit-export-img-actions {
+  display: flex;
+  gap: 8px;
 }

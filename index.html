@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Barcode Generator</title>
+<title>Barcode Generator & PDF Tools</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="barcode.css">
 <link rel="stylesheet" href="pdf.css">
 <link rel="stylesheet" href="responsive.css">
+<link rel="icon" type="image/svg+xml" href="web-icon.png">
 </head>
 <body>
 
@@ -170,7 +171,9 @@
           </div>
         </div>
       </div>
-    </div><div id="preview-panel">
+    </div>
+    
+    <div id="preview-panel">
       <h2>Nam Viet Barcode Generator - Preview</h2>
       <div id="a4-wrapper">
         <div id="a4">
@@ -179,7 +182,9 @@
       </div>
     </div>
 
-  </section><section id="section-pdf" class="app-section">
+  </section>
+
+  <section id="section-pdf" class="app-section">
 
     <div class="pdf-panel" id="panel-combine">
       <h2 class="pdf-panel-title">Combine images to PDF</h2>
@@ -257,39 +262,17 @@
           <div class="dz-thumbs" id="dz-edit-thumbs"></div>
         </div>
       </div>
-      
-      <div class="edit-opt-row">
-        <label class="pdf-opt-label">Change paper size</label>
-        <div class="select-wrap">
-          <select id="edit-papersize">
-            <option value="none">None</option>
-            <option value="a4v">A4 Vertical</option>
-            <option value="a4h">A4 Horizontal</option>
-            <option value="a3v">A3 Vertical</option>
-            <option value="a3h">A3 Horizontal</option>
-          </select>
-          <span class="select-arrow">&#8964;</span>
+
+      <div class="edit-export-img-section">
+        <label class="pdf-opt-label">EXPORT IMAGE</label>
+        <div class="edit-export-img-actions">
+          <button class="opt-action-btn" id="edit-export-img-page" style="flex: 1;">Page</button>
+          <button class="opt-action-btn" id="edit-export-img-all" style="flex: 1;">All</button>
         </div>
-        <button id="edit-papersize-all" class="opt-toggle-btn" title="Áp dụng cho tất cả các trang">All</button>
+        <div class="nav-divider" style="background: #e0e0e0; margin: 12px 0 0 0;"></div>
       </div>
 
-      <div class="edit-rotate-container">
-        <div class="edit-rotate-label">ROTATE</div>
-        <div class="edit-rotate-actions">
-          <div class="edit-rotate-group">
-            <span class="edit-rotate-sub">Selected page</span>
-            <button class="rotate-btn" id="edit-rotate-page">90°</button>
-            <button class="rotate-btn" id="edit-rotate-page-ccw">-90°</button>
-          </div>
-          <div class="edit-rotate-group">
-            <span class="edit-rotate-sub">All</span>
-            <button class="rotate-btn" id="edit-rotate-all">90°</button>
-            <button class="rotate-btn" id="edit-rotate-all-ccw">-90°</button>
-          </div>
-        </div>
-      </div>
-
-      <button class="pdf-download-btn" id="edit-download-btn">Download PDF</button>
+      <button class="pdf-download-btn" id="edit-download-btn" style="margin-top: 12px;">Download PDF</button>
     </div>
 
     <div class="edit-canvas-panel" id="panel-edit-canvas">
@@ -402,30 +385,23 @@
 
             <div class="elb-divider"></div>
 
-            <!-- Shape combo button: nhấn Ctrl để cycle rect→triangle→ellipse -->
             <button class="elb-btn elb-shape-combo-btn" id="elb-shape-combo" title="Shape · Ctrl để đổi: Rect → Triangle → Ellipse">
-              <!-- icon rect (mặc định) -->
               <svg id="elb-shape-icon-rect" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="5" y="5" width="14" height="14" rx="1"/>
               </svg>
-              <!-- icon triangle (ẩn) -->
               <svg id="elb-shape-icon-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" style="display:none">
                 <polygon points="12,4 21,19 3,19"/>
               </svg>
-              <!-- icon ellipse (ẩn) -->
               <svg id="elb-shape-icon-ellipse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
                 <circle cx="12" cy="12" r="8"/>
               </svg>
             </button>
 
-            <!-- Line combo button: nhấn Ctrl để swap line ↔ arrow -->
             <button class="elb-btn elb-line-combo-btn" id="elb-line-combo" title="Line / Arrow · Ctrl để đổi loại">
-              <!-- icon arrow line (mặc định) -->
               <svg id="elb-line-icon-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="4" y1="20" x2="18" y2="6"/>
                 <polyline points="10,6 18,6 18,14"/>
               </svg>
-              <!-- icon plain line (ẩn) -->
               <svg id="elb-line-icon-plain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="display:none">
                 <line x1="4" y1="20" x2="20" y2="4"/>
               </svg>
@@ -436,7 +412,37 @@
           <div class="edit-empty-hint">Chọn một trang để chỉnh sửa</div>
         </div>
 
-      </div></div></section></div>
+      </div>
+      <div class="edit-bottom-toolbar">
+        <div class="edit-opt-row" style="margin: 0;">
+          <label class="pdf-opt-label">Change paper size</label>
+          <div class="select-wrap" style="width: 130px;">
+            <select id="edit-papersize">
+              <option value="none">None</option>
+              <option value="a4v">A4 Vertical</option>
+              <option value="a4h">A4 Horizontal</option>
+              <option value="a3v">A3 Vertical</option>
+              <option value="a3h">A3 Horizontal</option>
+            </select>
+            <span class="select-arrow">&#8964;</span>
+          </div>
+          <button id="edit-papersize-all" class="opt-toggle-btn" title="Áp dụng cho tất cả các trang">All</button>
+        </div>
+
+        <div class="etb-divider" style="height: 24px; margin: 0 16px;"></div>
+
+        <div class="edit-rotate-row">
+          <label class="pdf-opt-label" style="min-width: auto;">Rotate page</label>
+          <button class="opt-action-btn" id="edit-rotate-90">90&deg;</button>
+          <button class="opt-action-btn" id="edit-rotate-ccw">-90&deg;</button>
+          <button id="edit-rotate-all-toggle" class="opt-toggle-btn" title="Áp dụng xoay cho tất cả các trang">All</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.min.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/barcode.js"></script>

@@ -655,6 +655,7 @@ function _bindEditButtons() {
 
       const pg = _getCurrentPg();
       if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
+      // Đã hỗ trợ định dạng TIFF/TIF
       const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*,.tiff,.tif';
       input.addEventListener('change', async () => {
         if (!input.files[0]) return;
@@ -679,11 +680,8 @@ function _bindEditButtons() {
   if (shapeComboBtn) {
     shapeComboBtn.addEventListener('click', (e) => {
       const pg = _getCurrentPg();
-
-      // Click thường: toggle bật/tắt chế độ vẽ shape
       const currentShapeType = SHAPE_CYCLE[activeShapeComboIdx];
       if (activeShapeTool === currentShapeType) {
-        // Đang active → tắt
         activeShapeTool = null;
         _cancelLinePending();
         document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
@@ -707,8 +705,6 @@ function _bindEditButtons() {
   if (lineComboBtn) {
     lineComboBtn.addEventListener('click', (e) => {
       const pg = _getCurrentPg();
-
-      // Click thường: toggle bật/tắt chế độ vẽ line
       if (activeShapeTool === 'line') {
         activeShapeTool = null;
         _cancelLinePending();
@@ -730,8 +726,6 @@ function _bindEditButtons() {
   document.querySelectorAll('.etb-align-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const align = btn.dataset.align;
-
-      // Cập nhật trạng thái active
       document.querySelectorAll('.etb-align-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
@@ -742,7 +736,6 @@ function _bindEditButtons() {
 
       obj.textAlign = align;
 
-      // Cập nhật DOM trực tiếp
       const area = document.getElementById('edit-canvas-area');
       if (area && area._overlayEl) {
         const el = area._overlayEl.querySelector(`[data-obj-id="${obj.id}"]`);
@@ -759,7 +752,6 @@ function _bindEditButtons() {
     const activeTag = document.activeElement ? document.activeElement.tagName : '';
     const isTyping = activeTag === 'INPUT' || activeTag === 'SELECT' || (document.activeElement && document.activeElement.isContentEditable);
 
-    // ESC: huỷ tool
     if (e.key === 'Escape' && activeShapeTool) {
       activeShapeTool = null;
       _cancelLinePending();
@@ -768,18 +760,14 @@ function _bindEditButtons() {
       return;
     }
 
-    // Ctrl / Meta: cycle shape hoặc swap line mode
-    // Chỉ bắt khi: (1) đang vẽ shape/line, (2) không typing, (3) không kèm chữ cái khác (tránh Ctrl+C, Ctrl+V, v.v.)
     if ((e.key === 'Control' || e.key === 'Meta') && !isTyping) {
       if (activeShapeTool === 'rect' || activeShapeTool === 'triangle' || activeShapeTool === 'ellipse') {
-        // Cycle sang shape kế tiếp
         activeShapeComboIdx = (activeShapeComboIdx + 1) % SHAPE_CYCLE.length;
         activeShapeTool = SHAPE_CYCLE[activeShapeComboIdx];
         _updateShapeComboIcon();
         _setCanvasCursor(activeShapeTool);
         e.preventDefault();
       } else if (activeShapeTool === 'line') {
-        // Swap plain ↔ arrow
         activeLineMode = (activeLineMode === 'arrow') ? 'plain' : 'arrow';
         _updateLineComboIcon();
         e.preventDefault();
@@ -793,13 +781,11 @@ function _bindEditButtons() {
     canvasArea.addEventListener('mousedown', e => _onCanvasMousedownForShape(e));
   }
 
-  // Tùy chọn Rotate/PaperSize đã bị ẩn khỏi UI theo thiết kế, nhưng giữ an toàn ở đây nếu sau này cần dùng lại
-// ── Xử lý Paper Size và nút Toggle "All" ──
+  // ── Xử lý Paper Size và nút Toggle "All" ──
   const paperSizeEl = document.getElementById('edit-papersize');
   const paperSizeAllBtn = document.getElementById('edit-papersize-all');
   let isPaperSizeAll = false; // Trạng thái mặc định: Tắt
 
-  // Bật/tắt trạng thái "All"
   if (paperSizeAllBtn) {
     paperSizeAllBtn.addEventListener('click', () => {
       isPaperSizeAll = !isPaperSizeAll;
@@ -807,16 +793,14 @@ function _bindEditButtons() {
     });
   }
 
-  // Khi chọn khổ giấy trong Dropdown
   if (paperSizeEl) {
     paperSizeEl.addEventListener('change', e => { 
       const currentPg = _getCurrentPg(); 
-      if (!currentPg && editPages.length === 0) return; // Không có trang nào
+      if (!currentPg && editPages.length === 0) return; 
       
       const val = e.target.value;
       const preset = PAPER_SIZES[val];
 
-      // Hàm áp dụng khổ giấy cho 1 trang cụ thể
       const applySizeToPage = (pg) => {
         if (val === 'none') {
           pg.widthPt = pg.origWidthPt || pg.widthPt;
@@ -827,40 +811,64 @@ function _bindEditButtons() {
         }
       };
 
-      // Nếu nút All đang bật -> Áp dụng cho toàn bộ mảng editPages
       if (isPaperSizeAll) {
         editPages.forEach(pg => applySizeToPage(pg));
-      } 
-      // Nếu tắt -> Chỉ áp dụng cho trang hiện tại
-      else if (currentPg) {
+      } else if (currentPg) {
         applySizeToPage(currentPg);
       }
       
-      // Vẽ lại trang đang xem và cập nhật lại toàn bộ Thumbnails
       if (currentPg) _openPageEditor(currentPg); 
       _renderEditThumbs(); 
     });
   }
-  
-  const dlBtn = document.getElementById('edit-download-btn');
-  // Khôi phục các nút Rotate
-  const rotatePage = document.getElementById('edit-rotate-page');
-  if (rotatePage) rotatePage.addEventListener('click', () => { const pg = _getCurrentPg(); if (pg) { pg.rotation = ((pg.rotation || 0) + 90) % 360; _openPageEditor(pg); _renderEditThumbs(); } });
 
-  const rotatePageCcw = document.getElementById('edit-rotate-page-ccw');
-  if (rotatePageCcw) rotatePageCcw.addEventListener('click', () => { const pg = _getCurrentPg(); if (pg) { pg.rotation = ((pg.rotation || 0) - 90 + 360) % 360; _openPageEditor(pg); _renderEditThumbs(); } });
+  // ── Xử lý Rotate và nút Toggle "All" ──
+  const rotateAllBtn = document.getElementById('edit-rotate-all-toggle');
+  let isRotateAll = false; // Trạng thái mặc định: Tắt
 
-  const rotateAll = document.getElementById('edit-rotate-all');
-  if (rotateAll) rotateAll.addEventListener('click', () => { editPages.forEach(p => { p.rotation = ((p.rotation || 0) + 90) % 360; }); const pg = _getCurrentPg(); if (pg) _openPageEditor(pg); _renderEditThumbs(); });
+  if (rotateAllBtn) {
+    rotateAllBtn.addEventListener('click', () => {
+      isRotateAll = !isRotateAll;
+      rotateAllBtn.classList.toggle('active', isRotateAll);
+    });
+  }
 
-  const rotateAllCcw = document.getElementById('edit-rotate-all-ccw');
-  if (rotateAllCcw) rotateAllCcw.addEventListener('click', () => { editPages.forEach(p => { p.rotation = ((p.rotation || 0) - 90 + 360) % 360; }); const pg = _getCurrentPg(); if (pg) _openPageEditor(pg); _renderEditThumbs(); });
+  const handleRotate = (angle) => {
+    if (isRotateAll) {
+      editPages.forEach(p => { p.rotation = ((p.rotation || 0) + angle + 360) % 360; });
+    } else {
+      const pg = _getCurrentPg();
+      if (pg) pg.rotation = ((pg.rotation || 0) + angle + 360) % 360;
+    }
+    const currentPg = _getCurrentPg();
+    if (currentPg) _openPageEditor(currentPg);
+    _renderEditThumbs();
+  };
+
+  const rotate90Btn = document.getElementById('edit-rotate-90');
+  if (rotate90Btn) rotate90Btn.addEventListener('click', () => handleRotate(90));
+
+  const rotateCcwBtn = document.getElementById('edit-rotate-ccw');
+  if (rotateCcwBtn) rotateCcwBtn.addEventListener('click', () => handleRotate(-90));
+
+const dlBtn = document.getElementById('edit-download-btn');
   if (dlBtn) {
     dlBtn.addEventListener('click', async () => {
       if (!editPages.length) { alert('Chưa có trang nào.'); return; }
       dlBtn.disabled = true; dlBtn.textContent = 'Đang xử lý…';
       try { await _buildAndDownloadEditPDF(); } catch(e) { alert('Lỗi: ' + e.message); } finally { dlBtn.disabled = false; dlBtn.textContent = 'Download PDF'; }
     });
+  }
+
+  // ── Xử lý các nút EXPORT IMAGE ──
+  const exportImgPageBtn = document.getElementById('edit-export-img-page');
+  if (exportImgPageBtn) {
+    exportImgPageBtn.addEventListener('click', () => _exportEditImages(false));
+  }
+
+  const exportImgAllBtn = document.getElementById('edit-export-img-all');
+  if (exportImgAllBtn) {
+    exportImgAllBtn.addEventListener('click', () => _exportEditImages(true));
   }
 }
 
@@ -1037,25 +1045,20 @@ function _updateTextControls(obj) {
 function _updateFontColorHex(val) { /* hex display removed, no-op */ }
 function _getCurrentPg() { if (!editSelectedPage) return null; return editPages.find(p => p.id === editSelectedPage) || null; }
 
-async function _buildAndDownloadEditPDF() {
+// Hàm 1: Sinh ra dữ liệu file PDF ngầm trong bộ nhớ
+async function _generateEditedPdfBytes() {
   const { PDFDocument, rgb, StandardFonts } = PDFLib;
   const outDoc = await PDFDocument.create();
 
-  // Lấy kích thước Container màn hình để tính toán lại chính xác tỷ lệ Zoom của từng trang
   const area = document.getElementById('edit-canvas-area');
   const areaW = area ? (area.clientWidth || 600) : 600;
   const areaH = area ? (area.clientHeight || 700) : 700;
 
   for (const pg of editPages) {
     let page;
-    // Kiểm tra xem người dùng có đổi khổ giấy không
     const isResized = (pg.widthPt !== pg.origWidthPt) || (pg.heightPt !== pg.origHeightPt);
 
-    /* ════════════════════════════════════════════
-       1. XỬ LÝ BACKGROUND VÀ KHỔ GIẤY (PAPER SIZE)
-       ════════════════════════════════════════════ */
     if (pg.imageDataURL) {
-      // Nếu trang là file Ảnh
       page = outDoc.addPage([pg.widthPt, pg.heightPt]);
       const isJpeg = pg.imageDataURL.startsWith('data:image/jpeg') || pg.imageDataURL.startsWith('data:image/jpg');
       const base64 = pg.imageDataURL.split(',')[1];
@@ -1072,29 +1075,22 @@ async function _buildAndDownloadEditPDF() {
       page.drawImage(imgEmbed, { x: (pg.widthPt - dw) / 2, y: (pg.heightPt - dh) / 2, width: dw, height: dh });
       
     } else if (pg.pdfBytes) {
-      // Nếu trang là file PDF
       const srcDoc = await PDFDocument.load(pg.pdfBytes, { ignoreEncryption: true });
       if (isResized) {
-        // NẾU CÓ ĐỔI KHỔ GIẤY: Tạo trang mới với size mới, nhúng trang cũ vào và scale fit như hình ảnh
         page = outDoc.addPage([pg.widthPt, pg.heightPt]);
         const [embeddedPage] = await outDoc.embedPdf(pg.pdfBytes, [pg.pdfPageIndex]);
         const ratio = Math.min(pg.widthPt / embeddedPage.width, pg.heightPt / embeddedPage.height);
         const dw = embeddedPage.width * ratio, dh = embeddedPage.height * ratio;
         page.drawPage(embeddedPage, { x: (pg.widthPt - dw) / 2, y: (pg.heightPt - dh) / 2, width: dw, height: dh });
       } else {
-        // GIỮ NGUYÊN KHỔ GIẤY: Copy thẳng để giữ nguyên chất lượng vector
         const [copied] = await outDoc.copyPages(srcDoc, [pg.pdfPageIndex]);
         outDoc.addPage(copied);
         page = outDoc.getPage(outDoc.getPageCount() - 1);
       }
     } else {
-      // Trang trống
       page = outDoc.addPage([pg.widthPt || 595, pg.heightPt || 842]);
     }
 
-    /* ════════════════════════════════════════════
-       2. XỬ LÝ XOAY TRANG (ROTATE)
-       ════════════════════════════════════════════ */
     if (pg.rotation) {
       const rot = [0, 90, 180, 270].find(r => r === pg.rotation) || 0;
       if (rot) {
@@ -1103,19 +1099,13 @@ async function _buildAndDownloadEditPDF() {
       }
     }
 
-    /* ════════════════════════════════════════════
-       3. ĐỒNG BỘ TỶ LỆ TEXT/IMAGE LÊN PDF CHUẨN 100%
-       ════════════════════════════════════════════ */
-    // Tính lại tỷ lệ Zoom của trang này lúc edit để làm hệ quy chiếu
     const isRotated = pg.rotation === 90 || pg.rotation === 270;
     const logicalW = isRotated ? pg.heightPt : pg.widthPt;
     const logicalH = isRotated ? pg.widthPt : pg.heightPt;
     const pageScale = Math.min((areaW - 32) / logicalW, (areaH - 32) / logicalH, 1.5);
 
     for (const obj of pg.overlayObjects) {
-      // Công thức vàng: Chuyển đổi tọa độ màn hình (CSS Pixel) sang kích thước thực tế PDF (Point)
       const pdfX = obj.x / pageScale;
-      // PDF hệ tọa độ Y ngược với Web (gốc Y nằm ở dưới cùng)
       const pdfY = pg.heightPt - ((obj.y + obj.h) / pageScale); 
       const pdfW = obj.w / pageScale;
       const pdfH = obj.h / pageScale;
@@ -1136,9 +1126,7 @@ async function _buildAndDownloadEditPDF() {
           const g = parseInt(hexColor.slice(2,4), 16) / 255;
           const b = parseInt(hexColor.slice(4,6), 16) / 255;
           
-          // Size chữ thực tế trên PDF = Size hiển thị / Tỷ lệ zoom
           const pdfFontSize = obj.fontSize / pageScale;
-          // Tọa độ Y của chữ là Baseline (Đường cơ sở), ta tính xấp xỉ 80% chiều cao chữ từ trên xuống
           const textY = pg.heightPt - (obj.y / pageScale) - (pdfFontSize * 0.8); 
 
           page.drawText(obj.content || '', { 
@@ -1185,7 +1173,6 @@ async function _buildAndDownloadEditPDF() {
               x: pdfX, y: pdfY, width: pdfW, height: pdfH,
               borderColor: strokeRgb, borderWidth: strokeRgb ? sw : 0,
               color: fillRgb,
-              // Chú ý: pdf-lib dùng borderDashArray cho Rect và Ellipse
               borderDashArray: isDashed && strokeRgb ? [sw * 3, sw * 2] : undefined 
             });
 
@@ -1199,9 +1186,7 @@ async function _buildAndDownloadEditPDF() {
             });
 
           } else if (obj.shapeType === 'triangle') {
-            // BUG FIX: drawSvgPath dùng hệ tọa độ SVG (Y đi xuống).
-            // Cần dùng x/y options để đặt gốc tọa độ, rồi vẽ path theo SVG relative.
-            const pdfY_top = pg.heightPt - (obj.y / pageScale); // Top của object trong PDF
+            const pdfY_top = pg.heightPt - (obj.y / pageScale); 
             const triPath  = `M ${pdfW/2},0 L ${pdfW},${pdfH} L 0,${pdfH} Z`;
             page.drawSvgPath(triPath, {
               x: pdfX, y: pdfY_top,
@@ -1213,7 +1198,6 @@ async function _buildAndDownloadEditPDF() {
           } else if (obj.shapeType === 'line') {
             if (strokeRgb) {
               let lx1, ly1, lx2, ly2;
-              // MỚI: Tính toán tọa độ xuất PDF chuẩn xác dựa trên tỷ lệ điểm bắt đầu/kết thúc
               if (obj.lineStartRel && obj.lineEndRel) {
                 lx1 = pdfX + obj.lineStartRel[0] * pdfW;
                 ly1 = pdfY + (1 - obj.lineStartRel[1]) * pdfH;
@@ -1252,8 +1236,74 @@ async function _buildAndDownloadEditPDF() {
     }
   }
 
-  const outBytes = await outDoc.save();
+  return await outDoc.save();
+}
+
+// Hàm 2: Download bản PDF
+async function _buildAndDownloadEditPDF() {
+  const outBytes = await _generateEditedPdfBytes();
   triggerDownload(new Blob([outBytes], { type: 'application/pdf' }), 'edited.pdf');
+}
+
+// Hàm 3: Export thành Image PNG (Chính xác 100% với bản PDF)
+async function _exportEditImages(exportAll) {
+  if (!editPages.length) { alert('Chưa có trang nào.'); return; }
+  const pg = _getCurrentPg();
+  if (!exportAll && !pg) { alert('Vui lòng chọn một trang để export.'); return; }
+
+  const btnPage = document.getElementById('edit-export-img-page');
+  const btnAll = document.getElementById('edit-export-img-all');
+  
+  btnPage.disabled = true; btnAll.disabled = true;
+  if (exportAll) btnAll.textContent = '...'; else btnPage.textContent = '...';
+
+  try {
+    // 1. Lấy byte PDF đã được chỉnh sửa (chứa MỌI THỨ: vẽ, xoay, text, khổ giấy...)
+    const pdfBytes = await _generateEditedPdfBytes();
+
+    // 2. Dùng pdf.js để render byte PDF đó thành ảnh
+    const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+
+    let pagesToExport = [];
+    if (exportAll) {
+      for (let i = 1; i <= pdf.numPages; i++) pagesToExport.push(i);
+    } else {
+      const idx = editPages.findIndex(p => p.id === pg.id);
+      pagesToExport.push(idx + 1);
+    }
+
+    for (let i = 0; i < pagesToExport.length; i++) {
+      const pageNum = pagesToExport[i];
+      const page = await pdf.getPage(pageNum);
+      
+      // Scale 2.5 cho ảnh sắc nét (High Quality)
+      const viewport = page.getViewport({ scale: 2.5 });
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      // Chuyển sang ảnh PNG và tải xuống
+      const dataURL = canvas.toDataURL('image/png');
+      const blob = await (await fetch(dataURL)).blob();
+
+      const filename = exportAll ? `exported-page-${pageNum}.png` : `exported-page.png`;
+      triggerDownload(blob, filename);
+
+      // Delay nhẹ khi tải nhiều ảnh để trình duyệt không chặn popup download
+      if (exportAll && i < pagesToExport.length - 1) {
+        await new Promise(r => setTimeout(r, 400));
+      }
+    }
+  } catch(e) {
+    console.error(e);
+    alert('Lỗi xuất ảnh: ' + e.message);
+  } finally {
+    btnPage.textContent = 'Page'; btnAll.textContent = 'All';
+    btnPage.disabled = false; btnAll.disabled = false;
+  }
 }
 
 /* ════════════════════════════════════════════
