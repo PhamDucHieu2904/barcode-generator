@@ -22,6 +22,7 @@ const EDIT_FONTS = [
 const PAPER_SIZES = { none: null, a4v: { w: 595, h: 842 }, a4h: { w: 842, h: 595 }, a3v: { w: 842, h: 1191 }, a3h: { w: 1191, h: 842 } };
 
 let editPages = [], editSelectedPage = null, editPdfOrigBytes = null, editDragSrcId = null, editSelectedObj = null, editorScale = 1;
+let editZoom = 1;
 let _clipboard = null; // Lưu object đã copy (Ctrl+C)
 
 // ── Shape tool state ──
@@ -38,6 +39,7 @@ function initEditPDF() {
   _bindEditDropZone();
   _bindEditButtons();
   _bindTextFormatControls();
+  _bindZoomControls();
   _renderEditThumbs();
 
   // Bắt sự kiện phím (Delete, Ctrl+C, Ctrl+V)
@@ -223,29 +225,27 @@ function _openPageEditor(pg) {
 
   const areaW = area.clientWidth || 600, areaH = area.clientHeight || 700;
   
-  // 1. Nhận diện kích thước thật khi bị xoay (Đảo chiều Rộng/Cao)
   const isRotated = pg.rotation === 90 || pg.rotation === 270;
   const logicalW = isRotated ? pg.heightPt : pg.widthPt;
   const logicalH = isRotated ? pg.widthPt : pg.heightPt;
   
-  // Tính tỷ lệ thu phóng dựa trên kích thước thật đã xoay
   editorScale = Math.min((areaW - 32) / logicalW, (areaH - 32) / logicalH, 1.5);
 
-  // 2. Tạo một lớp Wrapper để giữ chỗ cho Layout không bị tràn
   const wrapper = document.createElement('div');
-  wrapper.style.width = Math.round(logicalW * editorScale) + 'px';
-  wrapper.style.height = Math.round(logicalH * editorScale) + 'px';
+  wrapper.id = 'edit-page-wrapper';
+  wrapper.style.width = Math.round(logicalW * editorScale * editZoom) + 'px';
+  wrapper.style.height = Math.round(logicalH * editorScale * editZoom) + 'px';
   wrapper.style.display = 'flex';
   wrapper.style.alignItems = 'center';
   wrapper.style.justifyContent = 'center';
 
-  // 3. Render trang PDF như bình thường
   const pageEl = document.createElement('div');
   pageEl.className = 'edit-page-canvas';
   pageEl.style.width = Math.round(pg.widthPt * editorScale) + 'px';
   pageEl.style.height = Math.round(pg.heightPt * editorScale) + 'px';
-  pageEl.style.transform = `rotate(${pg.rotation}deg)`;
+  pageEl.style.transform = `scale(${editZoom}) rotate(${pg.rotation}deg)`;
   pageEl.style.transformOrigin = 'center center';
+  
   const bgLayer = document.createElement('div');
   bgLayer.className = 'edit-bg-layer'; bgLayer.style.width = '100%'; bgLayer.style.height = '100%';
 
@@ -263,7 +263,6 @@ function _openPageEditor(pg) {
 
   pageEl.addEventListener('mousedown', e => { if (e.target === pageEl || e.target === bgLayer || e.target === overlayEl) _deselectAll(pg); });
   
-  // Chèn Page vào Wrapper, rồi mới chèn vào màn hình
   wrapper.appendChild(pageEl);
   area.appendChild(wrapper);
   area._currentPg = pg; area._overlayEl = overlayEl;
@@ -288,6 +287,53 @@ function _clearEditor() {
   if (area) area.innerHTML = '<div class="edit-empty-hint">Chọn một trang để chỉnh sửa</div>';
   editSelectedObj = null; _updateTextControls(null);
 }
+function _bindResizeHandle(el, obj, handleEl, dir) {
+  handleEl.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    const startX = e.clientX, startY = e.clientY, startW = obj.w, startH = obj.h, startOX = obj.x, startOY = obj.y, MIN = 20;
+    
+    const aspect = startW / startH; 
+    
+    function onMove(e2) {
+      // Khử sai số vận tốc kéo chuột khi màn hình đang bị Zoom
+      let dx = (e2.clientX - startX) / editZoom;
+      let dy = (e2.clientY - startY) / editZoom;
+      
+      const pg = _getCurrentPg();
+      if (pg) {
+        if (pg.rotation === 90) {
+          const tmp = dx; dx = -dy; dy = tmp;
+        } else if (pg.rotation === 180) {
+          dx = -dx; dy = -dy;
+        } else if (pg.rotation === 270) {
+          const tmp = dx; dx = dy; dy = -tmp;
+        }
+      }
+
+      if (dir === 'se') { 
+        if (Math.abs(dx) > Math.abs(dy)) {
+          obj.w = Math.max(MIN, startW + dx);
+          obj.h = obj.w / aspect;
+        } else {
+          obj.h = Math.max(MIN, startH + dy);
+          obj.w = obj.h * aspect;
+        }
+      }
+      else if (dir === 'e') { obj.w = Math.max(MIN, startW + dx); }
+      else if (dir === 'w') { const nw = Math.max(MIN, startW - dx); obj.x = startOX + (startW - nw); obj.w = nw; }
+      else if (dir === 's') { obj.h = Math.max(MIN, startH + dy); }
+      else if (dir === 'n') { const nh = Math.max(MIN, startH - dy); obj.y = startOY + (startH - nh); obj.h = nh; }
+      
+      el.style.width = obj.w + 'px'; 
+      el.style.height = obj.h + 'px'; 
+      el.style.left = obj.x + 'px'; 
+      el.style.top = obj.y + 'px';
+    }
+    
+    function onUp() { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+    document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+  });
+}
 
 function _bindObjectMove(el, obj, pg) {
   let startX, startY, startOX, startOY;
@@ -301,11 +347,11 @@ function _bindObjectMove(el, obj, pg) {
     startX = e.clientX; startY = e.clientY; startOX = obj.x; startOY = obj.y;
 
     function onMove(e2) {
-      let dx = e2.clientX - startX;
-      let dy = e2.clientY - startY;
+      // Chia lại cho editZoom để vận tốc chuột khớp với màn hình
+      let dx = (e2.clientX - startX) / editZoom;
+      let dy = (e2.clientY - startY) / editZoom;
       let localDx = dx, localDy = dy;
 
-      // Xử lý dịch tọa độ khi canvas bị xoay
       if (pg.rotation === 90) {
         localDx = -dy; localDy = dx;
       } else if (pg.rotation === 180) {
@@ -1046,8 +1092,74 @@ function _updateFontColorHex(val) { /* hex display removed, no-op */ }
 function _getCurrentPg() { if (!editSelectedPage) return null; return editPages.find(p => p.id === editSelectedPage) || null; }
 
 // Hàm 1: Sinh ra dữ liệu file PDF ngầm trong bộ nhớ
+// 1. HÀM MỚI: Xử lý triệt để lỗi tiếng Việt bằng cách vẽ Text thành ảnh PNG siêu nét
+async function _renderTextToPng(obj) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const scale = 4; // Khử răng cưa bằng độ phân giải 4x
+    canvas.width = obj.w * scale;
+    canvas.height = obj.h * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    // Cài đặt font chữ y hệt như UI
+    const fontSize = obj.fontSize || 16;
+    ctx.font = `${obj.fontStyle === 'italic' ? 'italic' : 'normal'} ${obj.fontWeight === 'bold' ? 'bold' : 'normal'} ${fontSize}px "${obj.fontFamily || 'Arial'}", sans-serif`;
+    ctx.fillStyle = obj.color || '#000000';
+    ctx.textBaseline = 'top';
+
+    // Cài đặt viền chữ (stroke)
+    const strokeW = obj.strokeWidth || 0;
+    const strokeC = obj.stroke || 'none';
+    if (strokeW > 0 && strokeC !== 'none') {
+      ctx.lineWidth = strokeW;
+      ctx.strokeStyle = strokeC;
+      ctx.lineJoin = 'round';
+    }
+
+    // Xử lý xuống dòng tự động (Word Wrap)
+    const lines = [];
+    const paragraphs = (obj.content || '').split('\n');
+    for (const p of paragraphs) {
+      let currentLine = '';
+      const words = p.split(' ');
+      for (const word of words) {
+        const testLine = currentLine + word + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > obj.w && currentLine !== '') {
+          lines.push(currentLine.trim());
+          currentLine = word + ' ';
+        } else {
+          currentLine = testLine;
+        }
+      }
+      lines.push(currentLine.trim());
+    }
+
+    // Căn lề (Align) và vẽ lên Canvas
+    const lineHeight = fontSize * 1.2;
+    let y = 0;
+    for (const line of lines) {
+      let x = 0;
+      const lineWidth = ctx.measureText(line).width;
+      if (obj.textAlign === 'center') {
+        x = (obj.w - lineWidth) / 2;
+      } else if (obj.textAlign === 'right') {
+        x = obj.w - lineWidth;
+      }
+      
+      if (strokeW > 0 && strokeC !== 'none') ctx.strokeText(line, x, y);
+      ctx.fillText(line, x, y);
+      y += lineHeight;
+    }
+
+    resolve(canvas.toDataURL('image/png'));
+  });
+}
+
+// 2. HÀM CŨ ĐÃ ĐƯỢC NÂNG CẤP (Kết nối với hàm vẽ Text ở trên)
 async function _generateEditedPdfBytes() {
-  const { PDFDocument, rgb, StandardFonts } = PDFLib;
+  const { PDFDocument, rgb } = PDFLib;
   const outDoc = await PDFDocument.create();
 
   const area = document.getElementById('edit-canvas-area');
@@ -1112,33 +1224,17 @@ async function _generateEditedPdfBytes() {
 
       if (obj.type === 'text') {
         try {
-          let fontType = StandardFonts.Helvetica;
-          const isBold = obj.fontWeight === 'bold';
-          const isItalic = obj.fontStyle === 'italic';
-          if (isBold && isItalic) fontType = StandardFonts.HelveticaBoldOblique;
-          else if (isBold) fontType = StandardFonts.HelveticaBold;
-          else if (isItalic) fontType = StandardFonts.HelveticaOblique;
-
-          const font2 = await outDoc.embedFont(fontType);
           const isTransparent = obj.color === 'transparent' || obj.color === 'none';
-          const hexColor = isTransparent ? '000000' : (obj.color || '#000000').replace('#', '');
-          const r = parseInt(hexColor.slice(0,2), 16) / 255;
-          const g = parseInt(hexColor.slice(2,4), 16) / 255;
-          const b = parseInt(hexColor.slice(4,6), 16) / 255;
-          
-          const pdfFontSize = obj.fontSize / pageScale;
-          const textY = pg.heightPt - (obj.y / pageScale) - (pdfFontSize * 0.8); 
+          if (isTransparent || !obj.content || obj.content.trim() === '') continue;
 
-          page.drawText(obj.content || '', { 
-            x: pdfX, 
-            y: textY, 
-            size: pdfFontSize, 
-            font: font2, 
-            color: rgb(r, g, b),
-            opacity: isTransparent ? 0 : 1,
-            maxWidth: pdfW,
-            lineHeight: pdfFontSize * 1.2
-          });
+          // Thay vì dùng font mặc định gây lỗi Unicode, gọi hàm xuất Text thành ảnh PNG siêu nét
+          const pngDataUrl = await _renderTextToPng(obj);
+          if (pngDataUrl) {
+            const base64 = pngDataUrl.split(',')[1];
+            const pngBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+            const imgEmbed = await outDoc.embedPng(pngBytes);
+            page.drawImage(imgEmbed, { x: pdfX, y: pdfY, width: pdfW, height: pdfH });
+          }
         } catch(e2) { console.error("Lỗi khi vẽ Text", e2); }
         
       } else if (obj.type === 'image' && obj.dataURL) {
@@ -1328,11 +1424,14 @@ function _resetCanvasCursor() {
 }
 
 function _getOverlayRelativePos(e) {
-  // Lấy tọa độ tương đối so với overlayEl (cùng hệ với obj.x, obj.y)
   const area = document.getElementById('edit-canvas-area');
   if (!area || !area._overlayEl) return null;
   const rect = area._overlayEl.getBoundingClientRect();
-  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  // Khử sai số tỷ lệ Zoom khi lấy tọa độ chuột
+  return { 
+    x: (e.clientX - rect.left) / editZoom, 
+    y: (e.clientY - rect.top) / editZoom 
+  };
 }
 
 
@@ -1662,4 +1761,47 @@ function _toCanvasPNG(dataURL) {
     };
     img.src = dataURL;
   });
+}
+// =========================================================
+// HỆ THỐNG ĐIỀU KHIỂN ZOOM (Phóng to / Thu nhỏ Canvas)
+// =========================================================
+function _updateCanvasZoom() {
+  const area = document.getElementById('edit-canvas-area');
+  if (!area || !area._currentPg) return;
+  const pg = area._currentPg;
+  const wrapper = document.getElementById('edit-page-wrapper');
+  const pageEl = area.querySelector('.edit-page-canvas');
+  if (!wrapper || !pageEl) return;
+  
+  const isRotated = pg.rotation === 90 || pg.rotation === 270;
+  const logicalW = isRotated ? pg.heightPt : pg.widthPt;
+  const logicalH = isRotated ? pg.widthPt : pg.heightPt;
+  
+  // Mở rộng Wrapper tạo thanh cuộn, đồng thời Scale nội dung SVG sắc nét bên trong
+  wrapper.style.width = Math.round(logicalW * editorScale * editZoom) + 'px';
+  wrapper.style.height = Math.round(logicalH * editorScale * editZoom) + 'px';
+  pageEl.style.transform = `scale(${editZoom}) rotate(${pg.rotation}deg)`;
+}
+
+function _bindZoomControls() {
+  const zoomInput = document.getElementById('edit-zoom-input');
+  const zoomInBtn = document.getElementById('edit-zoom-in');
+  const zoomOutBtn = document.getElementById('edit-zoom-out');
+
+  function setZoom(val) {
+    // Chặn giới hạn Zoom từ 1 đến 5 (theo yêu cầu)
+    editZoom = Math.max(1, Math.min(5, val));
+    if (zoomInput) zoomInput.value = editZoom.toFixed(1);
+    _updateCanvasZoom();
+  }
+
+  if (zoomInput) {
+    zoomInput.addEventListener('change', e => setZoom(parseFloat(e.target.value) || 1));
+  }
+  if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', () => setZoom(editZoom + 0.2));
+  }
+  if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', () => setZoom(editZoom - 0.2));
+  }
 }

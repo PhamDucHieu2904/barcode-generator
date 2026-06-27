@@ -87,6 +87,7 @@
 .etb-size-wrap { flex: 1 1 75px; min-width: 60px; max-width: 90px; }
 .etb-strokestyle-wrap { flex: 1 1 60px; min-width: 50px; max-width: 80px; }
 .etb-strokewidth-wrap { flex: 1 1 70px; min-width: 60px; max-width: 90px; }
+.etb-zoom-wrap { width: 80px; flex-shrink: 0; }
 
 .etb-color-wrap { flex-shrink: 0; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; padding: 2px 6px; justify-content: center; }
 .etb-color-wrap .color-swatch { width: 16px; height: 16px; }

@@ -278,6 +278,7 @@
     <div class="edit-canvas-panel" id="panel-edit-canvas">
 
       <div class="edit-top-toolbar">
+        
         <div class="etb-row">
           <label class="etb-label">Font</label>
           <div class="select-wrap etb-font-wrap">
@@ -365,6 +366,19 @@
               <button class="spin-btn" data-target="edit-strokewidth" data-dir="up">&#9654;</button>
             </div>
           </div>
+
+          <div class="etb-divider"></div>
+
+          <label class="etb-label">Zoom</label>
+          <div class="spinner-wrap etb-zoom-wrap">
+            <input class="spinner-input" id="edit-zoom-input" type="number" value="1" min="1" max="5" step="0.2" style="padding-right: 0;" />
+            <span class="strokewidth-unit">x</span>
+            <div class="spinner-btns horizontal">
+              <button class="spin-btn" id="edit-zoom-out" title="Thu nhỏ">&#8722;</button>
+              <button class="spin-btn" id="edit-zoom-in" title="Phóng to">&#43;</button>
+            </div>
+          </div>
+
         </div>
       </div>
       <div class="edit-canvas-main">
