@@ -68,3 +68,24 @@ function readFileAsArrayBuffer(file) {
     reader.readAsArrayBuffer(file);
   });
 }
+
+/**
+ * Convert any image dataURL to PNG via canvas (handles WebP, BMP, etc.).
+ * Used by both pdf.js and edit-pdf.js as single source of truth.
+ * @param {string} dataURL
+ * @returns {Promise<string>} PNG dataURL
+ */
+function convertToPNG(dataURL) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => reject(new Error('convertToPNG: failed to load image'));
+    img.src = dataURL;
+  });
+}

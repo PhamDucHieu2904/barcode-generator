@@ -1,0 +1,567 @@
+/* ══════════════════════════════════════════════
+   edit-pdf-toolbar.js — Toolbar, keyboard, format controls & zoom
+   Chứa: _bindKeyboardShortcuts, _bindEditButtons,
+         _bindTextFormatControls, _applyTextFormat, _updateTextControls,
+         _updateCanvasZoom, _bindZoomControls
+   Phụ thuộc: edit-pdf-state.js, edit-pdf-canvas.js, edit-pdf-shapes.js,
+               edit-pdf-export.js, edit-pdf-dropzone.js
+   ══════════════════════════════════════════════ */
+
+/**
+ * Bind keyboard shortcuts: Delete/Backspace, Ctrl+C, Ctrl+V.
+ * Được extract ra khỏi initEditPDF() để đặt ở đây cho rõ ràng hơn.
+ */
+function _bindKeyboardShortcuts() {
+  document.addEventListener('keydown', e => {
+    const activeTag = document.activeElement ? document.activeElement.tagName : '';
+    const isTyping = activeTag === 'INPUT' || activeTag === 'SELECT' || (document.activeElement && document.activeElement.isContentEditable);
+    if (isTyping) return;
+
+    // ── Delete / Backspace: xóa object ──
+    if ((e.key === 'Delete' || e.key === 'Backspace') && editSelectedObj) {
+      const pg = _getCurrentPg();
+      if (pg) {
+        pg.overlayObjects = pg.overlayObjects.filter(o => o.id !== editSelectedObj);
+        const area = document.getElementById('edit-canvas-area');
+        if (area && area._overlayEl) {
+          const elToRemove = area._overlayEl.querySelector(`[data-obj-id="${editSelectedObj}"]`);
+          if (elToRemove) elToRemove.remove();
+        }
+        editSelectedObj = null;
+        _updateTextControls(null);
+      }
+    }
+
+    // ── Ctrl+C: copy object đang chọn ──
+    if ((e.ctrlKey || e.metaKey) && e.key === 'c' && editSelectedObj) {
+      const pg = _getCurrentPg();
+      if (pg) {
+        const obj = pg.overlayObjects.find(o => o.id === editSelectedObj);
+        if (obj) {
+          // Loại bỏ _svgEl (DOM ref) trước khi serialize
+          const { _svgEl, ...copyable } = obj;
+          _clipboard = JSON.parse(JSON.stringify(copyable));
+        }
+      }
+      e.preventDefault();
+    }
+
+    // ── Ctrl+V: paste object từ clipboard ──
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v' && _clipboard) {
+      const pg = _getCurrentPg();
+      if (pg) {
+        const newObj = JSON.parse(JSON.stringify(_clipboard));
+        newObj.id    = uid();
+        newObj.x    += 20;  // Lệch nhẹ để phân biệt với bản gốc
+        newObj.y    += 20;
+        newObj.selected = false;
+        pg.overlayObjects.push(newObj);
+        const area = document.getElementById('edit-canvas-area');
+        if (area && area._overlayEl) {
+          _renderOverlayObject(newObj, area._overlayEl, pg);
+          _selectObject(newObj, pg);
+        }
+      }
+      e.preventDefault();
+    }
+    // ── Enter: Apply crop ──
+    if (e.key === 'Enter') {
+      const pg = _getCurrentPg();
+      if (pg) {
+        const cropbox = pg.overlayObjects.find(o => o.type === 'cropbox');
+        if (cropbox) {
+          e.preventDefault();
+          _applyCropToPage(pg, cropbox); // Defined in edit-pdf-export.js
+        }
+      }
+    }
+  });
+}
+
+function _bindEditButtons() {
+  const btnText = document.getElementById('edit-btn-text');
+  if (btnText) {
+    btnText.addEventListener('click', () => {
+      document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+      activeShapeTool = null;
+      _cancelLinePending();
+      _resetCanvasCursor();
+
+      const pg = _getCurrentPg();
+      if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
+      const obj = {
+        id: uid(), type: 'text', x: Math.round(pg.widthPt * editorScale * 0.3), y: Math.round(pg.heightPt * editorScale * 0.4),
+        w: 200, h: 60, content: 'Nhập text tại đây', fontFamily: 'Arial', fontSize: 16, fontWeight: 'normal', color: '#000000',
+        textAlign: 'left',
+        stroke: 'none', strokeWidth: 1, selected: false,
+      };
+      pg.overlayObjects.push(obj);
+      const area = document.getElementById('edit-canvas-area');
+      if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg);
+      _selectObject(obj, pg);
+    });
+  }
+
+  const btnImg = document.getElementById('edit-btn-image');
+  if (btnImg) {
+    btnImg.addEventListener('click', () => {
+      document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+      activeShapeTool = null;
+      _cancelLinePending();
+      _resetCanvasCursor();
+
+      const pg = _getCurrentPg();
+      if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
+      // Đã hỗ trợ định dạng TIFF/TIF
+      const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*,.tiff,.tif';
+      input.addEventListener('change', async () => {
+        if (!input.files[0]) return;
+        const dataURL = await readFileAsDataURL(input.files[0]);
+        const obj = {
+          id: uid(), type: 'image', x: Math.round(pg.widthPt * editorScale * 0.2), y: Math.round(pg.heightPt * editorScale * 0.2),
+          w: 200, h: 150, dataURL, selected: false,
+        };
+        pg.overlayObjects.push(obj);
+        const area = document.getElementById('edit-canvas-area');
+        if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg);
+        _selectObject(obj, pg);
+      });
+      input.click();
+    });
+  }
+
+  /* ── SHAPE COMBO BUTTON ── */
+  const shapeComboBtn = document.getElementById('elb-shape-combo');
+  _updateShapeComboIcon(); // khởi tạo icon mặc định
+
+  if (shapeComboBtn) {
+    shapeComboBtn.addEventListener('click', (e) => {
+      const pg = _getCurrentPg();
+      const currentShapeType = SHAPE_CYCLE[activeShapeComboIdx];
+      if (activeShapeTool === currentShapeType) {
+        activeShapeTool = null;
+        _cancelLinePending();
+        document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+        _resetCanvasCursor();
+        return;
+      }
+
+      if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
+      _cancelLinePending();
+      activeShapeTool = currentShapeType;
+      document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+      shapeComboBtn.classList.add('active');
+      _setCanvasCursor(activeShapeTool);
+    });
+  }
+
+  /* ── LINE COMBO BUTTON ── */
+  const lineComboBtn = document.getElementById('elb-line-combo');
+  _updateLineComboIcon(); // khởi tạo icon mặc định (arrow)
+
+  if (lineComboBtn) {
+    lineComboBtn.addEventListener('click', (e) => {
+      const pg = _getCurrentPg();
+      if (activeShapeTool === 'line') {
+        activeShapeTool = null;
+        _cancelLinePending();
+        document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+        _resetCanvasCursor();
+        return;
+      }
+
+      if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
+      _cancelLinePending();
+      activeShapeTool = 'line';
+      document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+      lineComboBtn.classList.add('active');
+      _setCanvasCursor('line');
+    });
+  }
+
+  /* ── PARAGRAPH ALIGN BUTTONS ── */
+  document.querySelectorAll('.etb-align-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const align = btn.dataset.align;
+      document.querySelectorAll('.etb-align-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (!editSelectedObj) return;
+      const pg = _getCurrentPg(); if (!pg) return;
+      const obj = pg.overlayObjects.find(o => o.id === editSelectedObj);
+      if (!obj || obj.type !== 'text') return;
+
+      obj.textAlign = align;
+
+      const area = document.getElementById('edit-canvas-area');
+      if (area && area._overlayEl) {
+        const el = area._overlayEl.querySelector(`[data-obj-id="${obj.id}"]`);
+        if (el) {
+          const textDiv = el.querySelector('.edit-obj-textcontent');
+          if (textDiv) textDiv.style.textAlign = align;
+        }
+      }
+    });
+  });
+
+  /* ESC huỷ tool shape/line + Ctrl standalone để cycle/swap combo */
+  document.addEventListener('keydown', e => {
+    const activeTag = document.activeElement ? document.activeElement.tagName : '';
+    const isTyping = activeTag === 'INPUT' || activeTag === 'SELECT' || (document.activeElement && document.activeElement.isContentEditable);
+
+    if (e.key === 'Escape' && activeShapeTool) {
+      activeShapeTool = null;
+      _cancelLinePending();
+      document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
+      _resetCanvasCursor();
+      return;
+    }
+
+    if ((e.key === 'Control' || e.key === 'Meta') && !isTyping) {
+      if (activeShapeTool === 'rect' || activeShapeTool === 'triangle' || activeShapeTool === 'ellipse') {
+        activeShapeComboIdx = (activeShapeComboIdx + 1) % SHAPE_CYCLE.length;
+        activeShapeTool = SHAPE_CYCLE[activeShapeComboIdx];
+        _updateShapeComboIcon();
+        _setCanvasCursor(activeShapeTool);
+        e.preventDefault();
+      } else if (activeShapeTool === 'line') {
+        activeLineMode = (activeLineMode === 'arrow') ? 'plain' : 'arrow';
+        _updateLineComboIcon();
+        e.preventDefault();
+      }
+    }
+  });
+
+  /* Bind sự kiện vẽ shape trên canvas area */
+  const canvasArea = document.getElementById('edit-canvas-area');
+  if (canvasArea) {
+    canvasArea.addEventListener('mousedown', e => _onCanvasMousedownForShape(e));
+  }
+
+  // ── Xử lý Master Toggle "All" ──
+  const masterAllBtn = document.getElementById('edit-master-all-toggle');
+  let isMasterAll = false; // Trạng thái mặc định: Tắt
+
+  if (masterAllBtn) {
+    masterAllBtn.addEventListener('click', () => {
+      isMasterAll = !isMasterAll;
+      masterAllBtn.classList.toggle('active', isMasterAll);
+    });
+  }
+
+  // ── Xử lý Paper Size ──
+  const paperSizeEl = document.getElementById('edit-papersize');
+  if (paperSizeEl) {
+    paperSizeEl.addEventListener('change', e => { 
+      const currentPg = _getCurrentPg(); 
+      if (!currentPg && editPages.length === 0) return; 
+      
+      const val = e.target.value;
+      const preset = PAPER_SIZES[val];
+
+      const applySizeToPage = (pg) => {
+        if (val === 'none') {
+          pg.widthPt = pg.origWidthPt || pg.widthPt;
+          pg.heightPt = pg.origHeightPt || pg.heightPt;
+        } else if (preset) {
+          pg.widthPt = preset.w; 
+          pg.heightPt = preset.h; 
+        }
+      };
+
+      if (isMasterAll) {
+        editPages.forEach(pg => applySizeToPage(pg));
+      } else if (currentPg) {
+        applySizeToPage(currentPg);
+      }
+      
+      if (currentPg) _openPageEditor(currentPg); 
+      _renderEditThumbs(); 
+    });
+  }
+
+  // ── Xử lý Rotate ──
+  const handleRotate = (angle) => {
+    if (isMasterAll) {
+      editPages.forEach(p => { p.rotation = ((p.rotation || 0) + angle + 360) % 360; });
+    } else {
+      const pg = _getCurrentPg();
+      if (pg) pg.rotation = ((pg.rotation || 0) + angle + 360) % 360;
+    }
+    const currentPg = _getCurrentPg();
+    if (currentPg) _openPageEditor(currentPg);
+    _renderEditThumbs();
+  };
+
+  const rotate90Btn = document.getElementById('edit-rotate-90');
+  if (rotate90Btn) rotate90Btn.addEventListener('click', () => handleRotate(90));
+
+  const rotateCcwBtn = document.getElementById('edit-rotate-ccw');
+  if (rotateCcwBtn) rotateCcwBtn.addEventListener('click', () => handleRotate(-90));
+
+  // ── Xử lý Nút Crop PDF ──
+  const cropBtn = document.getElementById('edit-crop-btn');
+  if (cropBtn) {
+    cropBtn.addEventListener('click', () => {
+      const pg = _getCurrentPg();
+      if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
+      
+      // Tạo một đối tượng cropbox toàn màn hình nếu chưa có
+      const existingCrop = pg.overlayObjects.find(o => o.type === 'cropbox');
+      if (existingCrop) {
+        // Nếu đã có, chọn nó
+        _selectObject(existingCrop, pg);
+      } else {
+        // Nếu chưa có, tạo mới phủ kín trang
+        const obj = {
+          id: uid(), type: 'cropbox', 
+          x: 0, y: 0, 
+          w: pg.widthPt * editorScale, h: pg.heightPt * editorScale,
+          selected: false
+        };
+        pg.overlayObjects.push(obj);
+        const area = document.getElementById('edit-canvas-area');
+        if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg);
+        _selectObject(obj, pg);
+      }
+    });
+  }
+
+const dlBtn = document.getElementById('edit-download-btn');
+  if (dlBtn) {
+    dlBtn.addEventListener('click', async () => {
+      if (!editPages.length) { alert('Chưa có trang nào.'); return; }
+      dlBtn.disabled = true; dlBtn.textContent = 'Đang xử lý…';
+      try { await _buildAndDownloadEditPDF(); } catch(e) { alert('Lỗi: ' + e.message); } finally { dlBtn.disabled = false; dlBtn.textContent = 'Download PDF'; }
+    });
+  }
+
+  // ── Xử lý các nút EXPORT IMAGE ──
+  const exportImgPageBtn = document.getElementById('edit-export-img-page');
+  if (exportImgPageBtn) {
+    exportImgPageBtn.addEventListener('click', () => _exportEditImages(false));
+  }
+
+  const exportImgAllBtn = document.getElementById('edit-export-img-all');
+  if (exportImgAllBtn) {
+    exportImgAllBtn.addEventListener('click', () => _exportEditImages(true));
+  }
+}
+
+// Bổ sung lắng nghe sự kiện cho Stroke
+function _bindTextFormatControls() {
+  ['edit-font', 'edit-fontsize', 'edit-fontstyle', 'edit-fontcolor',
+   'edit-fillcolor', 'edit-strokecolor', 'edit-strokestyle', 'edit-strokewidth'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.addEventListener('input', () => _applyTextFormat()); el.addEventListener('change', () => _applyTextFormat()); }
+  });
+
+  // None buttons (fill / stroke)
+  const fillNoneBtn   = document.getElementById('edit-fillcolor-none');
+  const strokeNoneBtn = document.getElementById('edit-strokecolor-none');
+
+  if (fillNoneBtn) {
+    fillNoneBtn.addEventListener('click', () => {
+      fillNoneBtn.classList.toggle('active');
+      _applyTextFormat();
+    });
+  }
+  if (strokeNoneBtn) {
+    strokeNoneBtn.addEventListener('click', () => {
+      strokeNoneBtn.classList.toggle('active');
+      _applyTextFormat();
+    });
+  }
+}
+
+function _applyTextFormat() {
+  if (!editSelectedObj) return;
+  const pg = _getCurrentPg(); if (!pg) return;
+  const obj = pg.overlayObjects.find(o => o.id === editSelectedObj);
+  if (!obj) return;
+
+  const fillColorEl   = document.getElementById('edit-fillcolor');
+  const strokeColorEl = document.getElementById('edit-strokecolor');
+  const fillNoneBtn   = document.getElementById('edit-fillcolor-none');
+  const strokeNoneBtn = document.getElementById('edit-strokecolor-none');
+  const strokeStyleEl = document.getElementById('edit-strokestyle');
+  const strokeWidthEl = document.getElementById('edit-strokewidth');
+
+  if (obj.type === 'shape') {
+    if (fillColorEl)   obj.shapeFill        = fillNoneBtn   && fillNoneBtn.classList.contains('active')   ? 'none' : (fillColorEl.value   || '#000000');
+    if (strokeColorEl) obj.shapeStroke      = strokeNoneBtn && strokeNoneBtn.classList.contains('active') ? 'none' : (strokeColorEl.value || '#000000');
+    if (strokeWidthEl) obj.shapeStrokeWidth = parseInt(strokeWidthEl.value) || 2;
+    if (strokeStyleEl) obj.shapeStrokeDash  = strokeStyleEl.value; 
+    obj.color = obj.shapeStroke;
+    _updateShapeSVG(obj);
+    return;
+  }
+
+  if (obj.type !== 'text') return;
+
+  const font  = document.getElementById('edit-font'), 
+        size  = document.getElementById('edit-fontsize'), 
+        style = document.getElementById('edit-fontstyle');
+
+  if (font)  obj.fontFamily  = font.value;
+  if (size)  obj.fontSize    = parseInt(size.value) || 16;
+  if (style) {
+    obj.fontWeight = (style.value === 'bold')   ? 'bold'   : 'normal';
+    obj.fontStyle  = (style.value === 'italic') ? 'italic' : 'normal';
+  }
+
+  // Lưu textAlign từ button đang active
+  const activeAlignBtn = document.querySelector('.etb-align-btn.active');
+  if (activeAlignBtn) obj.textAlign = activeAlignBtn.dataset.align || 'left';
+
+  // Dùng fillColor để lưu màu chữ, hỗ trợ Text "Tàng hình" (trong suốt) nếu click None
+  if (fillColorEl) obj.color = fillNoneBtn && fillNoneBtn.classList.contains('active') ? 'transparent' : (fillColorEl.value || '#000000');
+  if (strokeColorEl) obj.stroke = strokeNoneBtn && strokeNoneBtn.classList.contains('active') ? 'none' : strokeColorEl.value;
+  if (strokeWidthEl) obj.strokeWidth = parseInt(strokeWidthEl.value) || 0;
+
+  const area = document.getElementById('edit-canvas-area');
+  if (area && area._overlayEl) {
+    const el = area._overlayEl.querySelector(`[data-obj-id="${obj.id}"]`);
+    if (el) {
+      const textDiv = el.querySelector('.edit-obj-textcontent');
+      if (textDiv) {
+        textDiv.style.fontFamily = `"${obj.fontFamily}", sans-serif`;
+        textDiv.style.fontSize   = `${obj.fontSize}px`;
+        textDiv.style.fontWeight = obj.fontWeight;
+        textDiv.style.fontStyle  = obj.fontStyle;
+        textDiv.style.color      = obj.color;
+        textDiv.style.textAlign  = obj.textAlign || 'left';
+        if (obj.stroke !== 'none' && obj.strokeWidth > 0) {
+          textDiv.style.webkitTextStroke = `${obj.strokeWidth}px ${obj.stroke}`;
+        } else {
+          textDiv.style.webkitTextStroke = '0';
+        }
+      }
+    }
+  }
+}
+
+function _updateTextControls(obj) {
+  const font          = document.getElementById('edit-font'), 
+        size          = document.getElementById('edit-fontsize'), 
+        style         = document.getElementById('edit-fontstyle'), 
+        fillColorEl   = document.getElementById('edit-fillcolor'),
+        strokeColorEl = document.getElementById('edit-strokecolor'),
+        fillNoneBtn   = document.getElementById('edit-fillcolor-none'),
+        strokeNoneBtn = document.getElementById('edit-strokecolor-none'),
+        strokeStyleEl = document.getElementById('edit-strokestyle'),
+        strokeW       = document.getElementById('edit-strokewidth');
+
+  const isText  = obj && obj.type === 'text';
+  const isShape = obj && obj.type === 'shape';
+
+  [font, size, style].forEach(el => { if (el) el.disabled = !isText; });
+
+  // Align buttons chỉ bật khi text
+  document.querySelectorAll('.etb-align-btn').forEach(b => { b.disabled = !isText; });
+
+  if (fillColorEl)   fillColorEl.disabled   = !(isShape || isText);
+  if (fillNoneBtn)   fillNoneBtn.disabled   = !(isShape || isText);
+  if (strokeColorEl) strokeColorEl.disabled = !(isText || isShape);
+  if (strokeNoneBtn) strokeNoneBtn.disabled = !(isText || isShape);
+  if (strokeStyleEl) strokeStyleEl.disabled = !(isText || isShape);
+  if (strokeW)       strokeW.disabled     = !(isText || isShape);
+
+  if (fillNoneBtn)   fillNoneBtn.classList.remove('active');
+  if (strokeNoneBtn) strokeNoneBtn.classList.remove('active');
+
+  // Reset align buttons nếu không phải text
+  if (!isText) {
+    document.querySelectorAll('.etb-align-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.align === 'left');
+    });
+  }
+
+  if (isText && obj) {
+    if (font) font.value  = obj.fontFamily || 'Arial';
+    if (size) size.value  = obj.fontSize || 16;
+    if (style) {
+      if (obj.fontStyle === 'italic') style.value = 'italic';
+      else style.value = (obj.fontWeight === 'bold') ? 'bold' : 'normal';
+    }
+
+    const colorVal = obj.color || '#000000';
+    if (colorVal === 'transparent' || colorVal === 'none') {
+      if (fillColorEl) fillColorEl.value = '#000000';
+      if (fillNoneBtn) fillNoneBtn.classList.add('active');
+    } else {
+      if (fillColorEl) fillColorEl.value = colorVal;
+    }
+
+    const strokeVal = obj.stroke || 'none';
+    if (strokeColorEl) strokeColorEl.value = (strokeVal !== 'none') ? strokeVal : '#000000';
+    if (strokeNoneBtn && strokeVal === 'none') strokeNoneBtn.classList.add('active');
+    if (strokeW) strokeW.value = obj.strokeWidth || 1;
+
+    // Sync align buttons
+    const currentAlign = obj.textAlign || 'left';
+    document.querySelectorAll('.etb-align-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.align === currentAlign);
+    });
+  }
+
+  if (isShape && obj) {
+    const fillVal = obj.shapeFill || 'none';
+    if (fillColorEl)  fillColorEl.value = (fillVal !== 'none') ? fillVal : '#000000';
+    if (fillNoneBtn && fillVal === 'none') fillNoneBtn.classList.add('active');
+
+    const strokeVal = obj.shapeStroke || '#000000';
+    if (strokeColorEl) strokeColorEl.value = (strokeVal !== 'none') ? strokeVal : '#000000';
+    if (strokeNoneBtn && strokeVal === 'none') strokeNoneBtn.classList.add('active');
+
+    if (strokeW)       strokeW.value       = obj.shapeStrokeWidth != null ? obj.shapeStrokeWidth : 2;
+    if (strokeStyleEl) strokeStyleEl.value = obj.shapeStrokeDash || 'solid';
+  }
+}
+
+// _updateFontColorHex: đã xoá — không còn cần thiết sau khi loại bỏ hex display
+
+/* ════════════════════════════════════════════
+   HỆ THỐNG ĐIỀU KHIỂN ZOOM (Phóng to / Thu nhỏ Canvas)
+   ════════════════════════════════════════════ */
+
+function _updateCanvasZoom() {
+  const area = document.getElementById('edit-canvas-area');
+  if (!area || !area._currentPg) return;
+  const pg = area._currentPg;
+  const wrapper = document.getElementById('edit-page-wrapper');
+  const pageEl = area.querySelector('.edit-page-canvas');
+  if (!wrapper || !pageEl) return;
+  
+  const isRotated = pg.rotation === 90 || pg.rotation === 270;
+  const logicalW = isRotated ? pg.heightPt : pg.widthPt;
+  const logicalH = isRotated ? pg.widthPt : pg.heightPt;
+  
+  // Mở rộng Wrapper tạo thanh cuộn, đồng thời Scale nội dung SVG sắc nét bên trong
+  wrapper.style.width = Math.round(logicalW * editorScale * editZoom) + 'px';
+  wrapper.style.height = Math.round(logicalH * editorScale * editZoom) + 'px';
+  pageEl.style.transform = `scale(${editZoom}) rotate(${pg.rotation}deg)`;
+}
+
+function _bindZoomControls() {
+  const zoomInput = document.getElementById('edit-zoom-input');
+  const zoomInBtn = document.getElementById('edit-zoom-in');
+  const zoomOutBtn = document.getElementById('edit-zoom-out');
+
+  function setZoom(val) {
+    // Chặn giới hạn Zoom từ 1 đến 5 (theo yêu cầu)
+    editZoom = Math.max(1, Math.min(5, val));
+    if (zoomInput) zoomInput.value = editZoom.toFixed(1);
+    _updateCanvasZoom();
+  }
+
+  if (zoomInput) {
+    zoomInput.addEventListener('change', e => setZoom(parseFloat(e.target.value) || 1));
+  }
+  if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', () => setZoom(editZoom + 0.2));
+  }
+  if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', () => setZoom(editZoom - 0.2));
+  }
+}

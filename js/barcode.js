@@ -371,7 +371,30 @@ function downloadBarcodeSVG(fullCodes) {
   );
 }
 
-function downloadQRSVG(fullCodes) {
+/**
+ * Render một mã QR thành PNG dataURL một cách đáng tin cậy.
+ * Sử dụng requestAnimationFrame thay vì setTimeout cố định.
+ * @param {string} text
+ * @param {object} opts
+ * @returns {Promise<string|null>}
+ */
+function renderQRCodeToDataURL(text, opts) {
+  return new Promise((resolve) => {
+    const tmp = document.createElement('div');
+    tmp.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden;';
+    document.body.appendChild(tmp);
+    // QRCode.js render đồng bộ, nhưng cần 1 frame để vẽ xong canvas
+    new QRCode(tmp, opts);
+    requestAnimationFrame(() => {
+      const canvas = tmp.querySelector('canvas');
+      const dataURL = canvas ? canvas.toDataURL('image/png') : null;
+      document.body.removeChild(tmp);
+      resolve(dataURL);
+    });
+  });
+}
+
+async function downloadQRSVG(fullCodes) {
   const A4_W = 793.7, A4_H = 1122.5;
   const margin = 30, gap = 20;
   const qrSize = barcodeProps.qrSize;
@@ -387,51 +410,62 @@ function downloadQRSVG(fullCodes) {
   bg.setAttribute('width', A4_W); bg.setAttribute('height', A4_H); bg.setAttribute('fill', 'white');
   root.appendChild(bg);
 
-  fullCodes.forEach((code, idx) => {
+  for (let idx = 0; idx < fullCodes.length; idx++) {
+    const code = fullCodes[idx];
     const col = idx % cols, row = Math.floor(idx / cols);
     const x = margin + col * (qrSize + gap);
     const y = margin + row * (qrSize + gap + 18);
 
-    const tmp = document.createElement('div');
-    tmp.style.display = 'none';
-    document.body.appendChild(tmp);
-    new QRCode(tmp, {
-      text: code, width: qrSize * 2, height: qrSize * 2,
-      colorDark: barcodeProps.lineColor, colorLight: barcodeProps.bgColor,
+    // Render QR thành PNG một cách an toàn, không phụ thuộc magic timeout
+    const dataURL = await renderQRCodeToDataURL(code, {
+      text: code,
+      width:  qrSize * 2,
+      height: qrSize * 2,
+      colorDark:  barcodeProps.lineColor,
+      colorLight: barcodeProps.bgColor,
       correctLevel: QRCode.CorrectLevel.M,
     });
 
-    setTimeout(() => {
-      const canvas = tmp.querySelector('canvas');
-      if (canvas) {
-        const imgEl = document.createElementNS(ns, 'image');
-        imgEl.setAttribute('x', x); imgEl.setAttribute('y', y);
-        imgEl.setAttribute('width', qrSize); imgEl.setAttribute('height', qrSize);
-        imgEl.setAttributeNS('http://www.w3.org/1999/xlink', 'href', canvas.toDataURL('image/png'));
-        root.appendChild(imgEl);
-        if (barcodeProps.showText) {
-          const txt = document.createElementNS(ns, 'text');
-          txt.setAttribute('x', x + qrSize / 2);
-          txt.setAttribute('y', y + qrSize + 13);
-          txt.setAttribute('text-anchor', 'middle');
-          txt.setAttribute('font-size', barcodeProps.fontSize);
-          txt.setAttribute('font-family', barcodeProps.font + ', sans-serif');
-          txt.setAttribute('fill', barcodeProps.lineColor);
-          txt.textContent = code.length > 36 ? code.slice(0, 36) + '…' : code;
-          root.appendChild(txt);
-        }
+    if (dataURL) {
+      const imgEl = document.createElementNS(ns, 'image');
+      imgEl.setAttribute('x', x); imgEl.setAttribute('y', y);
+      imgEl.setAttribute('width', qrSize); imgEl.setAttribute('height', qrSize);
+      imgEl.setAttributeNS('http://www.w3.org/1999/xlink', 'href', dataURL);
+      root.appendChild(imgEl);
+
+      if (barcodeProps.showText) {
+        const txt = document.createElementNS(ns, 'text');
+        txt.setAttribute('x', x + qrSize / 2);
+        txt.setAttribute('y', y + qrSize + 13);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('font-size', barcodeProps.fontSize);
+        txt.setAttribute('font-family', barcodeProps.font + ', sans-serif');
+        txt.setAttribute('fill', barcodeProps.lineColor);
+        txt.textContent = code.length > 36 ? code.slice(0, 36) + '…' : code;
+        root.appendChild(txt);
       }
-      document.body.removeChild(tmp);
-      if (idx === fullCodes.length - 1) {
-        setTimeout(() => {
-          triggerDownload(
-            new Blob([new XMLSerializer().serializeToString(root)], { type: 'image/svg+xml' }),
-            'qrcodes.svg'
-          );
-        }, 100);
-      }
-    }, 200 + idx * 60);
-  });
+    }
+  }
+
+  triggerDownload(
+    new Blob([new XMLSerializer().serializeToString(root)], { type: 'image/svg+xml' }),
+    'qrcodes.svg'
+  );
+}
+
+/* ── Public API ── */
+
+/**
+ * Chuyển sang loại barcode khác. Được gọi từ app.js.
+ * Thay vì để app.js ghi trực tiếp vào biến internal, ta expose API rõ ràng.
+ * @param {string} type — 'EAN13' | 'UPCA' | 'ITF14' | 'CODE128' | 'QR'
+ */
+function switchBarcodeType(type) {
+  currentType = type;
+  codes = [''];
+  errorMsg.textContent = '';
+  renderInputs();
+  renderPreview();
 }
 
 /* ── Public init ── */

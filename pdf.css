@@ -45,8 +45,8 @@
 .pdf-panel--edit .drop-zone { flex: 1; min-height: 200px; max-height: none; }
 
 /* ── Paper size / opt rows ── */
-.edit-opt-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; margin-top: 15px; }
-.edit-opt-row .pdf-opt-label { font-size: 12px; white-space: normal; flex: 1; line-height: 1.2; }
+.edit-opt-row { display: flex; align-items: center; gap: 4px; margin-bottom: 14px; margin-top: 15px; }
+.edit-opt-row .pdf-opt-label { font-size: 12px; white-space: normal; flex: 1; line-height: 1.2; padding-right: 4px; }
 .edit-opt-row .select-wrap { flex: 1.2; min-width: 0; }
 .edit-opt-row .select-wrap select { padding: 8px 16px 8px 8px; font-size: 13px; }
 
@@ -216,9 +216,9 @@
   align-items: center;
   background: #fff;
   border-top: 1px solid #e0e0e0;
-  padding: 10px 24px;
+  padding: 10px 12px;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 6px;
   overflow-x: auto;
 }
 
@@ -226,7 +226,7 @@
 .edit-bottom-toolbar .edit-rotate-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   margin: 0;
 }
 

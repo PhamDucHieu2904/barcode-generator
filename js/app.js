@@ -28,13 +28,10 @@
 
       activateSection(section);
 
-      // If switching to barcode, update current type and re-render inputs
+      // If switching to barcode, delegate to barcode.js public API
+      // Không truy cập trực tiếp vào biến internal (currentType, codes) nữa
       if (section === 'barcode') {
-        currentType = type;          // barcode.js global
-        codes = [''];                // barcode.js global
-        if (typeof errorMsg !== 'undefined') errorMsg.textContent = '';
-        renderInputs();              // barcode.js
-        renderPreview();             // barcode.js
+        switchBarcodeType(type); // barcode.js public API
       }
     });
   });

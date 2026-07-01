@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="barcode.css">
 <link rel="stylesheet" href="pdf.css">
 <link rel="stylesheet" href="responsive.css">
-<link rel="icon" type="image/svg+xml" href="web-icon.png">
+<link rel="icon" type="image/png" href="web-icon.png">
 </head>
 <body>
 
@@ -429,6 +429,10 @@
       </div>
       <div class="edit-bottom-toolbar">
         <div class="edit-opt-row" style="margin: 0;">
+          <button id="edit-master-all-toggle" class="opt-toggle-btn" title="Áp dụng cho tất cả các trang">All</button>
+          
+          <div class="etb-divider" style="height: 24px; margin: 0 8px;"></div>
+
           <label class="pdf-opt-label">Change paper size</label>
           <div class="select-wrap" style="width: 130px;">
             <select id="edit-papersize">
@@ -440,17 +444,19 @@
             </select>
             <span class="select-arrow">&#8964;</span>
           </div>
-          <button id="edit-papersize-all" class="opt-toggle-btn" title="Áp dụng cho tất cả các trang">All</button>
         </div>
 
-        <div class="etb-divider" style="height: 24px; margin: 0 16px;"></div>
+        <div class="etb-divider" style="height: 24px; margin: 0 8px;"></div>
 
         <div class="edit-rotate-row">
           <label class="pdf-opt-label" style="min-width: auto;">Rotate page</label>
           <button class="opt-action-btn" id="edit-rotate-90">90&deg;</button>
           <button class="opt-action-btn" id="edit-rotate-ccw">-90&deg;</button>
-          <button id="edit-rotate-all-toggle" class="opt-toggle-btn" title="Áp dụng xoay cho tất cả các trang">All</button>
         </div>
+
+        <div class="etb-divider" style="height: 24px; margin: 0 8px;"></div>
+
+        <button id="edit-crop-btn" class="opt-action-btn">Crop PDF</button>
       </div>
     </div>
   </section>
@@ -461,25 +467,15 @@
 <script src="js/utils.js"></script>
 <script src="js/barcode.js"></script>
 <script src="js/pdf.js"></script>
+<!-- edit-pdf modules — load theo thứ tự phụ thuộc -->
+<script src="js/edit-pdf-state.js"></script>
+<script src="js/edit-pdf-canvas.js"></script>
+<script src="js/edit-pdf-shapes.js"></script>
+<script src="js/edit-pdf-export.js"></script>
+<script src="js/edit-pdf-toolbar.js"></script>
+<script src="js/edit-pdf-dropzone.js"></script>
 <script src="js/edit-pdf.js"></script>
 <script src="js/app.js"></script>
-<script>
-  // Populate font select after DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
-    const fontSel = document.getElementById('edit-font');
-    if (fontSel) {
-      ['Arial','Helvetica','Georgia','Times New Roman','Courier New',
-       'Roboto','Open Sans','Lato','Montserrat','Raleway',
-       'Oswald','Playfair Display','Merriweather','Nunito','Poppins',
-       'Source Sans Pro','Ubuntu','PT Serif','Quicksand','Josefin Sans'
-      ].forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f; opt.textContent = f;
-        opt.style.fontFamily = f;
-        fontSel.appendChild(opt);
-      });
-    }
-  });
-</script>
+<!-- Font select populated by _populateFontSelect() in edit-pdf.js -->
 </body>
 </html>

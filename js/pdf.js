@@ -104,10 +104,17 @@ class DropZone {
         img.alt = item.file.name;
         thumb.appendChild(img);
       } else {
-        // PDF thumb
+        // PDF thumb — dùng DOM API để tránh XSS từ tên file
         const inner = document.createElement('div');
         inner.className = 'dz-thumb-pdf';
-        inner.innerHTML = `<span class="pdf-icon">📄</span><span class="pdf-name">${item.file.name}</span>`;
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'pdf-icon';
+        iconSpan.textContent = '📄';
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'pdf-name';
+        nameSpan.textContent = item.file.name; // safe: textContent không interpret HTML
+        inner.appendChild(iconSpan);
+        inner.appendChild(nameSpan);
         thumb.appendChild(inner);
       }
 
@@ -306,23 +313,8 @@ function resizeImageDataURL(dataURL, scale) {
   });
 }
 
-function convertToPNG(dataURL) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.src = dataURL;
-  });
-}
+// convertToPNG đã được chuyển vào utils.js — dùng chung với edit-pdf.js
 
-/* ────────────────────────────────────────────
-   INIT
-   ──────────────────────────────────────────── */
 /* ────────────────────────────────────────────
    INIT
    ──────────────────────────────────────────── */
