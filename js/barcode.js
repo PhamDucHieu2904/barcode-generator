@@ -37,6 +37,7 @@ const BARCODE_META = {
   UPCA:    { label: 'Nhập UPC-A',       hint: 'Nhập 11 chữ số — check digit cuối tự động tính.',      placeholder: '01234567890',     onlyDigits: true,  maxLen: 11 },
   ITF14:   { label: 'Nhập ITF 14',      hint: 'Nhập 13 chữ số — check digit cuối tự động tính.',      placeholder: '1234567890123',   onlyDigits: true,  maxLen: 13 },
   CODE128: { label: 'Nhập Code 128',    hint: 'Nhập chuỗi ký tự bất kỳ. Code 128 tự tính check.',    placeholder: 'ABC-123',         onlyDigits: false, maxLen: 48 },
+  GS1128:  { label: 'Nhập GS1-128',     hint: 'Nhập AI trong ngoặc đơn, ví dụ: (01)12345678901231(10)LOT001',  placeholder: '(01)12345678901231', onlyDigits: false, maxLen: 80 },
   QR:      { label: 'Nhập nội dung QR', hint: 'Nhập văn bản, URL, số điện thoại…',                    placeholder: 'https://example.com', onlyDigits: false, maxLen: 500 },
 };
 
@@ -91,6 +92,7 @@ function getFullCode(raw, type) {
     case 'UPCA':    return calcUPCA(raw);
     case 'ITF14':   return calcITF14(raw);
     case 'CODE128':
+    case 'GS1128':
     case 'QR':      return raw.trim() || null;
     default:        return null;
   }
@@ -103,15 +105,18 @@ function validateFull(full, type) {
     case 'UPCA':    return /^\d{12}$/.test(full) ? null : 'UPC-A cần đúng 12 chữ số';
     case 'ITF14':   return /^\d{14}$/.test(full) ? null : 'ITF-14 cần đúng 14 chữ số';
     case 'CODE128': return full.length > 0 ? null : 'Code 128 không được để trống';
+    case 'GS1128':  return /\(\d{2,4}\)/.test(full) ? null : 'GS1-128 cần ít nhất một Application Identifier, ví dụ: (01)...';
     case 'QR':      return full.length > 0 ? null : 'QR không được để trống';
     default:        return null;
   }
 }
 
 function jsFormat(type) {
-  return type === 'ITF14' ? 'ITF14' :
-         type === 'EAN13' ? 'EAN13' :
-         type === 'UPCA'  ? 'UPC'   : 'CODE128';
+  if (type === 'ITF14')  return 'ITF14';
+  if (type === 'EAN13')  return 'EAN13';
+  if (type === 'UPCA')   return 'UPC';
+  if (type === 'GS1128') return 'GS1-128';
+  return 'CODE128';
 }
 
 function barcodeOpts(overrides = {}) {
