@@ -292,6 +292,7 @@ function _finalizeLine(endPos, pg, overlayEl, ev) {
   pg.overlayObjects.push(newObj);
   _renderOverlayObject(newObj, overlayEl, pg);
   _selectObject(newObj, pg);
+  _saveHistory();
 }
 
 // =========================================================
@@ -368,6 +369,8 @@ function _startShapeDrag(e, startPos, pg, overlayEl, isShift) {
       pg.overlayObjects = pg.overlayObjects.filter(o => o.id !== currentObj.id);
       const objEl = overlayEl.querySelector(`[data-obj-id="${currentObj.id}"]`);
       if (objEl) objEl.remove();
+    } else if (currentObj) {
+      _saveHistory();
     }
   }
 

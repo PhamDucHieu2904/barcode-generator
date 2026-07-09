@@ -18,6 +18,12 @@ let editPages = [], editSelectedPage = null, editPdfOrigBytes = null, editDragSr
 let editZoom = 1;
 let _clipboard = null; // Lưu object đã copy (Ctrl+C)
 
+// ── Lịch sử Undo/Redo ──
+const MAX_HISTORY = 15;
+let editHistory = [];
+let editHistoryIndex = -1;
+
+
 // ── Shape tool state ──
 let activeShapeTool = null; // 'rect' | 'triangle' | 'ellipse' | 'line' | null
 
@@ -51,3 +57,90 @@ function hexToRgb(hex) {
  * Dùng chung bởi mọi module.
  */
 function _getCurrentPg() { if (!editSelectedPage) return null; return editPages.find(p => p.id === editSelectedPage) || null; }
+
+/* ════════════════════════════════════════════
+   UNDO / REDO HISTORY MANAGER
+   ════════════════════════════════════════════ */
+
+/**
+ * Lưu trạng thái hiện tại vào history. 
+ * Gọi hàm này SAU MỖI THAO TÁC thay đổi.
+ */
+function _saveHistory() {
+  if (editPages.length === 0) return;
+
+  // Clone sâu overlayObjects để không bị dính tham chiếu (reference),
+  // nhưng giữ nguyên tham chiếu tới pdfBytes / imageDataURL để không ngốn RAM.
+  const stateCopy = editPages.map(pg => ({
+    ...pg,
+    overlayObjects: pg.overlayObjects.map(obj => ({ ...obj }))
+  }));
+
+  // Nếu đang ở giữa History (đã Undo) mà làm thao tác mới, thì cắt bỏ đoạn History tương lai
+  if (editHistoryIndex < editHistory.length - 1) {
+    editHistory = editHistory.slice(0, editHistoryIndex + 1);
+  }
+
+  editHistory.push(stateCopy);
+
+  // Giới hạn max history (tránh tràn RAM)
+  if (editHistory.length > MAX_HISTORY) {
+    editHistory.shift();
+  } else {
+    editHistoryIndex++;
+  }
+}
+
+/**
+ * Undo thao tác
+ */
+function _undo() {
+  if (editHistoryIndex > 0) {
+    editHistoryIndex--;
+    _restoreHistory(editHistory[editHistoryIndex]);
+  }
+}
+
+/**
+ * Redo thao tác
+ */
+function _redo() {
+  if (editHistoryIndex < editHistory.length - 1) {
+    editHistoryIndex++;
+    _restoreHistory(editHistory[editHistoryIndex]);
+  }
+}
+
+/**
+ * Phục hồi trạng thái từ History state
+ */
+function _restoreHistory(state) {
+  // Clone lại state từ history ra hiện tại
+  editPages = state.map(pg => ({
+    ...pg,
+    overlayObjects: pg.overlayObjects.map(obj => ({ ...obj }))
+  }));
+
+  // Cập nhật lại UI
+  _renderEditThumbs();
+
+  const current = _getCurrentPg();
+  if (current) {
+    _openPageEditor(current);
+  } else if (editPages.length > 0) {
+    editSelectedPage = editPages[0].id;
+    _openPageEditor(editPages[0]);
+  }
+
+  // Khôi phục Selected Object nếu nó vẫn tồn tại
+  if (editSelectedObj) {
+    const curPg = _getCurrentPg();
+    const stillExists = curPg && curPg.overlayObjects.find(o => o.id === editSelectedObj);
+    if (!stillExists) {
+      editSelectedObj = null;
+      _updateTextControls(null);
+    } else {
+      _updateTextControls(stillExists);
+    }
+  }
+}

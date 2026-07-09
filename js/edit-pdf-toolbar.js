@@ -29,6 +29,7 @@ function _bindKeyboardShortcuts() {
         }
         editSelectedObj = null;
         _updateTextControls(null);
+        _saveHistory();
       }
     }
 
@@ -61,8 +62,22 @@ function _bindKeyboardShortcuts() {
           _renderOverlayObject(newObj, area._overlayEl, pg);
           _selectObject(newObj, pg);
         }
+        _saveHistory();
       }
       e.preventDefault();
+    }
+    
+    // ── Ctrl+Z / Ctrl+Y: Undo / Redo ──
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      if (e.shiftKey) _redo();
+      else _undo();
+      e.preventDefault();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      _redo();
+      e.preventDefault();
+      return;
     }
     // ── Enter: Apply crop ──
     if (e.key === 'Enter') {
@@ -99,6 +114,7 @@ function _bindEditButtons() {
       const area = document.getElementById('edit-canvas-area');
       if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg);
       _selectObject(obj, pg);
+      _saveHistory();
     });
   }
 
@@ -125,6 +141,7 @@ function _bindEditButtons() {
         const area = document.getElementById('edit-canvas-area');
         if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg);
         _selectObject(obj, pg);
+        _saveHistory();
       });
       input.click();
     });
@@ -201,6 +218,7 @@ function _bindEditButtons() {
           if (textDiv) textDiv.style.textAlign = align;
         }
       }
+      _saveHistory();
     });
   });
 
@@ -291,6 +309,7 @@ function _bindEditButtons() {
     const currentPg = _getCurrentPg();
     if (currentPg) _openPageEditor(currentPg);
     _renderEditThumbs();
+    _saveHistory();
   };
 
   const rotate90Btn = document.getElementById('edit-rotate-90');
@@ -323,6 +342,7 @@ function _bindEditButtons() {
         const area = document.getElementById('edit-canvas-area');
         if (area && area._overlayEl) _renderOverlayObject(obj, area._overlayEl, pg);
         _selectObject(obj, pg);
+        _saveHistory();
       }
     });
   }
@@ -353,7 +373,10 @@ function _bindTextFormatControls() {
   ['edit-font', 'edit-fontsize', 'edit-fontstyle', 'edit-fontcolor',
    'edit-fillcolor', 'edit-strokecolor', 'edit-strokestyle', 'edit-strokewidth'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) { el.addEventListener('input', () => _applyTextFormat()); el.addEventListener('change', () => _applyTextFormat()); }
+    if (el) { 
+      el.addEventListener('input', () => _applyTextFormat()); 
+      el.addEventListener('change', () => { _applyTextFormat(); _saveHistory(); }); 
+    }
   });
 
   // None buttons (fill / stroke)
@@ -364,12 +387,14 @@ function _bindTextFormatControls() {
     fillNoneBtn.addEventListener('click', () => {
       fillNoneBtn.classList.toggle('active');
       _applyTextFormat();
+      _saveHistory();
     });
   }
   if (strokeNoneBtn) {
     strokeNoneBtn.addEventListener('click', () => {
       strokeNoneBtn.classList.toggle('active');
       _applyTextFormat();
+      _saveHistory();
     });
   }
 }

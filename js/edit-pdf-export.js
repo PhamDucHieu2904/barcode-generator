@@ -115,7 +115,7 @@ async function _applyCropToPage(currentPg, cropbox) {
         
         pg.origWidthPt = pg.widthPt = pdfW;
         pg.origHeightPt = pg.heightPt = pdfH;
-        pg.rotation = 0; 
+        // KHÔNG reset pg.rotation để giữ nguyên góc xoay mà user đã chọn
         
         const pdf = await pdfjsLib.getDocument({ data: pg.pdfBytes }).promise;
         const pdfPage = await pdf.getPage(1);
@@ -141,7 +141,7 @@ async function _applyCropToPage(currentPg, cropbox) {
         pg.renderURL = pg.imageDataURL;
         pg.origWidthPt = pg.widthPt = pdfW;
         pg.origHeightPt = pg.heightPt = pdfH;
-        pg.rotation = 0;
+        // KHÔNG reset pg.rotation
       }
       
       pg.overlayObjects = pg.overlayObjects.filter(o => o.id !== cropbox.id && o.type !== 'cropbox');
@@ -154,6 +154,7 @@ async function _applyCropToPage(currentPg, cropbox) {
     document.body.style.cursor = '';
     _renderEditThumbs();
     _openPageEditor(currentPg);
+    _saveHistory();
   } catch (e) {
     document.body.style.cursor = '';
     console.error(e);

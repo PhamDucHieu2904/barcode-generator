@@ -3,17 +3,20 @@
    ══════════════════════════════════════════════ */
 
 /**
- * Trigger a file download from a Blob.
- * @param {Blob} blob
+ * Trigger a file download from a Blob or a data URL string.
+ * @param {Blob|string} data
  * @param {string} filename
  */
-function triggerDownload(blob, filename) {
-  const url = URL.createObjectURL(blob);
+function triggerDownload(data, filename) {
+  const isString = typeof data === 'string';
+  const url = isString ? data : URL.createObjectURL(data);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  if (!isString) {
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
 }
 
 /**

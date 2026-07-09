@@ -60,14 +60,16 @@ const barcodeProps = {
 };
 
 /* ── DOM refs ── */
-const inputsList  = document.getElementById('inputs-list');
-const inputLabel  = document.getElementById('input-label');
-const inputHint   = document.getElementById('input-hint');
-const addBtn      = document.getElementById('add-btn');
-const downloadBtn = document.getElementById('download-btn');
-const errorMsg    = document.getElementById('error-msg');
-const a4El        = document.getElementById('a4');
-const placeholder = document.getElementById('placeholder');
+const inputsList   = document.getElementById('inputs-list');
+const inputLabel   = document.getElementById('input-label');
+const inputHint    = document.getElementById('input-hint');
+const addBtn       = document.getElementById('add-btn');
+const downloadBtn  = document.getElementById('download-btn');
+const downloadPdfBtn = document.getElementById('download-pdf-btn');
+const downloadPngBtn = document.getElementById('download-png-btn');
+const errorMsg     = document.getElementById('error-msg');
+const cardsEl      = document.getElementById('barcode-cards');
+const placeholder  = document.getElementById('placeholder');
 
 /* ── Props DOM refs ── */
 const propFont       = document.getElementById('prop-font');
@@ -280,14 +282,14 @@ addBtn.addEventListener('click', () => {
   if (codes.length < MAX_CODES) { codes.push(''); renderInputs(); }
 });
 
-/* ── Render preview ── */
+/* ── Render preview (card layout) ── */
 function renderPreview() {
-  a4El.innerHTML = '';
+  cardsEl.innerHTML = '';
   const filledCodes = codes.filter(c => c && c.trim());
 
   if (!filledCodes.length) {
     placeholder.style.display = 'flex';
-    a4El.appendChild(placeholder);
+    cardsEl.appendChild(placeholder);
     return;
   }
   placeholder.style.display = 'none';
@@ -296,14 +298,14 @@ function renderPreview() {
     const full = getFullCode(raw, currentType);
     if (!full || validateFull(full, currentType)) return;
 
-    const wrap = document.createElement('div');
-    wrap.className = 'barcode-preview-item';
+    const card = document.createElement('div');
+    card.className = 'barcode-card';
 
     if (currentType === 'QR') {
       const qrDiv = document.createElement('div');
       qrDiv.id = `qr-prev-${idx}`;
-      wrap.appendChild(qrDiv);
-      a4El.appendChild(wrap);
+      card.appendChild(qrDiv);
+      cardsEl.appendChild(card);
       new QRCode(qrDiv, {
         text: full,
         width:  barcodeProps.qrSize,
@@ -314,79 +316,233 @@ function renderPreview() {
       });
     } else {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      wrap.appendChild(svg);
-      a4El.appendChild(wrap);
+      card.appendChild(svg);
+      cardsEl.appendChild(card);
       try {
         JsBarcode(svg, full, barcodeOpts({ format: jsFormat(currentType) }));
       } catch (e) {
-        // Hiển thị lỗi trực tiếp trong preview thay vì im lặng
-        wrap.innerHTML = `<div style="color:#e55;font-size:12px;padding:8px;word-break:break-all;">Lỗi: ${e.message || e}</div>`;
+        card.innerHTML = `<div style="color:#e55;font-size:12px;padding:8px;word-break:break-all;">Lỗi: ${e.message || e}</div>`;
       }
     }
   });
 }
 
-/* ── Download SVG ── */
+/* ── Init all download buttons ── */
 function initBarcodeDownload() {
-  downloadBtn.addEventListener('click', () => {
-    const filledCodes = codes.filter(c => c && c.trim());
-    if (!filledCodes.length) { errorMsg.textContent = 'Vui lòng nhập ít nhất một mã.'; return; }
 
+  function getValidCodes() {
+    const filledCodes = codes.filter(c => c && c.trim());
+    if (!filledCodes.length) { errorMsg.textContent = 'Vui lòng nhập ít nhất một mã.'; return null; }
     const fullCodes = [];
     for (const raw of filledCodes) {
       const full = getFullCode(raw, currentType);
-      if (!full) { errorMsg.textContent = `Mã "${raw}" chưa đủ ký tự.`; return; }
+      if (!full) { errorMsg.textContent = `Mã "${raw}" chưa đủ ký tự.`; return null; }
       const err = validateFull(full, currentType);
-      if (err) { errorMsg.textContent = err; return; }
+      if (err) { errorMsg.textContent = err; return null; }
       fullCodes.push(full);
     }
     errorMsg.textContent = '';
+    return fullCodes;
+  }
 
+  // Download SVG
+  downloadBtn.addEventListener('click', () => {
+    const fullCodes = getValidCodes();
+    if (!fullCodes) return;
     if (currentType === 'QR') downloadQRSVG(fullCodes);
     else downloadBarcodeSVG(fullCodes);
   });
+
+  // Download PDF
+  downloadPdfBtn.addEventListener('click', async () => {
+    const fullCodes = getValidCodes();
+    if (!fullCodes) return;
+    downloadPdfBtn.disabled = true;
+    downloadPdfBtn.textContent = 'Generating...';
+    try {
+      if (currentType === 'QR') await downloadQRPDF(fullCodes);
+      else await downloadBarcodePDF(fullCodes);
+    } finally {
+      downloadPdfBtn.disabled = false;
+      downloadPdfBtn.textContent = 'Download PDF';
+    }
+  });
+
+  // Download PNG
+  downloadPngBtn.addEventListener('click', async () => {
+    const fullCodes = getValidCodes();
+    if (!fullCodes) return;
+    downloadPngBtn.disabled = true;
+    downloadPngBtn.textContent = 'Generating...';
+    try {
+      if (currentType === 'QR') await downloadQRPNG(fullCodes);
+      else await downloadBarcodePNG(fullCodes);
+    } finally {
+      downloadPngBtn.disabled = false;
+      downloadPngBtn.textContent = 'Download PNG';
+    }
+  });
 }
 
+/* ════════════════════════════════════════════
+   DOWNLOAD FUNCTIONS
+   ════════════════════════════════════════════ */
+
+/**
+ * Chuyển SVG element thành PNG Uint8Array để nhúng vào pdf-lib
+ */
+function svgToPngBytes(svgEl, w, h) {
+  return new Promise((resolve) => {
+    const serialized = new XMLSerializer().serializeToString(svgEl);
+    const blob = new Blob([serialized], { type: 'image/svg+xml' });
+    const url  = URL.createObjectURL(blob);
+    const img  = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = w * 2;  // @2x cho nét hơn
+      canvas.height = h * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob2 => {
+        if (!blob2) { resolve(null); return; }
+        blob2.arrayBuffer().then(buf => resolve(new Uint8Array(buf)));
+      }, 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+/**
+ * Chuyển SVG element thành PNG dataURL để download trực tiếp
+ */
+function svgToDataURL(svgEl, w, h) {
+  return new Promise((resolve) => {
+    const serialized = new XMLSerializer().serializeToString(svgEl);
+    const blob = new Blob([serialized], { type: 'image/svg+xml' });
+    const url  = URL.createObjectURL(blob);
+    const img  = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = w * 2;
+      canvas.height = h * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+/* ── Download SVG: 1 artboard, xếp dọc từ trên xuống ── */
 function downloadBarcodeSVG(fullCodes) {
-  const A4_W = 793.7, A4_H = 1122.5;
-  const margin = 30, gap = 20;
-  const itemW  = barcodeProps.barWidth * 100 + 40;
-  const itemH  = barcodeProps.barHeight + 40;
-  const cols   = Math.max(1, Math.floor((A4_W - margin * 2 + gap) / (itemW + gap)));
-
-  const ns = 'http://www.w3.org/2000/svg';
-  const root = document.createElementNS(ns, 'svg');
-  root.setAttribute('xmlns', ns);
-  root.setAttribute('viewBox', `0 0 ${A4_W} ${A4_H}`);
-  root.setAttribute('width',  `${A4_W}`);
-  root.setAttribute('height', `${A4_H}`);
-
-  const bg = document.createElementNS(ns, 'rect');
-  bg.setAttribute('width', A4_W); bg.setAttribute('height', A4_H); bg.setAttribute('fill', 'white');
-  root.appendChild(bg);
-
+  const padding = 30, gap = 20;
+  const ns  = 'http://www.w3.org/2000/svg';
   const fmt = jsFormat(currentType);
-  fullCodes.forEach((code, idx) => {
+
+  // Render tất cả vào temp SVG để lấy kích thước thực tế
+  const rendered = [];
+  for (const code of fullCodes) {
     const tmp = document.createElementNS(ns, 'svg');
     try {
       JsBarcode(tmp, code, barcodeOpts({ format: fmt }));
-      const bW = parseFloat(tmp.getAttribute('width')  || itemW);
-      const bH = parseFloat(tmp.getAttribute('height') || itemH);
-      const col = idx % cols, row = Math.floor(idx / cols);
-      const x = margin + col * (bW + gap);
-      const y = margin + row * (bH + gap);
-      const inner = document.createElementNS(ns, 'svg');
-      inner.setAttribute('x', x); inner.setAttribute('y', y);
-      inner.setAttribute('width', bW); inner.setAttribute('height', bH);
-      inner.innerHTML = tmp.innerHTML;
-      root.appendChild(inner);
+      rendered.push({
+        w:    parseFloat(tmp.getAttribute('width'))  || 200,
+        h:    parseFloat(tmp.getAttribute('height')) || 120,
+        html: tmp.innerHTML,
+      });
     } catch(e) {}
-  });
+  }
+  if (!rendered.length) return;
+
+  const maxW   = Math.max(...rendered.map(r => r.w)) + padding * 2;
+  const totalH = rendered.reduce((s, r) => s + r.h + gap, 0) - gap + padding * 2;
+
+  const root = document.createElementNS(ns, 'svg');
+  root.setAttribute('xmlns', ns);
+  root.setAttribute('viewBox', `0 0 ${maxW} ${totalH}`);
+  root.setAttribute('width',  String(maxW));
+  root.setAttribute('height', String(totalH));
+
+  const bg = document.createElementNS(ns, 'rect');
+  bg.setAttribute('width', maxW); bg.setAttribute('height', totalH); bg.setAttribute('fill', 'white');
+  root.appendChild(bg);
+
+  let y = padding;
+  for (const r of rendered) {
+    const inner = document.createElementNS(ns, 'svg');
+    inner.setAttribute('x', padding);
+    inner.setAttribute('y', String(y));
+    inner.setAttribute('width',  String(r.w));
+    inner.setAttribute('height', String(r.h));
+    inner.innerHTML = r.html;
+    root.appendChild(inner);
+    y += r.h + gap;
+  }
 
   triggerDownload(
     new Blob([new XMLSerializer().serializeToString(root)], { type: 'image/svg+xml' }),
     'barcodes.svg'
   );
+}
+
+/* ── Download PDF: mỗi barcode = 1 trang ── */
+async function downloadBarcodePDF(fullCodes) {
+  const { PDFDocument } = PDFLib;
+  const pdfDoc = await PDFDocument.create();
+  const ns  = 'http://www.w3.org/2000/svg';
+  const fmt = jsFormat(currentType);
+  const pad = 30;
+
+  for (const code of fullCodes) {
+    const tmp = document.createElementNS(ns, 'svg');
+    try {
+      JsBarcode(tmp, code, barcodeOpts({ format: fmt }));
+    } catch(e) { continue; }
+
+    const bW = parseFloat(tmp.getAttribute('width'))  || 200;
+    const bH = parseFloat(tmp.getAttribute('height')) || 120;
+    const pngBytes = await svgToPngBytes(tmp, bW, bH);
+    if (!pngBytes) continue;
+
+    const page = pdfDoc.addPage([bW + pad * 2, bH + pad * 2]);
+    const pngImage = await pdfDoc.embedPng(pngBytes);
+    page.drawImage(pngImage, { x: pad, y: pad, width: bW, height: bH });
+  }
+
+  const bytes = await pdfDoc.save();
+  triggerDownload(new Blob([bytes], { type: 'application/pdf' }), 'barcodes.pdf');
+}
+
+/* ── Download PNG: mỗi barcode = 1 file PNG ── */
+async function downloadBarcodePNG(fullCodes) {
+  const ns  = 'http://www.w3.org/2000/svg';
+  const fmt = jsFormat(currentType);
+
+  for (let i = 0; i < fullCodes.length; i++) {
+    const tmp = document.createElementNS(ns, 'svg');
+    try {
+      JsBarcode(tmp, fullCodes[i], barcodeOpts({ format: fmt }));
+    } catch(e) { continue; }
+
+    const bW = parseFloat(tmp.getAttribute('width'))  || 200;
+    const bH = parseFloat(tmp.getAttribute('height')) || 120;
+    const dataURL = await svgToDataURL(tmp, bW, bH);
+    if (!dataURL) continue;
+
+    const fname = fullCodes.length > 1 ? `barcode_${i + 1}.png` : 'barcode.png';
+    triggerDownload(dataURL, fname);
+    if (i < fullCodes.length - 1) await new Promise(r => setTimeout(r, 150));
+  }
 }
 
 /**
@@ -412,29 +568,31 @@ function renderQRCodeToDataURL(text, opts) {
   });
 }
 
+/* ── QR Download SVG: 1 artboard, xếp dọc ── */
 async function downloadQRSVG(fullCodes) {
-  const A4_W = 793.7, A4_H = 1122.5;
-  const margin = 30, gap = 20;
-  const qrSize = barcodeProps.qrSize;
-  const cols   = Math.max(1, Math.floor((A4_W - margin * 2 + gap) / (qrSize + gap)));
+  const padding = 30, gap = 20;
+  const qrSize  = barcodeProps.qrSize;
+  const textH   = barcodeProps.showText ? barcodeProps.fontSize + 8 : 0;
+  const itemH   = qrSize + textH;
+
+  const totalH = fullCodes.length * (itemH + gap) - gap + padding * 2;
+  const totalW = qrSize + padding * 2;
 
   const ns = 'http://www.w3.org/2000/svg';
   const root = document.createElementNS(ns, 'svg');
   root.setAttribute('xmlns', ns);
-  root.setAttribute('viewBox', `0 0 ${A4_W} ${A4_H}`);
-  root.setAttribute('width',  `${A4_W}`);
-  root.setAttribute('height', `${A4_H}`);
+  root.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+  root.setAttribute('width',  String(totalW));
+  root.setAttribute('height', String(totalH));
   const bg = document.createElementNS(ns, 'rect');
-  bg.setAttribute('width', A4_W); bg.setAttribute('height', A4_H); bg.setAttribute('fill', 'white');
+  bg.setAttribute('width', totalW); bg.setAttribute('height', totalH); bg.setAttribute('fill', 'white');
   root.appendChild(bg);
 
   for (let idx = 0; idx < fullCodes.length; idx++) {
     const code = fullCodes[idx];
-    const col = idx % cols, row = Math.floor(idx / cols);
-    const x = margin + col * (qrSize + gap);
-    const y = margin + row * (qrSize + gap + 18);
+    const x = padding;
+    const y = padding + idx * (itemH + gap);
 
-    // Render QR thành PNG một cách an toàn, không phụ thuộc magic timeout
     const dataURL = await renderQRCodeToDataURL(code, {
       text: code,
       width:  qrSize * 2,
@@ -454,7 +612,7 @@ async function downloadQRSVG(fullCodes) {
       if (barcodeProps.showText) {
         const txt = document.createElementNS(ns, 'text');
         txt.setAttribute('x', x + qrSize / 2);
-        txt.setAttribute('y', y + qrSize + 13);
+        txt.setAttribute('y', y + qrSize + barcodeProps.fontSize);
         txt.setAttribute('text-anchor', 'middle');
         txt.setAttribute('font-size', barcodeProps.fontSize);
         txt.setAttribute('font-family', barcodeProps.font + ', sans-serif');
@@ -471,12 +629,65 @@ async function downloadQRSVG(fullCodes) {
   );
 }
 
+/* ── QR Download PDF: mỗi QR = 1 trang ── */
+async function downloadQRPDF(fullCodes) {
+  const { PDFDocument } = PDFLib;
+  const pdfDoc = await PDFDocument.create();
+  const qrSize = barcodeProps.qrSize;
+  const pad    = 30;
+
+  for (const code of fullCodes) {
+    const dataURL = await renderQRCodeToDataURL(code, {
+      text: code,
+      width:  qrSize * 2,
+      height: qrSize * 2,
+      colorDark:  barcodeProps.lineColor,
+      colorLight: barcodeProps.bgColor,
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+    if (!dataURL) continue;
+
+    // dataURL → Uint8Array
+    const res    = await fetch(dataURL);
+    const blob   = await res.blob();
+    const buffer = await blob.arrayBuffer();
+    const bytes  = new Uint8Array(buffer);
+
+    const page     = pdfDoc.addPage([qrSize + pad * 2, qrSize + pad * 2]);
+    const pngImage = await pdfDoc.embedPng(bytes);
+    page.drawImage(pngImage, { x: pad, y: pad, width: qrSize, height: qrSize });
+  }
+
+  const bytes = await pdfDoc.save();
+  triggerDownload(new Blob([bytes], { type: 'application/pdf' }), 'qrcodes.pdf');
+}
+
+/* ── QR Download PNG: mỗi QR = 1 file PNG ── */
+async function downloadQRPNG(fullCodes) {
+  for (let i = 0; i < fullCodes.length; i++) {
+    const code = fullCodes[i];
+    const dataURL = await renderQRCodeToDataURL(code, {
+      text: code,
+      width:  barcodeProps.qrSize * 2,
+      height: barcodeProps.qrSize * 2,
+      colorDark:  barcodeProps.lineColor,
+      colorLight: barcodeProps.bgColor,
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+    if (!dataURL) continue;
+
+    const fname = fullCodes.length > 1 ? `qrcode_${i + 1}.png` : 'qrcode.png';
+    triggerDownload(dataURL, fname);
+    if (i < fullCodes.length - 1) await new Promise(r => setTimeout(r, 150));
+  }
+}
+
 /* ── Public API ── */
 
 /**
  * Chuyển sang loại barcode khác. Được gọi từ app.js.
  * Thay vì để app.js ghi trực tiếp vào biến internal, ta expose API rõ ràng.
- * @param {string} type — 'EAN13' | 'UPCA' | 'ITF14' | 'CODE128' | 'QR'
+ * @param {string} type — 'EAN13' | 'UPCA' | 'ITF14' | 'CODE128' | 'GS1128' | 'QR'
  */
 function switchBarcodeType(type) {
   currentType = type;

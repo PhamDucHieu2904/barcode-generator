@@ -59,6 +59,7 @@ async function _handleEditFileDrop(files) {
     }
   }
   _renderEditThumbs(); _updateEditPlaceholder();
+  _saveHistory();
 }
 
 async function _loadPdfPages(arrayBuffer) {

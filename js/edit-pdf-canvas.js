@@ -193,10 +193,12 @@ function _renderOverlayObject(obj, overlayEl, pg) {
     });
 
     textDiv.addEventListener('blur', () => {
+      const oldContent = obj.content;
       obj.content = textDiv.textContent;
       textDiv.contentEditable = 'false'; textDiv.style.pointerEvents = 'none';
       el.style.cursor = 'move'; textDiv.style.cursor = 'move';
       el.style.userSelect = 'none'; textDiv.style.userSelect = 'none';
+      if (oldContent !== obj.content) _saveHistory();
     });
     textDiv.addEventListener('keydown', e => e.stopPropagation());
 
@@ -232,6 +234,7 @@ function _renderOverlayObject(obj, overlayEl, pg) {
     pg.overlayObjects = pg.overlayObjects.filter(o => o.id !== obj.id);
     el.remove();
     if (editSelectedObj === obj.id) { editSelectedObj = null; _updateTextControls(null); }
+    _saveHistory();
   });
   el.appendChild(delBtn);
 
@@ -245,13 +248,14 @@ function _renderOverlayObject(obj, overlayEl, pg) {
   handles.forEach(h => {
     const rh = document.createElement('div');
     rh.className = `obj-resize-handle ${h.cls}`;
-    // Tùy chỉnh con trỏ cho cropbox
-    if (obj.type === 'cropbox') {
-        if (h.dir === 'n' || h.dir === 's') rh.style.cursor = 'ns-resize';
-        if (h.dir === 'e' || h.dir === 'w') rh.style.cursor = 'ew-resize';
-        if (h.dir === 'ne' || h.dir === 'sw') rh.style.cursor = 'nesw-resize';
-        if (h.dir === 'nw' || h.dir === 'se') rh.style.cursor = 'nwse-resize';
-    }
+    
+    // Tùy chỉnh con trỏ sao cho hiển thị đúng hướng trên màn hình khi page bị xoay
+    const isRot = pg && (pg.rotation === 90 || pg.rotation === 270);
+    if (h.dir === 'n' || h.dir === 's') rh.style.cursor = isRot ? 'ew-resize' : 'ns-resize';
+    if (h.dir === 'e' || h.dir === 'w') rh.style.cursor = isRot ? 'ns-resize' : 'ew-resize';
+    if (h.dir === 'ne' || h.dir === 'sw') rh.style.cursor = isRot ? 'nwse-resize' : 'nesw-resize';
+    if (h.dir === 'nw' || h.dir === 'se') rh.style.cursor = isRot ? 'nesw-resize' : 'nwse-resize';
+
     _bindResizeHandle(el, obj, rh, h.dir);
     el.appendChild(rh);
   });
@@ -311,19 +315,34 @@ function _bindObjectMove(el, obj, pg) {
       let localDx = dx, localDy = dy;
 
       if (pg.rotation === 90) {
-        localDx = -dy; localDy = dx;
+        localDx = dy; localDy = -dx;
       } else if (pg.rotation === 180) {
         localDx = -dx; localDy = -dy;
       } else if (pg.rotation === 270) {
-        localDx = dy; localDy = -dx;
+        localDx = -dy; localDy = dx;
       }
 
-      obj.x = Math.max(0, startOX + localDx); 
-      obj.y = Math.max(0, startOY + localDy);
+      let nx = startOX + localDx;
+      let ny = startOY + localDy;
+
+      if (obj.type === 'cropbox') {
+        nx = Math.max(0, Math.min(nx, pg.widthPt * editorScale - obj.w));
+        ny = Math.max(0, Math.min(ny, pg.heightPt * editorScale - obj.h));
+      } else {
+        nx = Math.max(0, nx);
+        ny = Math.max(0, ny);
+      }
+
+      obj.x = nx; 
+      obj.y = ny;
       el.style.left = obj.x + 'px'; 
       el.style.top = obj.y + 'px';
     }
-    function onUp() { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+    function onUp() { 
+      document.removeEventListener('mousemove', onMove); 
+      document.removeEventListener('mouseup', onUp); 
+      if (obj.x !== startOX || obj.y !== startOY) _saveHistory();
+    }
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   });
 }
@@ -345,15 +364,22 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
       const pg = _getCurrentPg();
       if (pg) {
         if (pg.rotation === 90) {
-          const tmp = dx; dx = -dy; dy = tmp;
+          const tmp = dx; dx = dy; dy = -tmp;
         } else if (pg.rotation === 180) {
           dx = -dx; dy = -dy;
         } else if (pg.rotation === 270) {
-          const tmp = dx; dx = dy; dy = -tmp;
+          const tmp = dx; dx = -dy; dy = tmp;
         }
       }
 
-      // Xử lý kéo các hướng
+      // Giới hạn khung crop không được tràn ra ngoài trang PDF
+      if (obj.type === 'cropbox' && pg) {
+        if (dir.includes('e')) dx = Math.min(dx, pg.widthPt * editorScale - (startOX + startW));
+        if (dir.includes('w')) dx = Math.max(dx, -startOX);
+        if (dir.includes('s')) dy = Math.min(dy, pg.heightPt * editorScale - (startOY + startH));
+        if (dir.includes('n')) dy = Math.max(dy, -startOY);
+      }
+
       // Xử lý kéo các hướng
       if (dir === 'se') { 
         // Nếu là cropbox, cho phép resize tự do, còn lại khóa tỷ lệ
@@ -401,7 +427,11 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
       el.style.top = obj.y + 'px';
     }
     
-    function onUp() { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+    function onUp() { 
+      document.removeEventListener('mousemove', onMove); 
+      document.removeEventListener('mouseup', onUp); 
+      if (obj.w !== startW || obj.h !== startH || obj.x !== startOX || obj.y !== startOY) _saveHistory();
+    }
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   });
 }
