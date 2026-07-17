@@ -119,8 +119,8 @@
 .elb-divider { width: 20px; height: 1px; background: #e0e0e0; margin: 4px 0; flex-shrink: 0; }
 
 /* ── CANVAS AREA ── */
-.edit-canvas-area { flex: 1; display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 24px; position: relative; }
-.edit-page-canvas { position: relative; background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,0.13); border: 1px solid #ccc; flex-shrink: 0; transition: transform 0.3s ease; transform-origin: top center; }
+.edit-canvas-area { flex: 1; display: block; overflow: auto; padding: 24px; position: relative; text-align: center; }
+.edit-page-canvas { position: relative; background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,0.13); border: 1px solid #ccc; flex-shrink: 0; transform-origin: top left; text-align: left; }
 .edit-bg-layer { position: absolute; inset: 0; overflow: hidden; }
 .edit-page-hint { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #fdfdfd; color: #888; font-size: 16px; font-weight: bold; pointer-events: none; border: 2px dashed #ddd; margin: 16px; }
 .edit-page-hint::before { content: '📄'; font-size: 40px; margin-bottom: 12px; }

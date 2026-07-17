@@ -703,4 +703,56 @@ function _bindZoomControls() {
   if (zoomOutBtn) {
     zoomOutBtn.addEventListener('click', () => setZoom(editZoom - 0.2));
   }
+
+  const area = document.getElementById('edit-canvas-area');
+  if (area) {
+    area.addEventListener('wheel', e => {
+      if (e.altKey) {
+        e.preventDefault(); // Ngăn cuộn trang
+        const wrapper = document.getElementById('edit-page-wrapper');
+        if (!wrapper) return;
+        
+        const oldZoom = editZoom;
+        const zoomDelta = e.deltaY < 0 ? 0.2 : -0.2;
+        const newZoom = Math.max(1, Math.min(5, oldZoom + zoomDelta));
+        if (newZoom === oldZoom) return;
+
+        // Vị trí chuột so với wrapper trước khi zoom
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const mouseXRel = e.clientX - wrapperRect.left;
+        const mouseYRel = e.clientY - wrapperRect.top;
+        
+        const fracX = mouseXRel / wrapperRect.width;
+        const fracY = mouseYRel / wrapperRect.height;
+        
+        // Cập nhật zoom mới
+        editZoom = newZoom;
+        if (zoomInput) zoomInput.value = editZoom.toFixed(1);
+        _updateCanvasZoom();
+        
+        // Kích thước wrapper vừa bị thay đổi đồng bộ trong _updateCanvasZoom
+        const newWrapperWidth = wrapper.offsetWidth;
+        const newWrapperHeight = wrapper.offsetHeight;
+        
+        // Tọa độ kỳ vọng của điểm trỏ chuột trên wrapper sau khi zoom
+        const expectedMouseXRel = newWrapperWidth * fracX;
+        const expectedMouseYRel = newWrapperHeight * fracY;
+        
+        // Lấy lại bounding của area để tính offset
+        const areaRect = area.getBoundingClientRect();
+        
+        // Khoảng cách từ lề trái/trên của phần content đang scroll tới mép trái/trên của wrapper.
+        // Vì wrapper có margin: 0 auto; và area có padding: 24px;
+        const contentLeft = 24 + Math.max(0, (area.clientWidth - 48 - newWrapperWidth) / 2);
+        const contentTop = 24; // padding-top
+        
+        const absoluteMouseX = contentLeft + expectedMouseXRel;
+        const absoluteMouseY = contentTop + expectedMouseYRel;
+        
+        // Cuộn để giữ chuột ở vị trí cũ (trên màn hình)
+        area.scrollLeft = absoluteMouseX - (e.clientX - areaRect.left);
+        area.scrollTop = absoluteMouseY - (e.clientY - areaRect.top);
+      }
+    }, { passive: false });
+  }
 }
