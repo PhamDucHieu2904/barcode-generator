@@ -12,16 +12,12 @@ function _openPageEditor(pg) {
 
   const areaW = area.clientWidth || 600, areaH = area.clientHeight || 700;
   
-  const isRotated = pg.rotation === 90 || pg.rotation === 270;
-  const logicalW = isRotated ? pg.heightPt : pg.widthPt;
-  const logicalH = isRotated ? pg.widthPt : pg.heightPt;
-  
-  editorScale = Math.min((areaW - 32) / logicalW, (areaH - 32) / logicalH, 1.5);
+  editorScale = Math.min((areaW - 32) / pg.widthPt, (areaH - 32) / pg.heightPt, 1.5);
 
   const wrapper = document.createElement('div');
   wrapper.id = 'edit-page-wrapper';
-  wrapper.style.width = Math.round(logicalW * editorScale * editZoom) + 'px';
-  wrapper.style.height = Math.round(logicalH * editorScale * editZoom) + 'px';
+  wrapper.style.width = Math.round(pg.widthPt * editorScale * editZoom) + 'px';
+  wrapper.style.height = Math.round(pg.heightPt * editorScale * editZoom) + 'px';
   wrapper.style.display = 'flex';
   wrapper.style.alignItems = 'center';
   wrapper.style.justifyContent = 'center';
@@ -30,7 +26,7 @@ function _openPageEditor(pg) {
   pageEl.className = 'edit-page-canvas';
   pageEl.style.width = Math.round(pg.widthPt * editorScale) + 'px';
   pageEl.style.height = Math.round(pg.heightPt * editorScale) + 'px';
-  pageEl.style.transform = `scale(${editZoom}) rotate(${pg.rotation}deg)`;
+  pageEl.style.transform = `scale(${editZoom})`;
   pageEl.style.transformOrigin = 'center center';
   
   const bgLayer = document.createElement('div');
@@ -249,12 +245,11 @@ function _renderOverlayObject(obj, overlayEl, pg) {
     const rh = document.createElement('div');
     rh.className = `obj-resize-handle ${h.cls}`;
     
-    // Tùy chỉnh con trỏ sao cho hiển thị đúng hướng trên màn hình khi page bị xoay
-    const isRot = pg && (pg.rotation === 90 || pg.rotation === 270);
-    if (h.dir === 'n' || h.dir === 's') rh.style.cursor = isRot ? 'ew-resize' : 'ns-resize';
-    if (h.dir === 'e' || h.dir === 'w') rh.style.cursor = isRot ? 'ns-resize' : 'ew-resize';
-    if (h.dir === 'ne' || h.dir === 'sw') rh.style.cursor = isRot ? 'nwse-resize' : 'nesw-resize';
-    if (h.dir === 'nw' || h.dir === 'se') rh.style.cursor = isRot ? 'nesw-resize' : 'nwse-resize';
+    // Con trỏ chuẩn — page luôn hiển thị thẳng sau khi apply physical rotation
+    if (h.dir === 'n' || h.dir === 's') rh.style.cursor = 'ns-resize';
+    if (h.dir === 'e' || h.dir === 'w') rh.style.cursor = 'ew-resize';
+    if (h.dir === 'ne' || h.dir === 'sw') rh.style.cursor = 'nesw-resize';
+    if (h.dir === 'nw' || h.dir === 'se') rh.style.cursor = 'nwse-resize';
 
     _bindResizeHandle(el, obj, rh, h.dir);
     el.appendChild(rh);
@@ -312,18 +307,9 @@ function _bindObjectMove(el, obj, pg) {
       // Chia lại cho editZoom để vận tốc chuột khớp với màn hình
       let dx = (e2.clientX - startX) / editZoom;
       let dy = (e2.clientY - startY) / editZoom;
-      let localDx = dx, localDy = dy;
 
-      if (pg.rotation === 90) {
-        localDx = dy; localDy = -dx;
-      } else if (pg.rotation === 180) {
-        localDx = -dx; localDy = -dy;
-      } else if (pg.rotation === 270) {
-        localDx = -dy; localDy = dx;
-      }
-
-      let nx = startOX + localDx;
-      let ny = startOY + localDy;
+      let nx = startOX + dx;
+      let ny = startOY + dy;
 
       if (obj.type === 'cropbox') {
         nx = Math.max(0, Math.min(nx, pg.widthPt * editorScale - obj.w));
@@ -350,7 +336,7 @@ function _bindObjectMove(el, obj, pg) {
 function _bindResizeHandle(el, obj, handleEl, dir) {
   handleEl.addEventListener('mousedown', e => {
     e.preventDefault(); e.stopPropagation();
-    const startX = e.clientX, startY = e.clientY, startW = obj.w, startH = obj.h, startOX = obj.x, startOY = obj.y, MIN = 20;
+    const startX = e.clientX, startY = e.clientY, startW = obj.w, startH = obj.h, startOX = obj.x, startOY = obj.y, MIN = 2;
     
     // Ghi nhớ tỷ lệ gốc (Width / Height) ngay khi vừa click chuột
     const aspect = startW / startH; 
@@ -359,18 +345,7 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
       // Chia cho editZoom để tốc độ kéo khớp đúng với canvas khi đang zoom
       let dx = (e2.clientX - startX) / editZoom;
       let dy = (e2.clientY - startY) / editZoom;
-      
-      // Áp dụng dịch tọa độ cho Resize khi xoay trang PDF
       const pg = _getCurrentPg();
-      if (pg) {
-        if (pg.rotation === 90) {
-          const tmp = dx; dx = dy; dy = -tmp;
-        } else if (pg.rotation === 180) {
-          dx = -dx; dy = -dy;
-        } else if (pg.rotation === 270) {
-          const tmp = dx; dx = -dy; dy = tmp;
-        }
-      }
 
       // Giới hạn khung crop không được tràn ra ngoài trang PDF
       if (obj.type === 'cropbox' && pg) {

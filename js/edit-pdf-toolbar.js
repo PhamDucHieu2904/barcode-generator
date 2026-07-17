@@ -133,9 +133,20 @@ function _bindEditButtons() {
       input.addEventListener('change', async () => {
         if (!input.files[0]) return;
         const dataURL = await readFileAsDataURL(input.files[0]);
+        // Tải ảnh để lấy tỉ lệ gốc trước khi tạo object
+        const imgEl = new Image();
+        imgEl.src = dataURL;
+        await new Promise(res => { imgEl.onload = res; imgEl.onerror = res; });
+        const naturalW = imgEl.naturalWidth || 200;
+        const naturalH = imgEl.naturalHeight || 150;
+        // Tính kích thước phù hợp, giữ tỉ lệ gốc, tối đa 300px theo chiều lớn nhất
+        const maxDim = 300;
+        const ratio = Math.min(maxDim / naturalW, maxDim / naturalH, 1);
+        const objW = Math.round(naturalW * ratio);
+        const objH = Math.round(naturalH * ratio);
         const obj = {
           id: uid(), type: 'image', x: Math.round(pg.widthPt * editorScale * 0.2), y: Math.round(pg.heightPt * editorScale * 0.2),
-          w: 200, h: 150, dataURL, selected: false,
+          w: objW, h: objH, dataURL, selected: false,
         };
         pg.overlayObjects.push(obj);
         const area = document.getElementById('edit-canvas-area');
@@ -298,13 +309,77 @@ function _bindEditButtons() {
     });
   }
 
-  // ── Xử lý Rotate ──
+  // ── Xử lý Rotate ── (Apply vật lý: transform tọa độ objects + swap width/height)
+  const applyPhysicalRotate = (pg, angle) => {
+    const isClockwise = angle > 0; // +90 = clockwise, -90 = counter-clockwise
+
+    // Tính editorScale riêng cho từng trang (đặc biệt quan trọng khi Master All)
+    const area = document.getElementById('edit-canvas-area');
+    const areaW = area ? (area.clientWidth || 600) : 600;
+    const areaH = area ? (area.clientHeight || 700) : 700;
+    const pageScale = Math.min((areaW - 32) / pg.widthPt, (areaH - 32) / pg.heightPt, 1.5);
+
+    // Kích thước thực trên canvas (pixel)
+    const oldW = pg.widthPt * pageScale;
+    const oldH = pg.heightPt * pageScale;
+
+    // Transform tọa độ từng overlay object sang hệ tọa độ mới sau khi xoay
+    pg.overlayObjects.forEach(obj => {
+      const cx = obj.x + obj.w / 2;
+      const cy = obj.y + obj.h / 2;
+
+      let newCx, newCy;
+      if (isClockwise) {
+        // Rotate +90 (CW): (cx, cy) -> (oldH - cy, cx)
+        newCx = oldH - cy;
+        newCy = cx;
+      } else {
+        // Rotate -90 (CCW): (cx, cy) -> (cy, oldW - cx)
+        newCx = cy;
+        newCy = oldW - cx;
+      }
+
+      // Sau khi xoay, w và h của object cũng hoán đổi
+      const newW = obj.h;
+      const newH = obj.w;
+      obj.x = newCx - newW / 2;
+      obj.y = newCy - newH / 2;
+      obj.w = newW;
+      obj.h = newH;
+
+      // Với line: cập nhật lineStartRel / lineEndRel
+      if (obj.shapeType === 'line' && obj.lineStartRel && obj.lineEndRel) {
+        if (isClockwise) {
+          // (rx, ry) -> (1-ry, rx)
+          const s = obj.lineStartRel, en = obj.lineEndRel;
+          obj.lineStartRel = [1 - s[1], s[0]];
+          obj.lineEndRel   = [1 - en[1], en[0]];
+        } else {
+          const s = obj.lineStartRel, en = obj.lineEndRel;
+          obj.lineStartRel = [s[1], 1 - s[0]];
+          obj.lineEndRel   = [en[1], 1 - en[0]];
+        }
+      }
+    });
+
+    // Hoán đổi width/height trang
+    const tmpW = pg.widthPt;
+    pg.widthPt = pg.heightPt;
+    pg.heightPt = tmpW;
+    const tmpOW = pg.origWidthPt;
+    pg.origWidthPt = pg.origHeightPt;
+    pg.origHeightPt = tmpOW;
+
+    // Lưu rotation để export PDF biết xoay
+    pg.rotation = ((pg.rotation || 0) + angle + 360) % 360;
+  };
+
   const handleRotate = (angle) => {
     if (isMasterAll) {
-      editPages.forEach(p => { p.rotation = ((p.rotation || 0) + angle + 360) % 360; });
+      editPages.forEach(p => applyPhysicalRotate(p, angle));
     } else {
       const pg = _getCurrentPg();
-      if (pg) pg.rotation = ((pg.rotation || 0) + angle + 360) % 360;
+      if (pg) applyPhysicalRotate(pg, angle);
     }
     const currentPg = _getCurrentPg();
     if (currentPg) _openPageEditor(currentPg);
@@ -558,14 +633,11 @@ function _updateCanvasZoom() {
   const pageEl = area.querySelector('.edit-page-canvas');
   if (!wrapper || !pageEl) return;
   
-  const isRotated = pg.rotation === 90 || pg.rotation === 270;
-  const logicalW = isRotated ? pg.heightPt : pg.widthPt;
-  const logicalH = isRotated ? pg.widthPt : pg.heightPt;
-  
-  // Mở rộng Wrapper tạo thanh cuộn, đồng thời Scale nội dung SVG sắc nét bên trong
-  wrapper.style.width = Math.round(logicalW * editorScale * editZoom) + 'px';
-  wrapper.style.height = Math.round(logicalH * editorScale * editZoom) + 'px';
-  pageEl.style.transform = `scale(${editZoom}) rotate(${pg.rotation}deg)`;
+  // Sau khi apply physical rotation, widthPt/heightPt đã được swap sẵn
+  wrapper.style.width = Math.round(pg.widthPt * editorScale * editZoom) + 'px';
+  wrapper.style.height = Math.round(pg.heightPt * editorScale * editZoom) + 'px';
+  pageEl.style.transform = `scale(${editZoom})`;
+  pageEl.style.transformOrigin = 'center center';
 }
 
 function _bindZoomControls() {

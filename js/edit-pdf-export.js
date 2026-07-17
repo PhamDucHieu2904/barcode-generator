@@ -193,39 +193,65 @@ async function _generateEditedPdfBytes() {
       
     } else if (pg.pdfBytes) {
       const srcDoc = await PDFDocument.load(pg.pdfBytes, { ignoreEncryption: true });
-      if (isResized) {
-        page = outDoc.addPage([pg.widthPt, pg.heightPt]);
-        const [embeddedPage] = await outDoc.embedPdf(pg.pdfBytes, [pg.pdfPageIndex]);
-        const ratio = Math.min(pg.widthPt / embeddedPage.width, pg.heightPt / embeddedPage.height);
-        const dw = embeddedPage.width * ratio, dh = embeddedPage.height * ratio;
-        page.drawPage(embeddedPage, { x: (pg.widthPt - dw) / 2, y: (pg.heightPt - dh) / 2, width: dw, height: dh });
-      } else {
-        const [copied] = await outDoc.copyPages(srcDoc, [pg.pdfPageIndex]);
-        outDoc.addPage(copied);
-        page = outDoc.getPage(outDoc.getPageCount() - 1);
+      const [copied] = await outDoc.copyPages(srcDoc, [pg.pdfPageIndex]);
+      outDoc.addPage(copied);
+      page = outDoc.getPage(outDoc.getPageCount() - 1);
+      // Set rotation cho PDF viewer biết xoay trang
+      if (pg.rotation) {
+        const currentRot = page.getRotation().angle || 0;
+        page.setRotation(PDFLib.degrees((currentRot + pg.rotation) % 360));
       }
+
     } else {
       page = outDoc.addPage([pg.widthPt || 595, pg.heightPt || 842]);
     }
 
-    if (pg.rotation) {
-      const rot = [0, 90, 180, 270].find(r => r === pg.rotation) || 0;
-      if (rot) {
-        const currentRot = page.getRotation().angle || 0;
-        page.setRotation(PDFLib.degrees((currentRot + rot) % 360));
-      }
-    }
-
-    const isRotated = pg.rotation === 90 || pg.rotation === 270;
-    const logicalW = isRotated ? pg.heightPt : pg.widthPt;
-    const logicalH = isRotated ? pg.widthPt : pg.heightPt;
-    const pageScale = Math.min((areaW - 32) / logicalW, (areaH - 32) / logicalH, 1.5);
+    // pageScale dựa trên dimensions thực (đã swap nếu cần)
+    const pageScale = Math.min((areaW - 32) / pg.widthPt, (areaH - 32) / pg.heightPt, 1.5);
 
     for (const obj of pg.overlayObjects) {
-      const pdfX = obj.x / pageScale;
-      const pdfY = pg.heightPt - ((obj.y + obj.h) / pageScale); 
-      const pdfW = obj.w / pageScale;
-      const pdfH = obj.h / pageScale;
+      // Tính tọa độ PDF: nếu trang đã bị xoay vật lý, cần map ngược overlay coords
+      // về tọa độ PDF gốc (vì chúng ta dùng setRotation metadata, ko embed rotate)
+      let pdfX, pdfY, pdfW, pdfH;
+      const rot = pg.rotation || 0;
+
+      if (rot === 0) {
+        // Không xoay: tính thẳng như cũ
+        pdfX = obj.x / pageScale;
+        pdfY = pg.heightPt - ((obj.y + obj.h) / pageScale);
+        pdfW = obj.w / pageScale;
+        pdfH = obj.h / pageScale;
+      } else if (rot === 90) {
+        // Overlay trong không gian xoay (W_new = origH, H_new = origW)
+        // Map ngược: (ox, oy) trong xoay → (origH - oy - oh, ox) trong gốc
+        const origH = pg.widthPt; // Sau swap 90CW: widthPt = origH
+        const origW = pg.heightPt; // heightPt = origW
+        pdfX = obj.y / pageScale;
+        pdfY = obj.x / pageScale; // y gốc (từ trên xuống)
+        pdfW = obj.h / pageScale;
+        pdfH = obj.w / pageScale;
+        // PDF y từ dưới lên: pdfY_bottom = origH - pdfY_top - pdfH
+        pdfY = origH - pdfY - pdfH;
+      } else if (rot === 180) {
+        pdfX = pg.widthPt - ((obj.x + obj.w) / pageScale);
+        pdfY = (obj.y) / pageScale;
+        pdfW = obj.w / pageScale;
+        pdfH = obj.h / pageScale;
+      } else if (rot === 270) {
+        const origW = pg.widthPt; // Sau swap 270: widthPt = origW
+        const origH = pg.heightPt; // heightPt = origH... wait 270 swaps too
+        // 270 CCW (= 3x 90CW): map: oy→x gốc ngược, ox→y gốc
+        pdfX = pg.heightPt - ((obj.y + obj.h) / pageScale);
+        pdfY = obj.x / pageScale;
+        pdfW = obj.h / pageScale;
+        pdfH = obj.w / pageScale;
+        pdfY = pg.widthPt - pdfY - pdfH;
+      } else {
+        pdfX = obj.x / pageScale;
+        pdfY = pg.heightPt - ((obj.y + obj.h) / pageScale);
+        pdfW = obj.w / pageScale;
+        pdfH = obj.h / pageScale;
+      }
 
       if (obj.type === 'text') {
         try {

@@ -332,7 +332,7 @@ function _startShapeDrag(e, startPos, pg, overlayEl, isShift) {
       currentObj = {
         id: uid(), type: 'shape',
         shapeType: activeShapeTool,
-        x, y, w: Math.max(4, w), h: Math.max(4, h),
+        x, y, w: Math.max(2, w), h: Math.max(2, h),
         shapeFill, shapeStroke,
         shapeStrokeWidth: _getStrokeWidth(),
         shapeStrokeDash: _getStrokeDash(),
@@ -345,7 +345,7 @@ function _startShapeDrag(e, startPos, pg, overlayEl, isShift) {
       _selectObject(currentObj, pg);
     } else {
       currentObj.x = x; currentObj.y = y;
-      currentObj.w = Math.max(4, w); currentObj.h = Math.max(4, h);
+      currentObj.w = Math.max(2, w); currentObj.h = Math.max(2, h);
       currentObj.shapeStroke = shapeStroke;
       currentObj.shapeFill   = shapeFill;
       currentObj.color       = shapeStroke;
@@ -365,7 +365,7 @@ function _startShapeDrag(e, startPos, pg, overlayEl, isShift) {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup',   onUp);
     ghost.remove();
-    if (currentObj && currentObj.w < 5 && currentObj.h < 5) {
+    if (currentObj && currentObj.w < 3 && currentObj.h < 3) {
       pg.overlayObjects = pg.overlayObjects.filter(o => o.id !== currentObj.id);
       const objEl = overlayEl.querySelector(`[data-obj-id="${currentObj.id}"]`);
       if (objEl) objEl.remove();
