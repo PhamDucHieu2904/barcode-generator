@@ -284,3 +284,99 @@
   display: flex;
   gap: 8px;
 }
+
+/* ── Guide Modal & Button ── */
+.pdf-panel-title { display: flex; justify-content: space-between; align-items: center; }
+.guide-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.2s;
+}
+.guide-btn:hover { background: #eee; color: #000; border-color: #aaa; }
+
+.guide-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(85, 85, 85, 0.85);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.guide-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.guide-modal-content {
+  background: #c9c9c9;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+.guide-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #c9c9c9;
+}
+.guide-modal-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+.guide-modal-close {
+  background: #e74c3c;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s;
+}
+.guide-modal-close:hover {
+  transform: scale(1.1);
+}
+.guide-modal-body {
+  background: #ffffff;
+  margin: 0 8px 8px 8px;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-y: auto;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.guide-modal-body h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 18px;
+  color: #111;
+}
+.guide-modal-body ul {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+.guide-modal-body li {
+  margin-bottom: 8px;
+}
+.guide-modal-body code {
+  background: #f4f4f4;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: monospace;
+}

@@ -380,3 +380,59 @@ function initPDF() {
     }
   }
 }
+
+/* ────────────────────────────────────────────
+   GUIDE MODAL LOGIC
+   ──────────────────────────────────────────── */
+async function initGuide() {
+  const guideBtns = document.querySelectorAll('.guide-btn');
+  const modal = document.getElementById('guide-modal');
+  const modalClose = document.getElementById('guide-modal-close');
+  const modalBody = document.getElementById('guide-modal-body');
+  
+  if (!modal || guideBtns.length === 0) return;
+
+  let guideData = null;
+
+  async function loadGuideData() {
+    if (guideData) return guideData;
+    try {
+      const res = await fetch('js/guide-data.json');
+      guideData = await res.json();
+      return guideData;
+    } catch (e) {
+      console.error("Failed to load guide-data.json", e);
+      return null;
+    }
+  }
+
+  function openModal(contentHtml) {
+    modalBody.innerHTML = contentHtml || 'Nội dung hướng dẫn chưa được cập nhật.';
+    modal.classList.add('active');
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+  }
+
+  guideBtns.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const type = btn.getAttribute('data-guide');
+      const data = await loadGuideData();
+      if (data) {
+        openModal(data[type]);
+      }
+    });
+  });
+
+  modalClose.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    // Đóng khi click vào vùng overlay tối bên ngoài
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+}
+
+// Khởi chạy ngay
+document.addEventListener('DOMContentLoaded', initGuide);

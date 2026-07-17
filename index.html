@@ -207,7 +207,7 @@
   <section id="section-pdf" class="app-section">
 
     <div class="pdf-panel" id="panel-combine">
-      <h2 class="pdf-panel-title">Combine images to PDF</h2>
+      <h2 class="pdf-panel-title">Combine images to PDF <button class="guide-btn" data-guide="combine">Guide</button></h2>
       <div class="drop-zone" id="dz-images" data-accepts="image">
         <div class="dz-inner" id="dz-images-inner">
           <div class="dz-placeholder" id="dz-images-placeholder">
@@ -245,7 +245,7 @@
     </div>
 
     <div class="pdf-panel" id="panel-merge">
-      <h2 class="pdf-panel-title">Merge PDFs File</h2>
+      <h2 class="pdf-panel-title">Merge PDFs File <button class="guide-btn" data-guide="merge">Guide</button></h2>
       <div class="drop-zone" id="dz-pdfs" data-accepts="pdf">
         <div class="dz-inner" id="dz-pdfs-inner">
           <div class="dz-placeholder" id="dz-pdfs-placeholder">
@@ -272,7 +272,7 @@
     </div>
 
     <div class="pdf-panel pdf-panel--edit" id="panel-edit">
-      <h2 class="pdf-panel-title">Edit PDF</h2>
+      <h2 class="pdf-panel-title">Edit PDF <button class="guide-btn" data-guide="edit">Guide</button></h2>
       <div class="drop-zone" id="dz-edit" data-accepts="pdf">
         <div class="dz-inner" id="dz-edit-inner">
           <div class="dz-placeholder" id="dz-edit-placeholder">
@@ -486,7 +486,17 @@
 <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.min.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/barcode.js"></script>
-<script src="js/pdf.js"></script>
+  <div class="guide-modal-overlay" id="guide-modal">
+    <div class="guide-modal-content">
+      <div class="guide-modal-header">
+        <span class="guide-modal-title">Guide</span>
+        <button class="guide-modal-close" id="guide-modal-close"></button>
+      </div>
+      <div class="guide-modal-body" id="guide-modal-body"></div>
+    </div>
+  </div>
+
+  <script src="js/pdf.js"></script>
 <!-- edit-pdf modules — load theo thứ tự phụ thuộc -->
 <script src="js/edit-pdf-state.js"></script>
 <script src="js/edit-pdf-canvas.js"></script>

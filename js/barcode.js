@@ -91,13 +91,7 @@ function getFullCode(raw, type) {
   if (!raw || !raw.trim()) return null;
 
   if (type === 'GS1128') {
-    // Xóa khoảng trắng thừa
-    const clean = raw.replace(/\s+/g, '');
-    // Kiểm tra có ít nhất một AI không
-    if (!/\(\d{2,4}\)/.test(clean)) return null;
-    // Encode nguyên chuỗi (kể cả dấu ngoặc) dưới dạng CODE128
-    // Dấu ngoặc là ký tự ASCII hợp lệ trong CODE128, scanner đọc được AI từ ký hiệu ngoặc
-    return clean;
+    return raw.replace(/[\(\)\s]/g, '');
   }
 
   switch (type) {
@@ -117,7 +111,7 @@ function validateFull(full, type) {
     case 'UPCA':    return /^\d{12}$/.test(full) ? null : 'UPC-A cần đúng 12 chữ số';
     case 'ITF14':   return /^\d{14}$/.test(full) ? null : 'ITF-14 cần đúng 14 chữ số';
     case 'CODE128': return full.length > 0 ? null : 'Code 128 không được để trống';
-    case 'GS1128':  return /\(\d{2,4}\)/.test(full) ? null : 'GS1-128 cần ít nhất một Application Identifier, ví dụ: (01)12345678901231';
+    case 'GS1128':  return parseGS1(full) ? null : 'Chuỗi GS1-128 không hợp lệ hoặc chứa AI không nhận dạng được';
     case 'QR':      return full.length > 0 ? null : 'QR không được để trống';
     default:        return null;
   }
@@ -143,8 +137,77 @@ function barcodeOpts(overrides = {}) {
     margin:       barcodeProps.margin,
     background:   barcodeProps.bgColor,
     lineColor:    barcodeProps.lineColor,
+    text:         overrides.text,
     ...overrides,
   };
+}
+
+const GS1_AI_FIXED = {
+  '00': 18,
+  '01': 14, '02': 14, '03': 14, '04': 14,
+  '11': 6, '12': 6, '13': 6, '14': 6, '15': 6, '16': 6, '17': 6,
+  '20': 2,
+  '31': 6, '32': 6, '33': 6, '34': 6, '35': 6, '36': 6,
+  '41': 13
+};
+
+function parseGS1(raw) {
+  let clean = raw.replace(/[\(\)\s]/g, '');
+  if (!clean) return null;
+  
+  let encoded = 'Ï'; // FNC1 (char 207)
+  let displayValue = '';
+  let i = 0;
+  
+  while (i < clean.length) {
+    let ai = null;
+    let isVariable = true;
+    let dataLen = 0;
+    
+    let ai2 = clean.substr(i, 2);
+    let ai3 = clean.substr(i, 3);
+    let ai4 = clean.substr(i, 4);
+
+    if (GS1_AI_FIXED[ai2] !== undefined) {
+      ai = ai2; dataLen = GS1_AI_FIXED[ai2]; isVariable = false;
+    } else if (['10','21','22','30','37','90'].includes(ai2)) {
+      ai = ai2; isVariable = true;
+    } else if (ai3.startsWith('41') && parseInt(ai3) <= 416) {
+      ai = ai3; dataLen = 13; isVariable = false;
+    } else if (['240','241','242','250','251','253','254','255','420','421','422','423','424','425','426','427'].includes(ai3)) {
+       ai = ai3; isVariable = true;
+    } else if (['8003','8004','8008','8018','8020','8110'].includes(ai4)) {
+       ai = ai4; isVariable = true;
+    } else if (ai4.startsWith('31') || ai4.startsWith('32') || ai4.startsWith('33') || ai4.startsWith('34') || ai4.startsWith('35') || ai4.startsWith('36')) {
+      ai = ai4; dataLen = 6; isVariable = false;
+    } else if (ai4.startsWith('39') || ai4.startsWith('80') || ai4.startsWith('81') || ai4.startsWith('82') || ai4.startsWith('9')) {
+      ai = ai4; isVariable = true;
+    } else {
+      ai = ai2; isVariable = true;
+    }
+
+    if (!/^\d+$/.test(ai)) return null;
+
+    i += ai.length;
+    let data = '';
+    
+    if (!isVariable) {
+      data = clean.substr(i, dataLen);
+      i += dataLen;
+      if (data.length < dataLen) return null; // Incomplete data for fixed length AI
+    } else {
+      data = clean.substr(i);
+      i = clean.length;
+    }
+    
+    encoded += ai + data;
+    displayValue += `(${ai})${data}`;
+    
+    if (isVariable && i < clean.length) {
+      encoded += 'Ï';
+    }
+  }
+  return { encoded, displayValue };
 }
 
 /* ── Properties panel wiring ── */
@@ -319,7 +382,16 @@ function renderPreview() {
       card.appendChild(svg);
       cardsEl.appendChild(card);
       try {
-        JsBarcode(svg, full, barcodeOpts({ format: jsFormat(currentType) }));
+        let text = full;
+        let data = full;
+        if (currentType === 'GS1128') {
+          const parsed = parseGS1(full);
+          if (parsed) {
+            data = parsed.encoded;
+            text = parsed.displayValue;
+          }
+        }
+        JsBarcode(svg, data, barcodeOpts({ format: jsFormat(currentType), text: text }));
       } catch (e) {
         card.innerHTML = `<div style="color:#e55;font-size:12px;padding:8px;word-break:break-all;">Lỗi: ${e.message || e}</div>`;
       }
@@ -454,7 +526,16 @@ function downloadBarcodeSVG(fullCodes) {
   for (const code of fullCodes) {
     const tmp = document.createElementNS(ns, 'svg');
     try {
-      JsBarcode(tmp, code, barcodeOpts({ format: fmt }));
+      let text = code;
+      let data = code;
+      if (currentType === 'GS1128') {
+        const parsed = parseGS1(code);
+        if (parsed) {
+          data = parsed.encoded;
+          text = parsed.displayValue;
+        }
+      }
+      JsBarcode(tmp, data, barcodeOpts({ format: fmt, text: text }));
       rendered.push({
         w:    parseFloat(tmp.getAttribute('width'))  || 200,
         h:    parseFloat(tmp.getAttribute('height')) || 120,
@@ -506,7 +587,16 @@ async function downloadBarcodePDF(fullCodes) {
   for (const code of fullCodes) {
     const tmp = document.createElementNS(ns, 'svg');
     try {
-      JsBarcode(tmp, code, barcodeOpts({ format: fmt }));
+      let text = code;
+      let data = code;
+      if (currentType === 'GS1128') {
+        const parsed = parseGS1(code);
+        if (parsed) {
+          data = parsed.encoded;
+          text = parsed.displayValue;
+        }
+      }
+      JsBarcode(tmp, data, barcodeOpts({ format: fmt, text: text }));
     } catch(e) { continue; }
 
     const bW = parseFloat(tmp.getAttribute('width'))  || 200;
@@ -531,7 +621,16 @@ async function downloadBarcodePNG(fullCodes) {
   for (let i = 0; i < fullCodes.length; i++) {
     const tmp = document.createElementNS(ns, 'svg');
     try {
-      JsBarcode(tmp, fullCodes[i], barcodeOpts({ format: fmt }));
+      let text = fullCodes[i];
+      let data = fullCodes[i];
+      if (currentType === 'GS1128') {
+        const parsed = parseGS1(fullCodes[i]);
+        if (parsed) {
+          data = parsed.encoded;
+          text = parsed.displayValue;
+        }
+      }
+      JsBarcode(tmp, data, barcodeOpts({ format: fmt, text: text }));
     } catch(e) { continue; }
 
     const bW = parseFloat(tmp.getAttribute('width'))  || 200;
