@@ -18,15 +18,22 @@ function _openEditFilePicker(accept) {
   input.addEventListener('change', async () => _handleEditFileDrop(Array.from(input.files))); input.click();
 }
 
+// Render trang PDF thành dataURL VÀ trả kèm kích thước visual (đã apply rotation)
 async function _renderPdfJsPageToDataURL(pdfJsDoc, pageIndex) {
   try {
     const page = await pdfJsDoc.getPage(pageIndex + 1);
+    // scale=1.0 để lấy visual dimensions chính xác (pdfjsLib đã tính rotation)
+    const vpScale1 = page.getViewport({ scale: 1.0 });
     const viewport = page.getViewport({ scale: 1.5 });
     const canvas = document.createElement('canvas');
     canvas.width = viewport.width; canvas.height = viewport.height;
     await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
-    return canvas.toDataURL('image/png');
-  } catch(e) { return null; }
+    return {
+      dataURL: canvas.toDataURL('image/png'),
+      visualW: vpScale1.width,   // chiều rộng visual (pts, sau khi apply PDF rotation)
+      visualH: vpScale1.height,  // chiều cao visual
+    };
+  } catch(e) { return { dataURL: null, visualW: 595, visualH: 842 }; }
 }
 
 async function _handleEditFileDrop(files) {
@@ -49,9 +56,12 @@ async function _handleEditFileDrop(files) {
         const doc = await PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true });
         const pdfJsDoc = await pdfjsLib.getDocument({ data: bytes }).promise;
         for (let i = 0; i < doc.getPageCount(); i++) {
-          const { width, height } = doc.getPage(i).getSize();
-          const renderUrl = await _renderPdfJsPageToDataURL(pdfJsDoc, i);
-          editPages.push({ id: uid(), pdfBytes: bytes, pdfPageIndex: i, imageDataURL: null, renderURL: renderUrl, rotation: 0, widthPt: width, heightPt: height, origWidthPt: width, origHeightPt: height, overlayObjects: [] });
+          const pdfPage = doc.getPage(i);
+          const pdfBuiltInRot = pdfPage.getRotation().angle || 0;
+          const rendered = await _renderPdfJsPageToDataURL(pdfJsDoc, i);
+          const visualW = rendered.visualW;
+          const visualH = rendered.visualH;
+          editPages.push({ id: uid(), pdfBytes: bytes, pdfPageIndex: i, imageDataURL: null, renderURL: rendered.dataURL, rotation: 0, pdfBuiltInRotation: pdfBuiltInRot, widthPt: visualW, heightPt: visualH, origWidthPt: visualW, origHeightPt: visualH, overlayObjects: [] });
         }
       } finally {
         document.body.style.cursor = '';
@@ -69,9 +79,12 @@ async function _loadPdfPages(arrayBuffer) {
     const pdfJsDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     editPages = [];
     for (let i = 0; i < doc.getPageCount(); i++) {
-      const { width, height } = doc.getPage(i).getSize();
-      const renderUrl = await _renderPdfJsPageToDataURL(pdfJsDoc, i);
-      editPages.push({ id: uid(), pdfBytes: arrayBuffer, pdfPageIndex: i, renderURL: renderUrl, rotation: 0, widthPt: width, heightPt: height, origWidthPt: width, origHeightPt: height, overlayObjects: [] });
+      const pdfPage = doc.getPage(i);
+      const pdfBuiltInRot = pdfPage.getRotation().angle || 0;
+      const rendered = await _renderPdfJsPageToDataURL(pdfJsDoc, i);
+      const visualW = rendered.visualW;
+      const visualH = rendered.visualH;
+      editPages.push({ id: uid(), pdfBytes: arrayBuffer, pdfPageIndex: i, renderURL: rendered.dataURL, rotation: 0, pdfBuiltInRotation: pdfBuiltInRot, widthPt: visualW, heightPt: visualH, origWidthPt: visualW, origHeightPt: visualH, overlayObjects: [] });
     }
   } catch(e) { 
     alert('Lỗi file PDF: ' + e.message); 

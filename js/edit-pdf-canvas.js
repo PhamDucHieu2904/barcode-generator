@@ -30,10 +30,31 @@ function _openPageEditor(pg) {
   pageEl.style.transformOrigin = 'center center';
   
   const bgLayer = document.createElement('div');
-  bgLayer.className = 'edit-bg-layer'; bgLayer.style.width = '100%'; bgLayer.style.height = '100%';
+  bgLayer.className = 'edit-bg-layer'; bgLayer.style.cssText = 'width:100%;height:100%;position:relative;overflow:hidden;';
 
   if (pg.renderURL) {
-    const bgImg = document.createElement('img'); bgImg.src = pg.renderURL; bgImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+    const bgImg = document.createElement('img');
+    bgImg.src = pg.renderURL;
+    const rot = pg.rotation || 0;
+    if (rot === 90 || rot === 270) {
+      // Container đã swap: widthPt↔heightPt. renderURL vẫn là ảnh gốc (portrait).
+      // Cần đặt img với kích thước ngược (h x w), căn giữa, rồi rotate → fill đúng container
+      const cW = Math.round(pg.widthPt * editorScale);   // chiều rộng container hiện tại
+      const cH = Math.round(pg.heightPt * editorScale);  // chiều cao container hiện tại
+      bgImg.style.cssText = `
+        position:absolute;
+        width:${cH}px; height:${cW}px;
+        top:50%; left:50%;
+        margin-left:${-cH / 2}px; margin-top:${-cW / 2}px;
+        transform: rotate(${rot}deg);
+        transform-origin: center center;
+        object-fit:fill; display:block; pointer-events:none;
+      `;
+    } else if (rot === 180) {
+      bgImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;transform:rotate(180deg);transform-origin:center center;';
+    } else {
+      bgImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+    }
     bgLayer.appendChild(bgImg);
   }
 
@@ -200,9 +221,11 @@ function _renderOverlayObject(obj, overlayEl, pg) {
 
   } else if (obj.type === 'image') {
     el.classList.add('edit-obj-image');
+    el.style.overflow = 'hidden';
     const img = document.createElement('img');
-    img.src = obj.dataURL || ''; 
-    img.style.cssText = 'width:100%;height:100%;object-fit:fill;pointer-events:none;display:block;';
+    img.src = obj.dataURL || '';
+    // object-fit:contain để ảnh luôn giữ tỷ lệ gốc dù container bị resize
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;display:block;';
     el.appendChild(img);
 
   } else if (obj.type === 'shape') {

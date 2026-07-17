@@ -196,7 +196,7 @@ async function _generateEditedPdfBytes() {
       const [copied] = await outDoc.copyPages(srcDoc, [pg.pdfPageIndex]);
       outDoc.addPage(copied);
       page = outDoc.getPage(outDoc.getPageCount() - 1);
-      // Set rotation cho PDF viewer biết xoay trang
+      // Cộng thêm user rotation vào built-in rotation của PDF
       if (pg.rotation) {
         const currentRot = page.getRotation().angle || 0;
         page.setRotation(PDFLib.degrees((currentRot + pg.rotation) % 360));
@@ -206,51 +206,51 @@ async function _generateEditedPdfBytes() {
       page = outDoc.addPage([pg.widthPt || 595, pg.heightPt || 842]);
     }
 
-    // pageScale dựa trên dimensions thực (đã swap nếu cần)
+    // pageScale dựa trên visual dimensions (đã đúng sau fix)
     const pageScale = Math.min((areaW - 32) / pg.widthPt, (areaH - 32) / pg.heightPt, 1.5);
 
-    for (const obj of pg.overlayObjects) {
-      // Tính tọa độ PDF: nếu trang đã bị xoay vật lý, cần map ngược overlay coords
-      // về tọa độ PDF gốc (vì chúng ta dùng setRotation metadata, ko embed rotate)
-      let pdfX, pdfY, pdfW, pdfH;
-      const rot = pg.rotation || 0;
+    // Tổng rotation = built-in rotation của PDF + user's physical rotation
+    // Dùng để map visual coords → PDF raw coords khi vẽ overlay
+    const builtInRot = pg.pdfBuiltInRotation || 0;
+    const userRot    = pg.rotation || 0;
+    const totalRot   = (builtInRot + userRot) % 360;
 
-      if (rot === 0) {
-        // Không xoay: tính thẳng như cũ
-        pdfX = obj.x / pageScale;
-        pdfY = pg.heightPt - ((obj.y + obj.h) / pageScale);
-        pdfW = obj.w / pageScale;
-        pdfH = obj.h / pageScale;
-      } else if (rot === 90) {
-        // Overlay trong không gian xoay (W_new = origH, H_new = origW)
-        // Map ngược: (ox, oy) trong xoay → (origH - oy - oh, ox) trong gốc
-        const origH = pg.widthPt; // Sau swap 90CW: widthPt = origH
-        const origW = pg.heightPt; // heightPt = origW
-        pdfX = obj.y / pageScale;
-        pdfY = obj.x / pageScale; // y gốc (từ trên xuống)
-        pdfW = obj.h / pageScale;
-        pdfH = obj.w / pageScale;
-        // PDF y từ dưới lên: pdfY_bottom = origH - pdfY_top - pdfH
-        pdfY = origH - pdfY - pdfH;
-      } else if (rot === 180) {
-        pdfX = pg.widthPt - ((obj.x + obj.w) / pageScale);
-        pdfY = (obj.y) / pageScale;
-        pdfW = obj.w / pageScale;
-        pdfH = obj.h / pageScale;
-      } else if (rot === 270) {
-        const origW = pg.widthPt; // Sau swap 270: widthPt = origW
-        const origH = pg.heightPt; // heightPt = origH... wait 270 swaps too
-        // 270 CCW (= 3x 90CW): map: oy→x gốc ngược, ox→y gốc
-        pdfX = pg.heightPt - ((obj.y + obj.h) / pageScale);
-        pdfY = obj.x / pageScale;
-        pdfW = obj.h / pageScale;
-        pdfH = obj.w / pageScale;
-        pdfY = pg.widthPt - pdfY - pdfH;
+    // pg.widthPt/heightPt là visual dimensions (sau tất cả rotation)
+    // Raw PDF dimensions của copied page (lấy từ page object thực tế):
+    const rawPdfSize = page && page.getSize ? page.getSize() : { width: pg.widthPt, height: pg.heightPt };
+    const rawPdfW = rawPdfSize.width;
+    const rawPdfH = rawPdfSize.height;
+
+    for (const obj of pg.overlayObjects) {
+      // Map visual coords (y từ trên xuống) → PDF raw coords (y từ dưới lên)
+      // dựa theo totalRot (tổng xoay của visual so với raw PDF)
+      let pdfX, pdfY, pdfW, pdfH;
+      const vx = obj.x / pageScale; // visual left (pts)
+      const vy = obj.y / pageScale; // visual top  (pts)
+      const vw = obj.w / pageScale; // visual width (pts)
+      const vh = obj.h / pageScale; // visual height(pts)
+
+      if (totalRot === 0) {
+        pdfX = vx;
+        pdfY = rawPdfH - vy - vh;
+        pdfW = vw; pdfH = vh;
+      } else if (totalRot === 90) {
+        // visual y → pdf x; visual x → pdf (rawH - x), swapped dims
+        pdfX = vy;
+        pdfY = rawPdfH - vx - vw;
+        pdfW = vh; pdfH = vw;
+      } else if (totalRot === 180) {
+        pdfX = rawPdfW - vx - vw;
+        pdfY = vy;
+        pdfW = vw; pdfH = vh;
+      } else if (totalRot === 270) {
+        pdfX = rawPdfW - vy - vh;
+        pdfY = vx;
+        pdfW = vh; pdfH = vw;
       } else {
-        pdfX = obj.x / pageScale;
-        pdfY = pg.heightPt - ((obj.y + obj.h) / pageScale);
-        pdfW = obj.w / pageScale;
-        pdfH = obj.h / pageScale;
+        pdfX = vx;
+        pdfY = rawPdfH - vy - vh;
+        pdfW = vw; pdfH = vh;
       }
 
       if (obj.type === 'text') {

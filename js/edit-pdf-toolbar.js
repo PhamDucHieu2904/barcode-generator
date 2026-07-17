@@ -139,9 +139,13 @@ function _bindEditButtons() {
         await new Promise(res => { imgEl.onload = res; imgEl.onerror = res; });
         const naturalW = imgEl.naturalWidth || 200;
         const naturalH = imgEl.naturalHeight || 150;
-        // Tính kích thước phù hợp, giữ tỉ lệ gốc, tối đa 300px theo chiều lớn nhất
-        const maxDim = 300;
-        const ratio = Math.min(maxDim / naturalW, maxDim / naturalH, 1);
+        // Giới hạn kích thước ban đầu: tối đa 50% kích thước page canvas,
+        // đảm bảo ảnh dọc không tràn ra ngoài trang ngang
+        const pageCanvasW = pg.widthPt * editorScale;
+        const pageCanvasH = pg.heightPt * editorScale;
+        const maxW = pageCanvasW * 0.5;
+        const maxH = pageCanvasH * 0.5;
+        const ratio = Math.min(maxW / naturalW, maxH / naturalH, 1);
         const objW = Math.round(naturalW * ratio);
         const objH = Math.round(naturalH * ratio);
         const obj = {
