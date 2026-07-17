@@ -16,18 +16,18 @@ function _openPageEditor(pg) {
 
   const wrapper = document.createElement('div');
   wrapper.id = 'edit-page-wrapper';
+  // Đặt margin auto để center khi nhỏ, nhưng vẫn align top-left khi zoom to tránh bị cắt
+  wrapper.style.margin = '0 auto';
   wrapper.style.width = Math.round(pg.widthPt * editorScale * editZoom) + 'px';
   wrapper.style.height = Math.round(pg.heightPt * editorScale * editZoom) + 'px';
-  wrapper.style.display = 'flex';
-  wrapper.style.alignItems = 'center';
-  wrapper.style.justifyContent = 'center';
 
   const pageEl = document.createElement('div');
   pageEl.className = 'edit-page-canvas';
   pageEl.style.width = Math.round(pg.widthPt * editorScale) + 'px';
   pageEl.style.height = Math.round(pg.heightPt * editorScale) + 'px';
   pageEl.style.transform = `scale(${editZoom})`;
-  pageEl.style.transformOrigin = 'center center';
+  // Zoom từ góc trên bên trái (upper left)
+  pageEl.style.transformOrigin = 'top left';
   
   const bgLayer = document.createElement('div');
   bgLayer.className = 'edit-bg-layer'; bgLayer.style.cssText = 'width:100%;height:100%;position:relative;overflow:hidden;';
@@ -60,7 +60,9 @@ function _openPageEditor(pg) {
 
   pageEl.appendChild(bgLayer);
   const overlayEl = document.createElement('div');
-  overlayEl.className = 'edit-overlay'; overlayEl.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
+  overlayEl.className = 'edit-overlay';
+  // overflow:visible để resize handles và buttons không bị xén mất
+  overlayEl.style.cssText = 'position:absolute;inset:0;overflow:visible;';
   pageEl.appendChild(overlayEl);
 
   pg.overlayObjects.forEach(obj => _renderOverlayObject(obj, overlayEl, pg));
@@ -185,7 +187,9 @@ function _renderOverlayObject(obj, overlayEl, pg) {
   const el = document.createElement('div');
   el.dataset.objId = obj.id;
   el.className = 'edit-obj' + (obj.selected ? ' selected' : '');
-  el.style.cssText = `position:absolute; left:${obj.x}px; top:${obj.y}px; width:${obj.w}px; height:${obj.h}px; box-sizing:border-box; cursor:move; user-select:none;`;
+  // Lưu rotation vào transform-origin center của object
+  const rotDeg = obj.rotation || 0;
+  el.style.cssText = `position:absolute; left:${obj.x}px; top:${obj.y}px; width:${obj.w}px; height:${obj.h}px; box-sizing:border-box; cursor:move; user-select:none; transform-origin:center center; transform:rotate(${rotDeg}deg);`;
 
   if (obj.type === 'text') {
     el.classList.add('edit-obj-text');
@@ -221,12 +225,13 @@ function _renderOverlayObject(obj, overlayEl, pg) {
 
   } else if (obj.type === 'image') {
     el.classList.add('edit-obj-image');
-    el.style.overflow = 'hidden';
+    // Inner wrapper clip ảnh, còn handles thì nằm trên el (overflow:visible)
+    const inner = document.createElement('div');
+    inner.className = 'edit-obj-image-inner';
     const img = document.createElement('img');
     img.src = obj.dataURL || '';
-    // object-fit:contain để ảnh luôn giữ tỷ lệ gốc dù container bị resize
-    img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;display:block;';
-    el.appendChild(img);
+    inner.appendChild(img);
+    el.appendChild(inner);
 
   } else if (obj.type === 'shape') {
     el.classList.add('edit-obj-shape');
@@ -256,6 +261,14 @@ function _renderOverlayObject(obj, overlayEl, pg) {
     _saveHistory();
   });
   el.appendChild(delBtn);
+
+  // ── Rotate handle (góc trên trái) ──
+  const rotHandle = document.createElement('div');
+  rotHandle.className = 'obj-rotate-handle';
+  rotHandle.title = 'Xoay (Shift: bước 10°)';
+  rotHandle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>`;
+  _bindRotateHandle(el, obj, rotHandle);
+  el.appendChild(rotHandle);
 
   const handles = [ { cls:'rh-n', dir:'n' }, { cls:'rh-s', dir:'s' }, { cls:'rh-w', dir:'w' }, { cls:'rh-e', dir:'e' }, { cls:'rh-se', dir:'se' } ];
   
@@ -318,7 +331,7 @@ function _deselectAll(pg) {
 function _bindObjectMove(el, obj, pg) {
   let startX, startY, startOX, startOY;
   el.addEventListener('mousedown', e => {
-    if (e.target.closest('.obj-btn-del') || e.target.closest('.obj-resize-handle')) return;
+    if (e.target.closest('.obj-btn-del') || e.target.closest('.obj-resize-handle') || e.target.closest('.obj-rotate-handle')) return;
     if (el.querySelector('[contenteditable="true"]')) return;
 
     e.preventDefault(); e.stopPropagation();
@@ -327,7 +340,6 @@ function _bindObjectMove(el, obj, pg) {
     startX = e.clientX; startY = e.clientY; startOX = obj.x; startOY = obj.y;
 
     function onMove(e2) {
-      // Chia lại cho editZoom để vận tốc chuột khớp với màn hình
       let dx = (e2.clientX - startX) / editZoom;
       let dy = (e2.clientY - startY) / editZoom;
 
@@ -342,14 +354,14 @@ function _bindObjectMove(el, obj, pg) {
         ny = Math.max(0, ny);
       }
 
-      obj.x = nx; 
+      obj.x = nx;
       obj.y = ny;
-      el.style.left = obj.x + 'px'; 
+      el.style.left = obj.x + 'px';
       el.style.top = obj.y + 'px';
     }
-    function onUp() { 
-      document.removeEventListener('mousemove', onMove); 
-      document.removeEventListener('mouseup', onUp); 
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
       if (obj.x !== startOX || obj.y !== startOY) _saveHistory();
     }
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
@@ -360,17 +372,13 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
   handleEl.addEventListener('mousedown', e => {
     e.preventDefault(); e.stopPropagation();
     const startX = e.clientX, startY = e.clientY, startW = obj.w, startH = obj.h, startOX = obj.x, startOY = obj.y, MIN = 2;
-    
-    // Ghi nhớ tỷ lệ gốc (Width / Height) ngay khi vừa click chuột
-    const aspect = startW / startH; 
-    
+    const aspect = startW / startH;
+
     function onMove(e2) {
-      // Chia cho editZoom để tốc độ kéo khớp đúng với canvas khi đang zoom
       let dx = (e2.clientX - startX) / editZoom;
       let dy = (e2.clientY - startY) / editZoom;
       const pg = _getCurrentPg();
 
-      // Giới hạn khung crop không được tràn ra ngoài trang PDF
       if (obj.type === 'cropbox' && pg) {
         if (dir.includes('e')) dx = Math.min(dx, pg.widthPt * editorScale - (startOX + startW));
         if (dir.includes('w')) dx = Math.max(dx, -startOX);
@@ -378,9 +386,7 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
         if (dir.includes('n')) dy = Math.max(dy, -startOY);
       }
 
-      // Xử lý kéo các hướng
-      if (dir === 'se') { 
-        // Nếu là cropbox, cho phép resize tự do, còn lại khóa tỷ lệ
+      if (dir === 'se') {
         if (obj.type === 'cropbox') {
           obj.w = Math.max(MIN, startW + dx);
           obj.h = Math.max(MIN, startH + dy);
@@ -394,42 +400,62 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
           }
         }
       }
-      else if (dir === 'ne') { 
-        obj.w = Math.max(MIN, startW + dx); 
-        const nh = Math.max(MIN, startH - dy); 
-        obj.y = startOY + (startH - nh); 
-        obj.h = nh; 
-      }
-      else if (dir === 'sw') { 
-        obj.h = Math.max(MIN, startH + dy); 
-        const nw = Math.max(MIN, startW - dx); 
-        obj.x = startOX + (startW - nw); 
-        obj.w = nw; 
-      }
-      else if (dir === 'nw') { 
-        const nw = Math.max(MIN, startW - dx); 
-        obj.x = startOX + (startW - nw); 
-        obj.w = nw; 
-        const nh = Math.max(MIN, startH - dy); 
-        obj.y = startOY + (startH - nh); 
-        obj.h = nh; 
-      }
+      else if (dir === 'ne') { obj.w = Math.max(MIN, startW + dx); const nh = Math.max(MIN, startH - dy); obj.y = startOY + (startH - nh); obj.h = nh; }
+      else if (dir === 'sw') { obj.h = Math.max(MIN, startH + dy); const nw = Math.max(MIN, startW - dx); obj.x = startOX + (startW - nw); obj.w = nw; }
+      else if (dir === 'nw') { const nw = Math.max(MIN, startW - dx); obj.x = startOX + (startW - nw); obj.w = nw; const nh = Math.max(MIN, startH - dy); obj.y = startOY + (startH - nh); obj.h = nh; }
       else if (dir === 'e') { obj.w = Math.max(MIN, startW + dx); }
       else if (dir === 'w') { const nw = Math.max(MIN, startW - dx); obj.x = startOX + (startW - nw); obj.w = nw; }
       else if (dir === 's') { obj.h = Math.max(MIN, startH + dy); }
       else if (dir === 'n') { const nh = Math.max(MIN, startH - dy); obj.y = startOY + (startH - nh); obj.h = nh; }
-      
-      el.style.width = obj.w + 'px'; 
-      el.style.height = obj.h + 'px'; 
-      el.style.left = obj.x + 'px'; 
+
+      el.style.width = obj.w + 'px';
+      el.style.height = obj.h + 'px';
+      el.style.left = obj.x + 'px';
       el.style.top = obj.y + 'px';
     }
-    
-    function onUp() { 
-      document.removeEventListener('mousemove', onMove); 
-      document.removeEventListener('mouseup', onUp); 
+
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
       if (obj.w !== startW || obj.h !== startH || obj.x !== startOX || obj.y !== startOY) _saveHistory();
     }
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+  });
+}
+
+// ── Bind Rotate Handle ──
+function _bindRotateHandle(el, obj, handleEl) {
+  handleEl.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    const startAngle = obj.rotation || 0;
+
+    // Tâm của object trên màn hình (dùng getBoundingClientRect sau khi element đã render)
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top  + rect.height / 2;
+
+    // Góc bắt đầu giữa chuột và tâm object
+    const initMouseAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+
+    function onMove(e2) {
+      const curMouseAngle = Math.atan2(e2.clientY - cy, e2.clientX - cx) * (180 / Math.PI);
+      let delta = curMouseAngle - initMouseAngle;
+      let newAngle = startAngle + delta;
+
+      // Shift: snap to 10°
+      if (e2.shiftKey) newAngle = Math.round(newAngle / 10) * 10;
+
+      obj.rotation = ((newAngle % 360) + 360) % 360;
+      el.style.transform = `rotate(${obj.rotation}deg)`;
+    }
+
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      _saveHistory();
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   });
 }

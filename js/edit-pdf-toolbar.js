@@ -118,9 +118,46 @@ function _bindEditButtons() {
     });
   }
 
+async function _createBlurredEdgeImage(dataURL) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      
+      // Giảm độ blur đi 40% (từ 0.08 xuống ~0.048)
+      const blur = Math.min(w, h) * 0.048; 
+      
+      // Bước 1: Tạo mask mờ dần ở viền
+      ctx.filter = `blur(${blur}px)`;
+      ctx.fillStyle = 'black';
+      
+      // Tính toán vùng padding đủ lớn (khoảng 2.5 lần blur) để viền mờ 
+      // fade out hoàn toàn thành trong suốt trước khi chạm mép khung ảnh,
+      // giúp tránh bị xén ngọt (clipping) ở mép ngoài.
+      const pad = blur * 2.5;
+      ctx.fillRect(pad, pad, w - pad * 2, h - pad * 2);
+      
+      // Bước 2: Ghép ảnh gốc vào, lấy phần alpha của mask
+      ctx.filter = 'none';
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.drawImage(img, 0, 0, w, h);
+      
+      // Xuất ra dạng PNG để giữ được alpha channel (độ trong suốt)
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(dataURL);
+    img.src = dataURL;
+  });
+}
+
   const btnImg = document.getElementById('edit-btn-image');
   if (btnImg) {
-    btnImg.addEventListener('click', () => {
+    btnImg.addEventListener('click', (e) => {
+      const isBlurMode = e.ctrlKey || e.metaKey;
       document.querySelectorAll('.elb-btn').forEach(b => b.classList.remove('active'));
       activeShapeTool = null;
       _cancelLinePending();
@@ -132,7 +169,10 @@ function _bindEditButtons() {
       const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*,.tiff,.tif';
       input.addEventListener('change', async () => {
         if (!input.files[0]) return;
-        const dataURL = await readFileAsDataURL(input.files[0]);
+        let dataURL = await readFileAsDataURL(input.files[0]);
+        if (isBlurMode) {
+          dataURL = await _createBlurredEdgeImage(dataURL);
+        }
         // Tải ảnh để lấy tỉ lệ gốc trước khi tạo object
         const imgEl = new Image();
         imgEl.src = dataURL;
@@ -637,11 +677,9 @@ function _updateCanvasZoom() {
   const pageEl = area.querySelector('.edit-page-canvas');
   if (!wrapper || !pageEl) return;
   
-  // Sau khi apply physical rotation, widthPt/heightPt đã được swap sẵn
   wrapper.style.width = Math.round(pg.widthPt * editorScale * editZoom) + 'px';
   wrapper.style.height = Math.round(pg.heightPt * editorScale * editZoom) + 'px';
   pageEl.style.transform = `scale(${editZoom})`;
-  pageEl.style.transformOrigin = 'center center';
 }
 
 function _bindZoomControls() {
