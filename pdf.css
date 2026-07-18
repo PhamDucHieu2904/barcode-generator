@@ -380,3 +380,278 @@
   border-radius: 4px;
   font-family: monospace;
 }
+
+/* ══════════════════════════════════════
+   AI FILL — Button & Dialog
+   ══════════════════════════════════════ */
+
+/* ── AI button nằm ngoài panel toolbar ── */
+.ai-fill-btn-wrapper {
+  padding: 12px 0 8px 0;
+  display: flex;
+  justify-content: center;
+}
+
+#ai-fill-btn {
+  width: 46px;
+  height: 36px;
+  background: linear-gradient(135deg, #6c47ff 0%, #a259ff 100%);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  box-shadow: 0 2px 10px rgba(108,71,255,0.35);
+  transition: all 0.18s;
+  user-select: none;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+#ai-fill-btn::before {
+  content: '✦';
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+#ai-fill-btn:hover {
+  background: linear-gradient(135deg, #7c5fff 0%, #b36fff 100%);
+  box-shadow: 0 4px 18px rgba(108,71,255,0.5);
+  transform: translateY(-1px);
+}
+
+#ai-fill-btn:active,
+#ai-fill-btn.active {
+  background: linear-gradient(135deg, #4a2ecc 0%, #8040cc 100%);
+  box-shadow: 0 0 0 3px rgba(108,71,255,0.3);
+  transform: translateY(0);
+}
+
+#ai-fill-btn.active {
+  animation: ai-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes ai-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(108,71,255,0.3); }
+  50%       { box-shadow: 0 0 0 6px rgba(108,71,255,0.15); }
+}
+
+/* ── Selection box glow khi AI tool active ── */
+#ai-selection-box {
+  border-color: #6c47ff !important;
+  animation: ai-selection-glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes ai-selection-glow {
+  from { box-shadow: 0 0 0 9999px rgba(0,0,0,0.42); }
+  to   { box-shadow: 0 0 0 9999px rgba(0,0,0,0.52); }
+}
+
+/* ══════════════════════════════════════
+   AI PROMPT DIALOG
+   ══════════════════════════════════════ */
+#ai-prompt-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ai-dialog-backdrop {
+  display: none;
+}
+
+.ai-dialog-box {
+  pointer-events: all;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.18),
+    0 2px 8px rgba(0,0,0,0.08),
+    0 0 0 1px rgba(108,71,255,0.15);
+  width: 400px;
+  max-width: calc(100vw - 40px);
+  overflow: hidden;
+  animation: ai-dialog-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ai-dialog-in {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.ai-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1c1c1c;
+  padding: 14px 18px;
+  color: #fff;
+}
+
+.ai-dialog-icon {
+  font-size: 16px;
+  animation: ai-sparkle 2s ease-in-out infinite;
+}
+
+@keyframes ai-sparkle {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  50%       { opacity: 0.7; transform: scale(1.15) rotate(15deg); }
+}
+
+.ai-dialog-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ai-dialog-body {
+  padding: 18px 18px 12px;
+}
+
+.ai-dialog-hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.ai-prompt-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-height: 72px;
+  color: #111;
+  line-height: 1.5;
+  background: #fafafa;
+}
+
+.ai-prompt-textarea:focus {
+  border-color: #6c47ff;
+  box-shadow: 0 0 0 3px rgba(108,71,255,0.12);
+  background: #fff;
+}
+
+.ai-prompt-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-dialog-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #999;
+}
+
+.ai-info-icon { font-size: 12px; }
+
+.ai-dialog-error {
+  margin: 0 18px;
+  padding: 8px 12px;
+  background: #fff5f5;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #dc2626;
+  line-height: 1.4;
+}
+
+.ai-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 18px 16px;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+}
+
+.ai-btn {
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.ai-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ai-btn-cancel {
+  background: #f0f0f0;
+  color: #555;
+  border: 1.5px solid #e0e0e0;
+}
+
+.ai-btn-cancel:hover:not(:disabled) {
+  background: #e5e5e5;
+  color: #111;
+}
+
+.ai-btn-create {
+  background: #1c1c1c;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  min-width: 100px;
+  justify-content: center;
+}
+
+.ai-btn-create:hover:not(:disabled) {
+  background: #333;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+.ai-btn-icon {
+  font-size: 12px;
+}
+
+/* ── Loading spinner ── */
+.ai-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: ai-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Loading state — dim dialog */
+#ai-prompt-dialog.loading .ai-dialog-box {
+  opacity: 0.95;
+}

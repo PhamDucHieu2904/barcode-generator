@@ -8,7 +8,8 @@
      4. edit-pdf-export.js   — PDF/image export
      5. edit-pdf-toolbar.js  — Toolbar & keyboard
      6. edit-pdf-dropzone.js — File input & thumbnails
-     7. edit-pdf.js          ← entry point (this file)
+     7. edit-pdf-ai.js       — AI Generative Fill
+     8. edit-pdf.js          ← entry point (this file)
    ══════════════════════════════════════════════ */
 
 // Inject Google Fonts cho các font trong EDIT_FONTS (khai báo trong edit-pdf-state.js)
@@ -51,4 +52,5 @@ function initEditPDF() {
   _bindTextFormatControls();
   _bindZoomControls();
   _renderEditThumbs();
+  initAITool(); // AI Generative Fill
 }
