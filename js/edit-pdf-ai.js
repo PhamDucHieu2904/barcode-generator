@@ -1,13 +1,7 @@
 /* ══════════════════════════════════════════════
-   edit-pdf-ai.js — AI Generative Fill
-   Sử dụng: Cloudflare Workers AI (miễn phí 10k neurons/ngày)
-   Model: @cf/runwayml/stable-diffusion-v1-5-inpainting
-   Hướng dẫn deploy Worker: xem cloudflare_worker.js
+   edit-pdf-ai.js — Smart Text Replacement
+   Nhận diện và render hoàn toàn trong trình duyệt; không upload PDF.
    ══════════════════════════════════════════════ */
-
-// ── Config ──
-// Sau khi deploy Cloudflare Worker, paste URL vào đây:
-const CF_WORKER_URL = 'https://pdf-ai-fill.duchieudndh.workers.dev';
 
 // ── State ──
 let _aiActive = false;         // Tool AI đang bật?
@@ -42,7 +36,10 @@ function initAITool() {
 
     // Đổi cursor canvas
     const canvasArea = document.getElementById('edit-canvas-area');
-    if (canvasArea) canvasArea.style.cursor = 'crosshair';
+    if (canvasArea) {
+      canvasArea.style.cursor = 'crosshair';
+      canvasArea.classList.remove('can-pan');
+    }
 
     _bindAICanvasEvents();
   });
@@ -76,15 +73,17 @@ function _bindAICanvasEvents() {
 
     const selEl = document.createElement('div');
     selEl.id = 'ai-selection-box';
+    const selectionStroke = 2 / Math.max(1, editZoom);
+    const selectionRadius = 3 / Math.max(1, editZoom);
     selEl.style.cssText = `
       position: absolute;
       left: ${startPos.x}px; top: ${startPos.y}px;
       width: 0; height: 0;
-      border: 2px dashed #6c47ff;
+      border: ${selectionStroke}px dashed #6c47ff;
       box-sizing: border-box;
       pointer-events: none;
       z-index: 8000;
-      border-radius: 3px;
+      border-radius: ${selectionRadius}px;
       box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
       clip-path: inset(-9999px -9999px -9999px -9999px);
     `;
@@ -117,7 +116,8 @@ function _bindAICanvasEvents() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
 
-      if (!_aiSelectionRect || _aiSelectionRect.w < 10 || _aiSelectionRect.h < 10) {
+      const minLogicalSize = 10 / Math.max(1, editZoom); // 10px trên màn hình ở mọi mức zoom.
+      if (!_aiSelectionRect || _aiSelectionRect.w < minLogicalSize || _aiSelectionRect.h < minLogicalSize) {
         _removeAISelectionEl();
         return;
       }
@@ -162,6 +162,18 @@ function _showAIPromptDialog() {
         
         <!-- Mode: Text -->
         <div id="ai-mode-text" style="display: block;">
+          <div class="ai-font-detect-panel">
+            <div class="ai-detect-status-row">
+              <span id="ai-font-detect-status" class="ai-detect-status">Đang chuẩn bị nhận diện font…</span>
+              <span class="ai-detect-progress"><i id="ai-font-detect-progress"></i></span>
+            </div>
+            <div class="ai-source-row">
+              <label for="ai-source-text">Chữ gốc</label>
+              <input id="ai-source-text" type="text" placeholder="Tự đọc từ PDF hoặc OCR" autocomplete="off">
+              <button id="ai-font-redetect" class="ai-redetect-btn" type="button">Dò lại</button>
+            </div>
+            <div id="ai-font-candidates" class="ai-font-candidates"></div>
+          </div>
           <p class="ai-dialog-hint">Nhập chữ mới bạn muốn chèn vào bản scan</p>
           <textarea id="ai-prompt-input" class="ai-prompt-textarea" 
             placeholder="Ví dụ: CÔNG TY"
@@ -169,11 +181,7 @@ function _showAIPromptDialog() {
           
           <div class="ai-font-controls" style="margin-top: 8px; display: flex; gap: 8px; font-size: 12px; align-items: center;">
             <select id="ai-font-family" style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; outline: none; background: #fff; flex: 1;">
-              <option value="Arial">Font: Arial</option>
-              <option value="Times New Roman">Font: Times New Roman</option>
-              <option value="Courier New">Font: Courier New</option>
-              <option value="Verdana">Font: Verdana</option>
-              <option value="Tahoma">Font: Tahoma</option>
+              <option value="Arial">Arial</option>
             </select>
             <select id="ai-font-weight" style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; outline: none; background: #fff; width: 80px;">
               <option value="normal">Thường</option>
@@ -184,22 +192,43 @@ function _showAIPromptDialog() {
               <option value="italic">Nghiêng</option>
             </select>
 
+            <select id="ai-text-align" style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; outline: none; background: #fff; width: 70px;" title="Căn chữ">
+              <option value="left">Trái</option>
+              <option value="center">Giữa</option>
+              <option value="right">Phải</option>
+            </select>
+
             <input type="color" id="ai-text-color" value="#000000" style="padding: 0; border: 1px solid #ccc; border-radius: 4px; height: 26px; width: 30px; cursor: pointer;" title="Màu chữ">
           </div>
           
-          <div style="margin-top: 12px; font-size: 12px; color: #555;">
+          <div class="ai-text-adjustments" style="margin-top: 12px; font-size: 12px; color: #555;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
               <span>Cỡ Chữ (Size): <span id="ai-font-size-val">70</span>%</span>
               <input type="range" id="ai-font-size-slider" min="10" max="150" step="1" value="70" style="width: 120px;" title="Tỷ lệ cỡ chữ so với khung chọn">
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>Độ Nhòe (Blur): <span id="ai-blur-val">0.5</span>px</span>
-              <input type="range" id="ai-blur-slider" min="0" max="3" step="0.1" value="0.5" style="width: 120px;">
+          </div>
+
+          <div class="ai-appearance-panel">
+            <div class="ai-appearance-heading">
+              <label for="ai-appearance-mode">Hiệu ứng chữ</label>
+              <select id="ai-appearance-mode">
+                <option value="match" selected>Khớp tài liệu scan</option>
+                <option value="clean">Chữ kỹ thuật số sạch</option>
+                <option value="manual">Tùy chỉnh</option>
+              </select>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>Nhiễu Hạt (Noise): <span id="ai-noise-val">10</span>%</span>
-              <input type="range" id="ai-noise-slider" min="0" max="100" step="1" value="10" style="width: 120px;">
+            <div id="ai-scan-profile-status" class="ai-scan-profile-status">Đang phân tích hiệu ứng scan…</div>
+            <div class="ai-effect-grid">
+              <label><span>Cường độ <b id="ai-scan-strength-val">80</b>%</span><input id="ai-scan-strength" type="range" min="0" max="150" step="1" value="80"></label>
+              <label><span>Blur <b id="ai-blur-val">0.0</b>px</span><input id="ai-blur-slider" type="range" min="0" max="3" step="0.1" value="0"></label>
+              <label><span>Sharpen <b id="ai-sharpen-val">0</b>%</span><input id="ai-sharpen-slider" type="range" min="0" max="150" step="1" value="0"></label>
+              <label><span>Mực loang <b id="ai-spread-val">0</b>%</span><input id="ai-spread-slider" type="range" min="-100" max="100" step="1" value="0"></label>
+              <label><span>Contrast <b id="ai-contrast-val">100</b>%</span><input id="ai-contrast-slider" type="range" min="70" max="140" step="1" value="100"></label>
+              <label><span>Noise <b id="ai-noise-val">0</b>%</span><input id="ai-noise-slider" type="range" min="0" max="100" step="1" value="0"></label>
+              <label><span>JPEG <b id="ai-jpeg-val">100</b>%</span><input id="ai-jpeg-slider" type="range" min="60" max="100" step="1" value="100"></label>
             </div>
+            <input id="ai-bg-noise" type="hidden" value="0">
+            <input id="ai-ink-noise" type="hidden" value="0">
           </div>
           
           <div id="ai-live-preview-container" style="margin-top: 12px; text-align: center; border: 1px dashed #ccc; padding: 4px; border-radius: 4px; min-height: 40px; display: flex; align-items: center; justify-content: center; background: #fafafa; overflow: hidden;">
@@ -226,29 +255,72 @@ function _showAIPromptDialog() {
     </div>
   `;
   document.body.appendChild(dialog);
+  if (typeof populateSmartFontSelect === 'function') {
+    populateSmartFontSelect(document.getElementById('ai-font-family'));
+  }
 
   // Hiển thị kích thước vùng chọn
   const pg = _getCurrentPg();
   if (_aiSelectionRect && pg) {
     const sizeEl = document.getElementById('ai-selection-size');
     if (sizeEl) {
-      sizeEl.textContent = `Vùng chọn: ${Math.round(_aiSelectionRect.w * editorScale)} × ${Math.round(_aiSelectionRect.h * editorScale)} px canvas`;
+      sizeEl.textContent = `Vùng chọn: ${Math.round(_aiSelectionRect.w)} × ${Math.round(_aiSelectionRect.h)} px canvas`;
     }
   }
 
   // Live Preview Logic
   let capturedBase64ForPreview = null;
+  let livePreviewSequence = 0;
+  let detectedScanProfile = null;
   if (pg && _aiSelectionRect) {
     _captureSelectionRegion(pg, _aiSelectionRect).then(async base64 => {
       capturedBase64ForPreview = base64;
-      
+
+      const updateDetectProgress = (status, progress) => {
+        const statusEl = document.getElementById('ai-font-detect-status');
+        const progressEl = document.getElementById('ai-font-detect-progress');
+        if (statusEl) statusEl.textContent = status;
+        if (progressEl) progressEl.style.width = `${Math.max(4, Math.round((progress || 0) * 100))}%`;
+      };
+
+      const detectionPromise = typeof analyzeSelectionFont === 'function'
+        ? analyzeSelectionFont(pg, _aiSelectionRect, base64, updateDetectProgress)
+        : Promise.resolve(null);
+      const scanProfilePromise = typeof analyzeScanEffectProfile === 'function'
+        ? analyzeScanEffectProfile(base64).catch(err => {
+            console.warn('[Scan Profile] Analysis fallback:', err);
+            return null;
+          })
+        : Promise.resolve(null);
+      const [detectedColor, detectedHeightPct, fontAnalysis, rawScanProfile] = await Promise.all([
+        _extractDominantTextColor(base64),
+        _detectTextHeightPct(base64),
+        detectionPromise,
+        scanProfilePromise
+      ]);
+      let scanProfile = rawScanProfile;
+      if (scanProfile && fontAnalysis?.text && fontAnalysis.candidates?.[0] &&
+          typeof refineScanProfileStroke === 'function') {
+        try {
+          scanProfile = await refineScanProfileStroke(
+            base64,
+            fontAnalysis.text,
+            fontAnalysis.candidates[0],
+            scanProfile
+          );
+        } catch (err) {
+          console.warn('[Scan Profile] Stroke refinement fallback:', err);
+        }
+      }
+      if (scanProfile && typeof rememberScanEffectProfile === 'function') {
+        scanProfile = rememberScanEffectProfile(pg, scanProfile);
+      }
+
       // Auto-detect Text Color
-      const detectedColor = await _extractDominantTextColor(base64);
       const colorInput = document.getElementById('ai-text-color');
       if (colorInput) colorInput.value = detectedColor;
 
       // Auto-detect Text Height
-      const detectedHeightPct = await _detectTextHeightPct(base64);
       const fontSizeSlider = document.getElementById('ai-font-size-slider');
       const fontSizeVal = document.getElementById('ai-font-size-val');
       if (fontSizeSlider && fontSizeVal) {
@@ -257,11 +329,109 @@ function _showAIPromptDialog() {
         fontSizeVal.textContent = pctVal;
       }
 
+      detectedScanProfile = scanProfile;
+      if (scanProfile && document.getElementById('ai-appearance-mode')?.value === 'match') {
+        _applyScanProfileToUI(scanProfile);
+      } else if (!scanProfile) {
+        const profileStatus = document.getElementById('ai-scan-profile-status');
+        if (profileStatus) profileStatus.textContent = 'Không đủ dữ liệu để khớp tự động; có thể chỉnh tay.';
+      }
+
+      if (fontAnalysis) {
+        const sourceInput = document.getElementById('ai-source-text');
+        if (sourceInput) sourceInput.value = fontAnalysis.text || '';
+        _renderAIFontCandidates(fontAnalysis.candidates || [], fontAnalysis.source);
+        if (fontAnalysis.candidates?.[0]) await _applyAIFontCandidate(fontAnalysis.candidates[0]);
+        if (!fontAnalysis.text) updateDetectProgress('Không đọc được chữ gốc — nhập thủ công rồi bấm Dò lại', 0);
+      }
+
       _updateLivePreview();
+    }).catch(err => {
+      const statusEl = document.getElementById('ai-font-detect-status');
+      if (statusEl) statusEl.textContent = 'Không thể phân tích vùng chọn: ' + (err.message || err);
     });
   }
 
+  function _setEffectControl(id, value, displayId, displayValue) {
+    const input = document.getElementById(id);
+    const display = document.getElementById(displayId);
+    if (input) input.value = value;
+    if (display) display.textContent = displayValue ?? value;
+  }
+
+  function _applyScanProfileToUI(profile) {
+    if (!profile) return;
+    _setEffectControl('ai-blur-slider', profile.blurPx, 'ai-blur-val', Number(profile.blurPx).toFixed(1));
+    _setEffectControl('ai-sharpen-slider', Math.round(profile.sharpenAmount * 100), 'ai-sharpen-val');
+    const safeAutoSpread = Math.max(-0.08, Math.min(0.08, Number(profile.inkSpread) || 0));
+    _setEffectControl('ai-spread-slider', Math.round(safeAutoSpread * 100), 'ai-spread-val');
+    _setEffectControl('ai-contrast-slider', Math.round(profile.contrast * 100), 'ai-contrast-val');
+    _setEffectControl('ai-noise-slider', Math.round(profile.noiseAlpha * 100), 'ai-noise-val');
+    _setEffectControl('ai-jpeg-slider', Math.round(profile.jpegQuality * 100), 'ai-jpeg-val');
+    const bgNoise = document.getElementById('ai-bg-noise');
+    const inkNoise = document.getElementById('ai-ink-noise');
+    if (bgNoise) bgNoise.value = profile.backgroundNoise || 0;
+    if (inkNoise) inkNoise.value = profile.inkNoise || 0;
+    const status = document.getElementById('ai-scan-profile-status');
+    const sampleLabel = profile.sampleCount > 1 ? ` · ${profile.sampleCount} vùng trên trang` : '';
+    if (status) status.textContent = `Đã khớp ${Math.round(profile.confidence || 0)}%${sampleLabel} · blur ${Number(profile.blurPx).toFixed(1)}px · sharpen ${Math.round(profile.sharpenAmount*100)}% · JPEG ${Math.round(profile.jpegQuality*100)}%`;
+    _updateLivePreview();
+  }
+
+  function _applyCleanProfileToUI() {
+    _setEffectControl('ai-blur-slider', 0, 'ai-blur-val', '0.0');
+    _setEffectControl('ai-sharpen-slider', 0, 'ai-sharpen-val');
+    _setEffectControl('ai-spread-slider', 0, 'ai-spread-val');
+    _setEffectControl('ai-contrast-slider', 100, 'ai-contrast-val');
+    _setEffectControl('ai-noise-slider', 0, 'ai-noise-val');
+    _setEffectControl('ai-jpeg-slider', 100, 'ai-jpeg-val');
+    const bgNoise = document.getElementById('ai-bg-noise');
+    const inkNoise = document.getElementById('ai-ink-noise');
+    if (bgNoise) bgNoise.value = 0;
+    if (inkNoise) inkNoise.value = 0;
+    const status = document.getElementById('ai-scan-profile-status');
+    if (status) status.textContent = 'Không áp hiệu ứng scan.';
+    _updateLivePreview();
+  }
+
+  async function _applyAIFontCandidate(candidate) {
+    if (!candidate) return;
+    const family = document.getElementById('ai-font-family');
+    const weight = document.getElementById('ai-font-weight');
+    const style = document.getElementById('ai-font-style');
+    if (family) family.value = candidate.family || 'Arial';
+    if (weight) weight.value = candidate.fontWeight || 'normal';
+    if (style) style.value = candidate.fontStyle || 'normal';
+    if (typeof ensureGoogleFontLoaded === 'function') {
+      await ensureGoogleFontLoaded(candidate.family, document.getElementById('ai-source-text')?.value || 'Tiếng Việt');
+    }
+    document.querySelectorAll('.ai-font-candidate').forEach(btn => btn.classList.toggle('active', btn.dataset.family === candidate.family));
+    _updateLivePreview();
+  }
+
+  function _renderAIFontCandidates(candidates, sourceKind) {
+    const container = document.getElementById('ai-font-candidates');
+    if (!container) return;
+    container.innerHTML = '';
+    candidates.slice(0, 3).forEach(candidate => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'ai-font-candidate';
+      button.dataset.family = candidate.family;
+      button.style.fontFamily = `"${candidate.family}", sans-serif`;
+      button.innerHTML = `<strong>${candidate.family}</strong><small>${candidate.confidence || 0}% tương đồng</small>`;
+      button.addEventListener('click', () => _applyAIFontCandidate(candidate));
+      container.appendChild(button);
+    });
+    const statusEl = document.getElementById('ai-font-detect-status');
+    if (statusEl && candidates.length) {
+      const sourceLabel = sourceKind === 'pdf-text' ? 'PDF text' : (sourceKind === 'manual' ? 'Chữ nhập tay' : 'OCR');
+      statusEl.textContent = `${sourceLabel} · Gợi ý: ${candidates[0].family}`;
+    }
+  }
+
   async function _updateLivePreview() {
+    const sequence = ++livePreviewSequence;
     if (!capturedBase64ForPreview) return;
     const container = document.getElementById('ai-live-preview-container');
     if (!container) return;
@@ -279,11 +449,14 @@ function _showAIPromptDialog() {
       textAlign: document.getElementById('ai-text-align')?.value || 'left',
       textColor: document.getElementById('ai-text-color')?.value || '#000000',
       fontSizePct: parseFloat(document.getElementById('ai-font-size-slider')?.value || '70') / 100,
-      blurPx: parseFloat(document.getElementById('ai-blur-slider')?.value || '0.5'),
-      noiseAlpha: parseFloat(document.getElementById('ai-noise-slider')?.value || '10') / 100
+      ..._readAIScanEffectControls()
     };
 
+    if (typeof ensureGoogleFontLoaded === 'function') {
+      await ensureGoogleFontLoaded(manualStyle.fontFamily, prompt);
+    }
     const renderObj = await _localSmartTextReplacement(capturedBase64ForPreview, prompt, manualStyle);
+    if (sequence !== livePreviewSequence || !document.getElementById('ai-prompt-dialog')) return;
     container.innerHTML = `<img src="${renderObj.dataURL}" style="max-width: 100%; max-height: 100px; object-fit: contain; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">`;
   }
 
@@ -303,22 +476,70 @@ function _showAIPromptDialog() {
     _updateLivePreview();
   });
   
-  const blurSlider = document.getElementById('ai-blur-slider');
-  if (blurSlider) blurSlider.addEventListener('input', e => { 
-    document.getElementById('ai-blur-val').textContent = e.target.value; 
-    _updateLivePreview();
+  const effectSliders = [
+    ['ai-scan-strength','ai-scan-strength-val',false],
+    ['ai-blur-slider','ai-blur-val',true],
+    ['ai-sharpen-slider','ai-sharpen-val',true],
+    ['ai-spread-slider','ai-spread-val',true],
+    ['ai-contrast-slider','ai-contrast-val',true],
+    ['ai-noise-slider','ai-noise-val',true],
+    ['ai-jpeg-slider','ai-jpeg-val',true]
+  ];
+  effectSliders.forEach(([inputId, valueId, markManual]) => {
+    document.getElementById(inputId)?.addEventListener('input', e => {
+      const display = document.getElementById(valueId);
+      if (display) display.textContent = inputId === 'ai-blur-slider' ? Number(e.target.value).toFixed(1) : e.target.value;
+      if (markManual) {
+        const mode = document.getElementById('ai-appearance-mode');
+        if (mode) mode.value = 'manual';
+        const status = document.getElementById('ai-scan-profile-status');
+        if (status) status.textContent = 'Đang dùng profile tùy chỉnh.';
+      }
+      _updateLivePreview();
+    });
   });
-  
-  const noiseSlider = document.getElementById('ai-noise-slider');
-  if (noiseSlider) noiseSlider.addEventListener('input', e => { 
-    document.getElementById('ai-noise-val').textContent = e.target.value; 
-    _updateLivePreview();
+
+  document.getElementById('ai-appearance-mode')?.addEventListener('change', e => {
+    if (e.target.value === 'clean') _applyCleanProfileToUI();
+    else if (e.target.value === 'match') {
+      if (detectedScanProfile) _applyScanProfileToUI(detectedScanProfile);
+      else {
+        const status = document.getElementById('ai-scan-profile-status');
+        if (status) status.textContent = 'Đang phân tích hiệu ứng scan…';
+      }
+    } else {
+      const status = document.getElementById('ai-scan-profile-status');
+      if (status) status.textContent = 'Đang dùng profile tùy chỉnh.';
+      _updateLivePreview();
+    }
   });
   
   const fontControls = dialog.querySelectorAll('#ai-font-family, #ai-font-weight, #ai-font-style, #ai-text-align, #ai-text-color');
   fontControls.forEach(el => el.addEventListener('change', _updateLivePreview));
   const colorInput = document.getElementById('ai-text-color');
   if (colorInput) colorInput.addEventListener('input', _updateLivePreview);
+
+  document.getElementById('ai-font-redetect')?.addEventListener('click', async () => {
+    const sourceText = document.getElementById('ai-source-text')?.value?.trim();
+    if (!capturedBase64ForPreview || !sourceText || typeof detectNearestGoogleFonts !== 'function') return;
+    const button = document.getElementById('ai-font-redetect');
+    if (button) button.disabled = true;
+    try {
+      const statusEl = document.getElementById('ai-font-detect-status');
+      const progressEl = document.getElementById('ai-font-detect-progress');
+      const candidates = await detectNearestGoogleFonts(capturedBase64ForPreview, sourceText, null, (status, progress) => {
+        if (statusEl) statusEl.textContent = status;
+        if (progressEl) progressEl.style.width = `${Math.max(4, Math.round(progress * 100))}%`;
+      });
+      _renderAIFontCandidates(candidates, 'manual');
+      if (candidates[0]) await _applyAIFontCandidate(candidates[0]);
+    } catch (err) {
+      const statusEl = document.getElementById('ai-font-detect-status');
+      if (statusEl) statusEl.textContent = 'Dò font thất bại: ' + (err.message || err);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
 
   // Bind buttons dialog
   function onKeydown(e) {
@@ -339,6 +560,21 @@ function _showAIPromptDialog() {
   });
 }
 
+function _readAIScanEffectControls() {
+  return {
+    appearanceMode: document.getElementById('ai-appearance-mode')?.value || 'match',
+    scanStrength: parseFloat(document.getElementById('ai-scan-strength')?.value || '80') / 100,
+    blurPx: parseFloat(document.getElementById('ai-blur-slider')?.value || '0'),
+    sharpenAmount: parseFloat(document.getElementById('ai-sharpen-slider')?.value || '0') / 100,
+    inkSpread: parseFloat(document.getElementById('ai-spread-slider')?.value || '0') / 100,
+    contrast: parseFloat(document.getElementById('ai-contrast-slider')?.value || '100') / 100,
+    noiseAlpha: parseFloat(document.getElementById('ai-noise-slider')?.value || '0') / 100,
+    backgroundNoise: parseFloat(document.getElementById('ai-bg-noise')?.value || '0'),
+    inkNoise: parseFloat(document.getElementById('ai-ink-noise')?.value || '0'),
+    jpegQuality: parseFloat(document.getElementById('ai-jpeg-slider')?.value || '100') / 100
+  };
+}
+
 /* ════════════════════════════════════════════
    XỬ LÝ CANCEL
    ════════════════════════════════════════════ */
@@ -349,7 +585,7 @@ function _handleAICancel() {
 }
 
 /* ════════════════════════════════════════════
-   XỬ LÝ CREATE — Capture + Gọi Gemini
+   XỬ LÝ CREATE — Capture + render cục bộ
    ════════════════════════════════════════════ */
 async function _handleAICreate() {
   const pg = _getCurrentPg();
@@ -377,8 +613,8 @@ async function _handleAICreate() {
     const manualTextAlign = document.getElementById('ai-text-align')?.value || 'left';
     const manualTextColor = document.getElementById('ai-text-color')?.value || '#000000';
     const manualFontSizePct = parseFloat(document.getElementById('ai-font-size-slider')?.value || '70') / 100;
-    const manualBlur = parseFloat(document.getElementById('ai-blur-slider')?.value || '0.5');
-    const manualNoise = parseFloat(document.getElementById('ai-noise-slider')?.value || '10') / 100;
+    const scanEffects = _readAIScanEffectControls();
+    const detectedSourceText = document.getElementById('ai-source-text')?.value?.trim() || '';
 
     const manualStyle = { 
       fontFamily: manualFontFamily, 
@@ -387,11 +623,14 @@ async function _handleAICreate() {
       textAlign: manualTextAlign,
       textColor: manualTextColor,
       fontSizePct: manualFontSizePct,
-      blurPx: manualBlur,
-      noiseAlpha: manualNoise
+      sourceText: detectedSourceText,
+      ...scanEffects
     };
 
     console.log('⚡ [Smart Canvas] Đang áp dụng Text + Thuật toán đồ họa thủ công...');
+    if (typeof ensureGoogleFontLoaded === 'function') {
+      await ensureGoogleFontLoaded(manualFontFamily, prompt);
+    }
     const renderObj = await _localSmartTextReplacement(capturedBase64, prompt, manualStyle);
     
     resultDataURL = renderObj.dataURL;
@@ -408,8 +647,11 @@ async function _handleAICreate() {
     
     const canvasW = pg.widthPt * editorScale;
     const canvasH = pg.heightPt * editorScale;
-    const scaleX = imgForScale.naturalWidth ? (imgForScale.naturalWidth / canvasW) : 1;
-    const scaleY = imgForScale.naturalHeight ? (imgForScale.naturalHeight / canvasH) : 1;
+    const pageRot = ((pg.rotation || 0) % 360 + 360) % 360;
+    const orientedNaturalW = (pageRot === 90 || pageRot === 270) ? imgForScale.naturalHeight : imgForScale.naturalWidth;
+    const orientedNaturalH = (pageRot === 90 || pageRot === 270) ? imgForScale.naturalWidth : imgForScale.naturalHeight;
+    const scaleX = orientedNaturalW ? (orientedNaturalW / canvasW) : 1;
+    const scaleY = orientedNaturalH ? (orientedNaturalH / canvasH) : 1;
     
     const pdfExpandLeft = expandLeft / scaleX;
     const pdfExpandRight = expandRight / scaleX;
@@ -428,7 +670,23 @@ async function _handleAICreate() {
       w: _aiSelectionRect.w + pdfExpandLeft + pdfExpandRight,
       h: _aiSelectionRect.h + pdfExpandTop + pdfExpandBottom,
       dataURL: resultDataURL,
+      // Object coordinates are stored in the unzoomed editor canvas coordinate
+      // system. Keep the scale used at creation so PDF export does not depend on
+      // a later resize of the browser/editor panel.
+      coordinateScale: editorScale,
       selected: false,
+      smartText: {
+        sourceText: detectedSourceText,
+        replacementText: prompt,
+        sourceRect: { ..._aiSelectionRect },
+        fontFamily: manualFontFamily,
+        fontWeight: manualFontWeight,
+        fontStyle: manualFontStyle,
+        textAlign: manualTextAlign,
+        textColor: manualTextColor,
+        fontSizePct: manualFontSizePct,
+        ...scanEffects
+      }
     };
 
     pg.overlayObjects.push(obj);
@@ -461,12 +719,30 @@ async function _captureSelectionRegion(pg, rect) {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      // Tỷ lệ: renderURL có kích thước gốc (naturalWidth x naturalHeight)
+      // Dựng đúng hướng đang hiển thị trước khi crop; renderURL vẫn giữ hướng gốc.
+      const rot = ((pg.rotation || 0) % 360 + 360) % 360;
+      const oriented = document.createElement('canvas');
+      const swap = rot === 90 || rot === 270;
+      oriented.width = swap ? img.naturalHeight : img.naturalWidth;
+      oriented.height = swap ? img.naturalWidth : img.naturalHeight;
+      const orientedCtx = oriented.getContext('2d');
+      if (rot === 90) {
+        orientedCtx.translate(oriented.width, 0);
+        orientedCtx.rotate(Math.PI / 2);
+      } else if (rot === 180) {
+        orientedCtx.translate(oriented.width, oriented.height);
+        orientedCtx.rotate(Math.PI);
+      } else if (rot === 270) {
+        orientedCtx.translate(0, oriented.height);
+        orientedCtx.rotate(-Math.PI / 2);
+      }
+      orientedCtx.drawImage(img, 0, 0);
+
       // Canvas area hiển thị với kích thước (pg.widthPt * editorScale) x (pg.heightPt * editorScale)
       const canvasW = pg.widthPt * editorScale;
       const canvasH = pg.heightPt * editorScale;
-      const scaleX = img.naturalWidth  / canvasW;
-      const scaleY = img.naturalHeight / canvasH;
+      const scaleX = oriented.width  / canvasW;
+      const scaleY = oriented.height / canvasH;
 
       // Tọa độ vùng chọn trên ảnh gốc
       const srcX = Math.round(rect.x * scaleX);
@@ -478,7 +754,7 @@ async function _captureSelectionRegion(pg, rect) {
       canvas.width  = Math.max(1, srcW);
       canvas.height = Math.max(1, srcH);
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+      ctx.drawImage(oriented, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
 
       resolve(canvas.toDataURL('image/png').split(',')[1]);
     };
@@ -495,17 +771,6 @@ async function _captureSelectionRegion(pg, rect) {
     img.src = pg.renderURL;
   });
 }
-
-/* ════════════════════════════════════════════
-   GỌI COMFYUI LOCAL (Flux Kontext Dev)
-   ─ Hoàn toàn miễn phí, chạy trên RTX 3060
-   ─ Chất lượng cực cao cho việc sửa text/hình ảnh
-   ════════════════════════════════════════════ */
-const COMFYUI_URL = 'http://127.0.0.1:8189'; // qua proxy CORS
-
-/* ════════════════════════════════════════════
-   GỌI COMFYUI LOCAL (ĐÃ XÓA)
-   ════════════════════════════════════════════ */
 
 /* ════════════════════════════════════════════
    UI HELPERS
@@ -579,7 +844,53 @@ function _cancelAITool() {
       canvasArea._aiMousedown = null;
     }
   }
+  if (typeof _updateCanvasPanAvailability === 'function') _updateCanvasPanAvailability();
   _removeAISelectionEl();
+}
+
+/*
+ * Lấy màu lõi của nét chữ thay vì trung bình toàn bộ vùng anti-alias.
+ * Pixel rìa glyph luôn bị pha với màu nền, nếu đưa vào trung bình sẽ làm
+ * chữ mới nhạt rõ rệt (đặc biệt trên scan độ phân giải thấp).
+ */
+function _pickCoreInkColor(data, W, H) {
+  const border = Math.max(1, Math.round(Math.min(W, H) * 0.08));
+  const rs = [], gs = [], bs = [];
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (x >= border && x < W-border && y >= border && y < H-border) continue;
+      const i = (y * W + x) * 4;
+      rs.push(data[i]); gs.push(data[i+1]); bs.push(data[i+2]);
+    }
+  }
+  const median = arr => { arr.sort((a,b) => a-b); return arr[Math.floor(arr.length/2)] ?? 255; };
+  const bgR = median(rs), bgG = median(gs), bgB = median(bs);
+  const candidates = [];
+
+  for (let i = 0; i < data.length; i += 4) {
+    const dr=data[i]-bgR, dg=data[i+1]-bgG, db=data[i+2]-bgB;
+    const distance = Math.sqrt(dr*dr*0.3 + dg*dg*0.59 + db*db*0.11);
+    if (distance > 18) candidates.push({ r:data[i], g:data[i+1], b:data[i+2], distance });
+  }
+  if (!candidates.length) return '#000000';
+
+  candidates.sort((a,b) => b.distance - a.distance);
+  // Bỏ 1% pixel xa nền nhất để tránh chấm đen/nhiễu JPEG đơn lẻ, sau đó
+  // lấy 20% pixel lõi. Dùng quá nhiều pixel anti-alias sẽ làm màu chữ mới bạc đi.
+  const start = candidates.length >= 100 ? Math.floor(candidates.length * 0.01) : 0;
+  const count = Math.max(1, Math.ceil(candidates.length * 0.20));
+  const core = candidates.slice(start, Math.min(candidates.length, start + count));
+  let rSum=0, gSum=0, bSum=0, weightSum=0;
+  const maxDistance = core[0]?.distance || 1;
+  core.forEach(pixel => {
+    const weight = 0.5 + pixel.distance / maxDistance;
+    rSum += pixel.r * weight; gSum += pixel.g * weight; bSum += pixel.b * weight;
+    weightSum += weight;
+  });
+  const rgb = [rSum/weightSum, gSum/weightSum, bSum/weightSum].map(value =>
+    Math.max(0, Math.min(255, Math.round(value)))
+  );
+  return '#' + rgb.map(value => value.toString(16).padStart(2, '0')).join('');
 }
 
 /* Trích xuất màu mực in tối ưu từ ảnh crop */
@@ -595,26 +906,7 @@ function _extractDominantTextColor(base64) {
       
       const W = c.width, H = c.height;
       const data = ctx.getImageData(0,0,W,H).data;
-      
-      let sumLum = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        sumLum += data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
-      }
-      const avgLum = sumLum / (W * H);
-      const inkThresholdLum = Math.min(180, avgLum - 30);
-
-      let rSum=0, gSum=0, bSum=0, count=0;
-      for (let i=0; i<data.length; i+=4) {
-        const lum = data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
-        if (lum < inkThresholdLum) {
-          rSum += data[i]; gSum += data[i+1]; bSum += data[i+2]; count++;
-        }
-      }
-      if (count > 0) {
-        resolve('#' + [Math.round(rSum/count), Math.round(gSum/count), Math.round(bSum/count)].map(x => x.toString(16).padStart(2, '0')).join(''));
-      } else {
-        resolve('#000000');
-      }
+      resolve(_pickCoreInkColor(data, W, H));
     };
     img.onerror = () => resolve('#000000');
     img.src = 'data:image/png;base64,' + base64;
@@ -638,18 +930,19 @@ function _detectTextHeightPct(base64) {
 
       const W = c.width, H = c.height;
       const data = ctx.getImageData(0, 0, W, H).data;
-      
-      let sumLum = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        sumLum += data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
+
+      const border = Math.max(1, Math.round(Math.min(W, H) * 0.08));
+      const rs=[], gs=[], bs=[];
+      for (let y=0; y<H; y++) for (let x=0; x<W; x++) {
+        if (x>=border && x<W-border && y>=border && y<H-border) continue;
+        const i=(y*W+x)*4; rs.push(data[i]); gs.push(data[i+1]); bs.push(data[i+2]);
       }
-      const avgLum = sumLum / (W * H);
-      const inkThresholdLum = Math.min(180, avgLum - 30);
+      const median = arr => { arr.sort((a,b)=>a-b); return arr[Math.floor(arr.length/2)] ?? 255; };
+      const bgR=median(rs), bgG=median(gs), bgB=median(bs);
 
       function isInkPixel(i) {
-        const r = data[i], g = data[i+1], b = data[i+2];
-        const lum = r * 0.299 + g * 0.587 + b * 0.114;
-        return lum < inkThresholdLum;
+        const dr=data[i]-bgR, dg=data[i+1]-bgG, db=data[i+2]-bgB;
+        return Math.sqrt(dr*dr*0.3 + dg*dg*0.59 + db*db*0.11) > 28;
       }
 
       // Với mỗi hàng, đếm số pixel mực — cần ít nhất 2% số cột là mực
@@ -680,11 +973,43 @@ function _detectTextHeightPct(base64) {
   });
 }
 
+function _smartTextExpansionPadding(style, strength) {
+  const blur = Math.max(0, Number(style?.blurPx) || 0) * Math.max(0, strength || 0);
+  const spread = Math.max(0, Number(style?.inkSpread) || 0) * Math.max(0, strength || 0);
+  const sharpen = Math.max(0, Number(style?.sharpenAmount) || 0) * Math.max(0, strength || 0);
+  // 2 sigma cho blur, thêm một phần nhỏ cho morphology/halo; tối thiểu 1px
+  // để anti-alias không bị cắt. Profile scan thông thường sẽ chỉ cần 1-2px.
+  return Math.max(1, Math.ceil(blur * 2 + spread + sharpen * 0.5));
+}
+
+function _featherSmartPatchEdges(canvas, featherPx = 2) {
+  const width = canvas.width, height = canvas.height;
+  const feather = Math.max(0, Math.min(featherPx, Math.floor(Math.min(width, height) / 4)));
+  if (!feather) return canvas;
+
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const edgeDistance = Math.min(x + 0.5, y + 0.5, width - x - 0.5, height - y - 0.5);
+      if (edgeDistance >= feather) continue;
+      const t = Math.max(0, Math.min(1, edgeDistance / feather));
+      const smoothAlpha = t * t * (3 - 2 * t);
+      const alphaIndex = (y * width + x) * 4 + 3;
+      data[alphaIndex] = Math.round(data[alphaIndex] * smoothAlpha);
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
 function _localSmartTextReplacement(base64, newText, manualStyle) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
+      (async () => {
       const c = document.createElement('canvas');
       c.width = img.width;
       c.height = img.height;
@@ -692,47 +1017,47 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
       ctx.drawImage(img, 0, 0);
 
       const style = {
+        appearanceMode: manualStyle?.appearanceMode || 'match',
         backgroundColor: '#ffffff', // Will be overridden
         textColor: manualStyle?.textColor || '#000000',
         fontFamily: manualStyle?.fontFamily || 'Arial', 
         fontWeight: manualStyle?.fontWeight || 'bold', 
         fontStyle: manualStyle?.fontStyle || 'normal',
         isUppercase: false, 
-        blurPx: manualStyle?.blurPx !== undefined ? manualStyle.blurPx : 0.5, 
-        noiseAlpha: manualStyle?.noiseAlpha !== undefined ? manualStyle.noiseAlpha : 0.05
+        blurPx: manualStyle?.blurPx !== undefined ? manualStyle.blurPx : 0,
+        noiseAlpha: manualStyle?.noiseAlpha !== undefined ? manualStyle.noiseAlpha : 0,
+        sharpenAmount: manualStyle?.sharpenAmount || 0,
+        inkSpread: manualStyle?.inkSpread || 0,
+        contrast: manualStyle?.contrast || 1,
+        backgroundNoise: manualStyle?.backgroundNoise || 0,
+        inkNoise: manualStyle?.inkNoise || 0,
+        jpegQuality: manualStyle?.jpegQuality ?? 1,
+        scanStrength: manualStyle?.appearanceMode === 'clean' ? 0 : (manualStyle?.scanStrength ?? 1)
       };
       const finalText = style.isUppercase ? newText.toUpperCase() : newText;
 
       const W = img.width, H = img.height;
       const data = ctx.getImageData(0, 0, W, H).data;
       
-      let sumLum = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        sumLum += data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
+      // Lấy màu nền từ viền crop, dùng được cả chữ tối/nền sáng và chữ sáng/nền tối.
+      const border = Math.max(1, Math.round(Math.min(W, H) * 0.08));
+      const rs=[], gs=[], bs=[];
+      for (let y=0; y<H; y++) for (let x=0; x<W; x++) {
+        if (x>=border && x<W-border && y>=border && y<H-border) continue;
+        const i=(y*W+x)*4; rs.push(data[i]); gs.push(data[i+1]); bs.push(data[i+2]);
       }
-      const avgLum = sumLum / (W * H);
-      const inkThresholdLum = Math.min(180, avgLum - 30);
-
-      // Background is the most common color or average
-      let rBg=0, gBg=0, bBg=0, bgCount=0;
-      for (let i=0; i<data.length; i+=4) {
-        const lum = data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
-        if (lum > avgLum) {
-           rBg += data[i]; gBg += data[i+1]; bBg += data[i+2]; bgCount++;
-        }
-      }
-      if (bgCount > 0) {
-        style.backgroundColor = '#' + [Math.round(rBg/bgCount), Math.round(gBg/bgCount), Math.round(bBg/bgCount)].map(x => x.toString(16).padStart(2, '0')).join('');
-      }
+      const median = arr => { arr.sort((a,b)=>a-b); return arr[Math.floor(arr.length/2)] ?? 255; };
+      const bgR=median(rs), bgG=median(gs), bgB=median(bs);
+      style.backgroundColor = '#' + [bgR,bgG,bgB].map(x => Math.round(x).toString(16).padStart(2,'0')).join('');
 
       let minX = W, maxX = -1, minY = H, maxY = -1;
       let hasInk = false;
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           const i = (y * W + x) * 4;
-          const r = data[i], g = data[i+1], b = data[i+2];
-          const lum = r*0.299 + g*0.587 + b*0.114;
-          if (lum < inkThresholdLum) {
+           const dr=data[i]-bgR, dg=data[i+1]-bgG, db=data[i+2]-bgB;
+           const distance=Math.sqrt(dr*dr*0.3 + dg*dg*0.59 + db*db*0.11);
+           if (distance > 28) {
              if (x < minX) minX = x;
              if (x > maxX) maxX = x;
              if (y < minY) minY = y;
@@ -766,6 +1091,26 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
 
       ctx.textBaseline = 'alphabetic';
       let drawY = textCenterY + finalMetrics.actualBoundingBoxAscent - (finalVisualHeight / 2);
+      if (hasInk) {
+        // Text on a document line must share a baseline. Centering glyph boxes
+        // makes capitals/numbers look a few pixels too high when their descent
+        // differs from the source word. Estimate the original baseline from the
+        // OCR text rendered with the chosen font, then place the replacement on it.
+        const sourceText = String(manualStyle?.sourceText || '').trim();
+        if (sourceText) {
+          const sourceMetrics = ctx.measureText(sourceText);
+          const sourceMetricHeight = sourceMetrics.actualBoundingBoxAscent + sourceMetrics.actualBoundingBoxDescent;
+          if (sourceMetricHeight > 0) {
+            const detectedInkHeight = maxY - minY + 1;
+            const sourceScale = detectedInkHeight / sourceMetricHeight;
+            drawY = minY + sourceMetrics.actualBoundingBoxAscent * sourceScale;
+          } else {
+            drawY = maxY - finalMetrics.actualBoundingBoxDescent;
+          }
+        } else {
+          drawY = maxY - finalMetrics.actualBoundingBoxDescent;
+        }
+      }
 
       let drawX = textCenterX;
       if (hasInk) {
@@ -779,11 +1124,13 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
       let textTop = drawY - finalMetrics.actualBoundingBoxAscent;
       let textBottom = drawY + finalMetrics.actualBoundingBoxDescent;
 
+      const strength = Math.max(0, Math.min(1.5, style.scanStrength));
+      const effectPadding = _smartTextExpansionPadding(style, strength);
       let expandLeft = 0, expandRight = 0, expandTop = 0, expandBottom = 0;
-      if (textLeft < 0) expandLeft = Math.ceil(-textLeft) + 10;
-      if (textRight > img.width) expandRight = Math.ceil(textRight - img.width) + 10;
-      if (textTop < 0) expandTop = Math.ceil(-textTop) + 10;
-      if (textBottom > img.height) expandBottom = Math.ceil(textBottom - img.height) + 10;
+      if (textLeft < 0) expandLeft = Math.ceil(-textLeft) + effectPadding;
+      if (textRight > img.width) expandRight = Math.ceil(textRight - img.width) + effectPadding;
+      if (textTop < 0) expandTop = Math.ceil(-textTop) + effectPadding;
+      if (textBottom > img.height) expandBottom = Math.ceil(textBottom - img.height) + effectPadding;
 
       if (expandLeft > 0 || expandRight > 0 || expandTop > 0 || expandBottom > 0) {
         c.width = img.width + expandLeft + expandRight;
@@ -795,31 +1142,63 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
       ctx.fillStyle = style.backgroundColor;
       ctx.fillRect(0, 0, c.width, c.height);
 
-      if (style.blurPx > 0) ctx.filter = `blur(${style.blurPx}px)`;
-      ctx.fillStyle = style.textColor;
-      ctx.textAlign = align;
-      ctx.font = `${style.fontStyle} ${style.fontWeight} ${exactFontSize}px "${style.fontFamily}", sans-serif`;
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText(finalText, drawX, drawY);
+      const textCanvas = document.createElement('canvas');
+      textCanvas.width = c.width; textCanvas.height = c.height;
+      const textCtx = textCanvas.getContext('2d', { willReadFrequently: true });
+      textCtx.fillStyle = style.textColor;
+      textCtx.textAlign = align;
+      textCtx.font = `${style.fontStyle} ${style.fontWeight} ${exactFontSize}px "${style.fontFamily}", sans-serif`;
+      textCtx.textBaseline = 'alphabetic';
+      textCtx.fillText(finalText, drawX, drawY);
 
+      const safeInkSpread = style.appearanceMode === 'match'
+        ? Math.max(-0.08, Math.min(0.08, style.inkSpread))
+        : style.inkSpread;
+      if (typeof applyTextInkSpread === 'function' && Math.abs(safeInkSpread * strength) > 0.01) {
+        applyTextInkSpread(textCanvas, safeInkSpread * strength);
+      }
+      const effectiveBlur = style.blurPx * strength;
+      if (effectiveBlur > 0.01) ctx.filter = `blur(${effectiveBlur}px)`;
+      ctx.drawImage(textCanvas, 0, 0);
       ctx.filter = 'none';
-      if (style.noiseAlpha > 0) {
-        const noiseData = ctx.getImageData(0, 0, c.width, c.height);
-        for (let i = 0; i < noiseData.data.length; i += 4) {
-          const noise = (Math.random() - 0.5) * 50; 
-          noiseData.data[i]   = Math.min(255, Math.max(0, noiseData.data[i]   + noise * style.noiseAlpha));
-          noiseData.data[i+1] = Math.min(255, Math.max(0, noiseData.data[i+1] + noise * style.noiseAlpha));
-          noiseData.data[i+2] = Math.min(255, Math.max(0, noiseData.data[i+2] + noise * style.noiseAlpha));
-        }
-        ctx.putImageData(noiseData, 0, 0);
+
+      let seed = 2166136261;
+      for (let i=0; i<finalText.length; i++) seed = Math.imul(seed ^ finalText.charCodeAt(i), 16777619);
+      if (typeof applyCompositeScanEffects === 'function' && strength > 0) {
+        const manualNoise = style.appearanceMode === 'manual';
+        const backgroundNoise = manualNoise ? style.noiseAlpha * 10 : style.backgroundNoise;
+        const inkNoise = manualNoise ? style.noiseAlpha * 14 : style.inkNoise;
+        applyCompositeScanEffects(c, {
+          contrast: 1 + (style.contrast - 1) * strength,
+          sharpenAmount: style.sharpenAmount * strength,
+          backgroundNoise: backgroundNoise * strength,
+          inkNoise: inkNoise * strength,
+          noiseSeed: seed >>> 0
+        }, style.backgroundColor);
       }
 
+      let outputCanvas = c;
+      if (typeof finalizeScanCompression === 'function' && strength > 0) {
+        const effectiveQuality = 1 - (1 - style.jpegQuality) * Math.min(1, strength);
+        outputCanvas = await finalizeScanCompression(c, effectiveQuality);
+      }
+
+      // Avoid a visible rectangular seam against the scanned page. Keeping a
+      // very small alpha feather is enough to blend background/noise differences
+      // without softening the text in the middle of the patch.
+      outputCanvas = _featherSmartPatchEdges(outputCanvas, 2);
+
       resolve({ 
-        dataURL: c.toDataURL('image/png'), 
+        dataURL: outputCanvas.toDataURL('image/png'),
         maskURL: null,
         offsetX: -expandLeft,
-        offsetY: -expandTop
+        offsetY: -expandTop,
+        expandLeft,
+        expandRight,
+        expandTop,
+        expandBottom
       });
+      })().catch(reject);
     };
     img.onerror = reject;
     img.src = 'data:image/png;base64,' + base64;

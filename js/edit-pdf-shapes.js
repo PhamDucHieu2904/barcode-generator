@@ -43,12 +43,16 @@ const SHAPE_CURSORS = {
 
 function _setCanvasCursor(shapeType) {
   const canvasArea = document.getElementById('edit-canvas-area');
-  if (canvasArea) canvasArea.style.cursor = SHAPE_CURSORS[shapeType] || 'crosshair';
+  if (canvasArea) {
+    canvasArea.style.cursor = SHAPE_CURSORS[shapeType] || 'crosshair';
+    canvasArea.classList.remove('can-pan');
+  }
 }
 
 function _resetCanvasCursor() {
   const canvasArea = document.getElementById('edit-canvas-area');
   if (canvasArea) canvasArea.style.cursor = '';
+  if (typeof _updateCanvasPanAvailability === 'function') _updateCanvasPanAvailability();
 }
 
 function _getOverlayRelativePos(e) {

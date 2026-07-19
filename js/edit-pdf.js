@@ -8,20 +8,11 @@
      4. edit-pdf-export.js   — PDF/image export
      5. edit-pdf-toolbar.js  — Toolbar & keyboard
      6. edit-pdf-dropzone.js — File input & thumbnails
-     7. edit-pdf-ai.js       — AI Generative Fill
-     8. edit-pdf.js          ← entry point (this file)
+     7. edit-pdf-font-detect.js — PDF text/OCR + Google Font matcher
+     8. edit-pdf-scan-effects.js — Scan degradation analysis/render
+     9. edit-pdf-ai.js       — Smart text replacement UI/render
+    10. edit-pdf.js          ← entry point (this file)
    ══════════════════════════════════════════════ */
-
-// Inject Google Fonts cho các font trong EDIT_FONTS (khai báo trong edit-pdf-state.js)
-(function injectGoogleFonts() {
-  const webFonts = EDIT_FONTS
-    .filter(f => !['Arial','Helvetica','Georgia','Times New Roman','Courier New'].includes(f))
-    .map(f => f.replace(/ /g, '+')).join('|');
-  const link = document.createElement('link');
-  link.rel  = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?family=${webFonts.split('|').map(f=>`${f}:wght@400;700`).join('&family=')}&display=swap`;
-  document.head.appendChild(link);
-})();
 
 /**
  * Populate <select id="edit-font"> từ mảng EDIT_FONTS.
@@ -30,6 +21,19 @@
 function _populateFontSelect() {
   const fontSel = document.getElementById('edit-font');
   if (!fontSel) return;
+  if (typeof populateSmartFontSelect === 'function') {
+    populateSmartFontSelect(fontSel);
+    if (!fontSel.dataset.smartFontBound) {
+      fontSel.dataset.smartFontBound = '1';
+      fontSel.addEventListener('change', () => {
+        const selectedObj = _getCurrentPg()?.overlayObjects?.find(o => o.id === editSelectedObj);
+        ensureGoogleFontLoaded(fontSel.value, selectedObj?.content || 'Tiếng Việt').then(() => {
+          if (selectedObj) _renderEditThumbs();
+        });
+      });
+    }
+    return;
+  }
   fontSel.innerHTML = '';
   EDIT_FONTS.forEach(f => {
     const opt = document.createElement('option');
@@ -52,5 +56,5 @@ function initEditPDF() {
   _bindTextFormatControls();
   _bindZoomControls();
   _renderEditThumbs();
-  initAITool(); // AI Generative Fill
+  initAITool(); // Smart Text Replacement
 }

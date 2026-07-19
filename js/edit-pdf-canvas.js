@@ -72,6 +72,7 @@ function _openPageEditor(pg) {
   wrapper.appendChild(pageEl);
   area.appendChild(wrapper);
   area._currentPg = pg; area._overlayEl = overlayEl;
+  if (typeof _updateCanvasPanAvailability === 'function') _updateCanvasPanAvailability();
 }
 
 /* ════════════════════════════════════════════
@@ -177,6 +178,93 @@ function _updateShapeSVG(obj) {
   svgEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;';
   const delBtn = el.querySelector('.obj-btn-del');
   el.insertBefore(svgEl, delBtn || null);
+  _syncSelectionChrome(obj, el);
+}
+
+function _removeSelectionChrome() {
+  document.querySelector('#edit-page-wrapper > .edit-selection-chrome')?.remove();
+}
+
+function _syncSelectionChrome(obj, objEl) {
+  const wrapper = document.getElementById('edit-page-wrapper');
+  const chrome = wrapper?.querySelector(':scope > .edit-selection-chrome');
+  if (!wrapper || !chrome || chrome.dataset.selectionFor !== obj?.id || !objEl) return;
+
+  // Chrome là sibling của page đang zoom, nên dùng rect màn hình để bám vị trí
+  // mà không phải thu nhỏ/rasterize icon theo editZoom.
+  const wrapperRect = wrapper.getBoundingClientRect();
+  const objectRect = objEl.getBoundingClientRect();
+  chrome.style.left = `${objectRect.left - wrapperRect.left}px`;
+  chrome.style.top = `${objectRect.top - wrapperRect.top}px`;
+  chrome.style.width = `${Math.max(1, objectRect.width)}px`;
+  chrome.style.height = `${Math.max(1, objectRect.height)}px`;
+}
+
+function _syncCurrentSelectionChrome() {
+  const area = document.getElementById('edit-canvas-area');
+  const pg = _getCurrentPg();
+  if (!area?._overlayEl || !pg || !editSelectedObj) return;
+  const obj = pg.overlayObjects.find(item => item.id === editSelectedObj);
+  const objEl = area._overlayEl.querySelector(`[data-obj-id="${editSelectedObj}"]`);
+  if (obj && objEl) _syncSelectionChrome(obj, objEl);
+}
+
+function _showSelectionChrome(obj, pg, objEl) {
+  const wrapper = document.getElementById('edit-page-wrapper');
+  if (!wrapper || !objEl) return;
+  _removeSelectionChrome();
+
+  const chrome = document.createElement('div');
+  chrome.className = 'edit-selection-chrome';
+  chrome.dataset.selectionFor = obj.id;
+
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'obj-btn obj-btn-del';
+  delBtn.innerHTML = '&times;';
+  delBtn.title = 'Xóa';
+  delBtn.addEventListener('mousedown', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    pg.overlayObjects = pg.overlayObjects.filter(item => item.id !== obj.id);
+    objEl.remove();
+    chrome.remove();
+    if (editSelectedObj === obj.id) {
+      editSelectedObj = null;
+      _updateTextControls(null);
+    }
+    _saveHistory();
+  });
+  chrome.appendChild(delBtn);
+
+  const rotHandle = document.createElement('div');
+  rotHandle.className = 'obj-rotate-handle';
+  rotHandle.title = 'Xoay (Shift: bước 10°)';
+  rotHandle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>`;
+  _bindRotateHandle(objEl, obj, rotHandle);
+  chrome.appendChild(rotHandle);
+
+  const handles = [
+    { cls:'rh-n', dir:'n' }, { cls:'rh-s', dir:'s' },
+    { cls:'rh-w', dir:'w' }, { cls:'rh-e', dir:'e' },
+    { cls:'rh-se', dir:'se' }
+  ];
+  if (obj.type === 'cropbox') {
+    handles.push({ cls:'rh-ne', dir:'ne' }, { cls:'rh-nw', dir:'nw' }, { cls:'rh-sw', dir:'sw' });
+  }
+  handles.forEach(handle => {
+    const node = document.createElement('div');
+    node.className = `obj-resize-handle ${handle.cls}`;
+    if (handle.dir === 'n' || handle.dir === 's') node.style.cursor = 'ns-resize';
+    if (handle.dir === 'e' || handle.dir === 'w') node.style.cursor = 'ew-resize';
+    if (handle.dir === 'ne' || handle.dir === 'sw') node.style.cursor = 'nesw-resize';
+    if (handle.dir === 'nw' || handle.dir === 'se') node.style.cursor = 'nwse-resize';
+    _bindResizeHandle(objEl, obj, node, handle.dir);
+    chrome.appendChild(node);
+  });
+
+  wrapper.appendChild(chrome);
+  _syncSelectionChrome(obj, objEl);
 }
 
 
@@ -250,53 +338,10 @@ function _renderOverlayObject(obj, overlayEl, pg) {
 
   _bindObjectMove(el, obj, pg);
 
-  // Nút xóa đỏ
-  const delBtn = document.createElement('button');
-  delBtn.className = 'obj-btn obj-btn-del'; delBtn.innerHTML = '&times;'; delBtn.title = 'Xóa';
-  delBtn.addEventListener('mousedown', e => {
-    e.stopPropagation();
-    pg.overlayObjects = pg.overlayObjects.filter(o => o.id !== obj.id);
-    el.remove();
-    if (editSelectedObj === obj.id) { editSelectedObj = null; _updateTextControls(null); }
-    _saveHistory();
-  });
-  el.appendChild(delBtn);
-
-  // ── Rotate handle (góc trên trái) ──
-  const rotHandle = document.createElement('div');
-  rotHandle.className = 'obj-rotate-handle';
-  rotHandle.title = 'Xoay (Shift: bước 10°)';
-  rotHandle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>`;
-  _bindRotateHandle(el, obj, rotHandle);
-  el.appendChild(rotHandle);
-
-  const handles = [ { cls:'rh-n', dir:'n' }, { cls:'rh-s', dir:'s' }, { cls:'rh-w', dir:'w' }, { cls:'rh-e', dir:'e' }, { cls:'rh-se', dir:'se' } ];
-  
-  // Cropbox cần đủ 8 hướng
-  if (obj.type === 'cropbox') {
-    handles.push({ cls:'rh-ne', dir:'ne' }, { cls:'rh-nw', dir:'nw' }, { cls:'rh-sw', dir:'sw' });
-  }
-
-  handles.forEach(h => {
-    const rh = document.createElement('div');
-    rh.className = `obj-resize-handle ${h.cls}`;
-    
-    // Con trỏ chuẩn — page luôn hiển thị thẳng sau khi apply physical rotation
-    if (h.dir === 'n' || h.dir === 's') rh.style.cursor = 'ns-resize';
-    if (h.dir === 'e' || h.dir === 'w') rh.style.cursor = 'ew-resize';
-    if (h.dir === 'ne' || h.dir === 'sw') rh.style.cursor = 'nesw-resize';
-    if (h.dir === 'nw' || h.dir === 'se') rh.style.cursor = 'nwse-resize';
-
-    _bindResizeHandle(el, obj, rh, h.dir);
-    el.appendChild(rh);
-  });
-
   overlayEl.appendChild(el);
 }
 
 function _selectObject(obj, pg) {
-  if (editSelectedObj === obj.id) return;
-
   // Nếu chọn sang một Object khác, ép tắt chế độ gõ chữ của Text hiện tại
   if (document.activeElement && document.activeElement.classList.contains('edit-obj-textcontent')) {
     document.activeElement.blur();
@@ -311,6 +356,8 @@ function _selectObject(obj, pg) {
     Array.from(area._overlayEl.children).forEach(child => {
       if (child.dataset.objId === obj.id) child.classList.add('selected'); else child.classList.remove('selected');
     });
+    const objEl = area._overlayEl.querySelector(`[data-obj-id="${obj.id}"]`);
+    if (objEl) _showSelectionChrome(obj, pg, objEl);
   }
   _updateTextControls(obj);
 }
@@ -319,6 +366,7 @@ function _deselectAll(pg) {
   pg.overlayObjects.forEach(o => o.selected = false); editSelectedObj = null;
   const area = document.getElementById('edit-canvas-area');
   if (area && area._overlayEl) Array.from(area._overlayEl.children).forEach(child => child.classList.remove('selected'));
+  _removeSelectionChrome();
   _updateTextControls(null);
 
   // Ép tắt con trỏ nhấp nháy khi click ra vùng trống của PDF
@@ -358,6 +406,7 @@ function _bindObjectMove(el, obj, pg) {
       obj.y = ny;
       el.style.left = obj.x + 'px';
       el.style.top = obj.y + 'px';
+      _syncSelectionChrome(obj, el);
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove);
@@ -412,6 +461,7 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
       el.style.height = obj.h + 'px';
       el.style.left = obj.x + 'px';
       el.style.top = obj.y + 'px';
+      _syncSelectionChrome(obj, el);
     }
 
     function onUp() {
@@ -447,6 +497,7 @@ function _bindRotateHandle(el, obj, handleEl) {
 
       obj.rotation = ((newAngle % 360) + 360) % 360;
       el.style.transform = `rotate(${obj.rotation}deg)`;
+      _syncSelectionChrome(obj, el);
     }
 
     function onUp() {

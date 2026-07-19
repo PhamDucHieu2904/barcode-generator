@@ -28,6 +28,7 @@ function _bindKeyboardShortcuts() {
           if (elToRemove) elToRemove.remove();
         }
         editSelectedObj = null;
+        if (typeof _removeSelectionChrome === 'function') _removeSelectionChrome();
         _updateTextControls(null);
         _saveHistory();
       }
@@ -680,6 +681,55 @@ function _updateCanvasZoom() {
   wrapper.style.width = Math.round(pg.widthPt * editorScale * editZoom) + 'px';
   wrapper.style.height = Math.round(pg.heightPt * editorScale * editZoom) + 'px';
   pageEl.style.transform = `scale(${editZoom})`;
+  if (typeof _syncCurrentSelectionChrome === 'function') _syncCurrentSelectionChrome();
+  _updateCanvasPanAvailability();
+}
+
+function _updateCanvasPanAvailability() {
+  const area = document.getElementById('edit-canvas-area');
+  if (!area) return;
+  const aiIsActive = typeof _aiActive !== 'undefined' && _aiActive;
+  const canPan = editZoom > EDIT_ZOOM_MIN && !activeShapeTool && !aiIsActive;
+  area.classList.toggle('can-pan', canPan);
+  if (!canPan) area.classList.remove('is-panning');
+}
+
+function _bindCanvasPan(area) {
+  if (!area || area.dataset.panBound === '1') return;
+  area.dataset.panBound = '1';
+
+  area.addEventListener('mousedown', e => {
+    if (e.button !== 0 || editZoom <= EDIT_ZOOM_MIN || activeShapeTool ||
+        (typeof _aiActive !== 'undefined' && _aiActive)) return;
+    if (!e.target.closest('.edit-page-canvas')) return;
+    if (e.target.closest('.edit-obj, .obj-btn, .obj-resize-handle, .obj-rotate-handle, [contenteditable="true"]')) return;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startLeft = area.scrollLeft;
+    const startTop = area.scrollTop;
+    let moved = false;
+    e.preventDefault();
+
+    const onMove = e2 => {
+      const dx = e2.clientX - startX;
+      const dy = e2.clientY - startY;
+      if (!moved && Math.hypot(dx, dy) >= 2) {
+        moved = true;
+        area.classList.add('is-panning');
+      }
+      if (!moved) return;
+      area.scrollLeft = startLeft - dx;
+      area.scrollTop = startTop - dy;
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      area.classList.remove('is-panning');
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
 }
 
 function _bindZoomControls() {
@@ -688,8 +738,7 @@ function _bindZoomControls() {
   const zoomOutBtn = document.getElementById('edit-zoom-out');
 
   function setZoom(val) {
-    // Chặn giới hạn Zoom từ 1 đến 5 (theo yêu cầu)
-    editZoom = Math.max(1, Math.min(5, val));
+    editZoom = Math.max(EDIT_ZOOM_MIN, Math.min(EDIT_ZOOM_MAX, val));
     if (zoomInput) zoomInput.value = editZoom.toFixed(1);
     _updateCanvasZoom();
   }
@@ -698,14 +747,15 @@ function _bindZoomControls() {
     zoomInput.addEventListener('change', e => setZoom(parseFloat(e.target.value) || 1));
   }
   if (zoomInBtn) {
-    zoomInBtn.addEventListener('click', () => setZoom(editZoom + 0.2));
+    zoomInBtn.addEventListener('click', () => setZoom(editZoom + EDIT_ZOOM_STEP));
   }
   if (zoomOutBtn) {
-    zoomOutBtn.addEventListener('click', () => setZoom(editZoom - 0.2));
+    zoomOutBtn.addEventListener('click', () => setZoom(editZoom - EDIT_ZOOM_STEP));
   }
 
   const area = document.getElementById('edit-canvas-area');
   if (area) {
+    _bindCanvasPan(area);
     area.addEventListener('wheel', e => {
       if (e.altKey) {
         e.preventDefault(); // Ngăn cuộn trang
@@ -713,8 +763,8 @@ function _bindZoomControls() {
         if (!wrapper) return;
         
         const oldZoom = editZoom;
-        const zoomDelta = e.deltaY < 0 ? 0.2 : -0.2;
-        const newZoom = Math.max(1, Math.min(5, oldZoom + zoomDelta));
+        const zoomDelta = e.deltaY < 0 ? EDIT_ZOOM_STEP : -EDIT_ZOOM_STEP;
+        const newZoom = Math.max(EDIT_ZOOM_MIN, Math.min(EDIT_ZOOM_MAX, oldZoom + zoomDelta));
         if (newZoom === oldZoom) return;
 
         // Vị trí chuột so với wrapper trước khi zoom

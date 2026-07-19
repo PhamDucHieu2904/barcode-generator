@@ -16,6 +16,9 @@ const PAPER_SIZES = { none: null, a4v: { w: 595, h: 842 }, a4h: { w: 842, h: 595
 // ── Dữ liệu trang PDF đang mở ──
 let editPages = [], editSelectedPage = null, editPdfOrigBytes = null, editDragSrcId = null, editSelectedObj = null, editorScale = 1;
 let editZoom = 1;
+const EDIT_ZOOM_MIN = 1;
+const EDIT_ZOOM_MAX = 10;
+const EDIT_ZOOM_STEP = 0.2;
 let _clipboard = null; // Lưu object đã copy (Ctrl+C)
 
 // ── Lịch sử Undo/Redo ──
@@ -115,6 +118,14 @@ function _redo() {
  * Phục hồi trạng thái từ History state
  */
 function _restoreHistory(state) {
+  const area = document.getElementById('edit-canvas-area');
+  const viewport = area ? {
+    pageId: editSelectedPage,
+    left: area.scrollLeft,
+    top: area.scrollTop
+  } : null;
+  const selectedObjectId = editSelectedObj;
+
   // Clone lại state từ history ra hiện tại
   editPages = state.map(pg => ({
     ...pg,
@@ -132,15 +143,28 @@ function _restoreHistory(state) {
     _openPageEditor(editPages[0]);
   }
 
-  // Khôi phục Selected Object nếu nó vẫn tồn tại
-  if (editSelectedObj) {
+  // Khôi phục Selected Object nếu nó vẫn tồn tại.
+  // _openPageEditor() xóa selection DOM nên phải dùng ID đã chụp trước khi restore.
+  if (selectedObjectId) {
     const curPg = _getCurrentPg();
-    const stillExists = curPg && curPg.overlayObjects.find(o => o.id === editSelectedObj);
+    const stillExists = curPg && curPg.overlayObjects.find(o => o.id === selectedObjectId);
     if (!stillExists) {
       editSelectedObj = null;
       _updateTextControls(null);
     } else {
-      _updateTextControls(stillExists);
+      _selectObject(stillExists, curPg);
     }
+  }
+
+  // Undo/Redo chỉ thay dữ liệu, không được đẩy người dùng về góc trên-trái.
+  if (viewport && viewport.pageId === editSelectedPage) {
+    const restoreViewport = () => {
+      const currentArea = document.getElementById('edit-canvas-area');
+      if (!currentArea || currentArea._currentPg?.id !== viewport.pageId) return;
+      currentArea.scrollLeft = viewport.left;
+      currentArea.scrollTop = viewport.top;
+    };
+    restoreViewport();
+    requestAnimationFrame(restoreViewport);
   }
 }

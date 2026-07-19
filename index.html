@@ -19,7 +19,7 @@
 
 <link rel="stylesheet" href="global.css">
 <link rel="stylesheet" href="barcode.css">
-<link rel="stylesheet" href="pdf.css">
+<link rel="stylesheet" href="pdf.css?v=20260719-5">
 <link rel="stylesheet" href="responsive.css">
 <link rel="icon" type="image/png" href="web-icon.png">
 </head>
@@ -391,7 +391,7 @@
 
           <label class="etb-label">Zoom</label>
           <div class="spinner-wrap etb-zoom-wrap">
-            <input class="spinner-input" id="edit-zoom-input" type="number" value="1" min="1" max="5" step="0.2" style="padding-right: 0;" />
+            <input class="spinner-input" id="edit-zoom-input" type="number" value="1" min="1" max="10" step="0.2" style="padding-right: 0;" />
             <span class="strokewidth-unit">x</span>
             <div class="spinner-btns horizontal">
               <button class="spin-btn" id="edit-zoom-out" title="Thu nhỏ">&#8722;</button>
@@ -508,13 +508,15 @@
 
   <script src="js/pdf.js"></script>
 <!-- edit-pdf modules — load theo thứ tự phụ thuộc -->
-<script src="js/edit-pdf-state.js"></script>
-<script src="js/edit-pdf-canvas.js"></script>
-<script src="js/edit-pdf-shapes.js"></script>
-<script src="js/edit-pdf-export.js"></script>
-<script src="js/edit-pdf-toolbar.js"></script>
+<script src="js/edit-pdf-state.js?v=20260719-3"></script>
+<script src="js/edit-pdf-canvas.js?v=20260719-5"></script>
+<script src="js/edit-pdf-shapes.js?v=20260719-3"></script>
+<script src="js/edit-pdf-export.js?v=20260719-2"></script>
+<script src="js/edit-pdf-toolbar.js?v=20260719-5"></script>
 <script src="js/edit-pdf-dropzone.js"></script>
-<script src="js/edit-pdf-ai.js"></script>
+<script src="js/edit-pdf-font-detect.js"></script>
+<script src="js/edit-pdf-scan-effects.js?v=20260719-7"></script>
+<script src="js/edit-pdf-ai.js?v=20260719-10"></script>
 <script src="js/edit-pdf.js"></script>
 <script src="js/app.js"></script>
 <!-- Font select populated by _populateFontSelect() in edit-pdf.js -->

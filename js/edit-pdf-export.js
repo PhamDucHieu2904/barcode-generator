@@ -7,6 +7,9 @@
 
 // 1. HÀM MỚI: Xử lý triệt để lỗi tiếng Việt bằng cách vẽ Text thành ảnh PNG siêu nét
 async function _renderTextToPng(obj) {
+  if (typeof ensureGoogleFontLoaded === 'function') {
+    await ensureGoogleFontLoaded(obj.fontFamily || 'Arial', obj.content || 'Tiếng Việt');
+  }
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const scale = 4; // Khử răng cưa bằng độ phân giải 4x
@@ -68,6 +71,90 @@ async function _renderTextToPng(obj) {
 
     resolve(canvas.toDataURL('image/png'));
   });
+}
+
+function _loadExportImage(dataURL) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Không thể đọc ảnh của lớp chỉnh sửa.'));
+    image.src = dataURL;
+  });
+}
+
+function _dataUrlBytes(dataURL) {
+  const commaIndex = typeof dataURL === 'string' ? dataURL.indexOf(',') : -1;
+  if (commaIndex < 0) throw new Error('Dữ liệu ảnh chỉnh sửa không hợp lệ.');
+  const binary = atob(dataURL.slice(commaIndex + 1));
+  return Uint8Array.from(binary, char => char.charCodeAt(0));
+}
+
+/**
+ * Build one transparent, page-sized overlay for Smart Text replacements.
+ *
+ * The editor stores these patches in visual (top-left) coordinates while a PDF
+ * page can have an internal /Rotate value. Pre-rotating the complete overlay in
+ * the opposite direction lets PDF viewers rotate it together with the original
+ * page, producing the same result as the editor preview.
+ */
+async function _buildSmartTextPageOverlay(pg, fallbackScale, totalRot) {
+  const smartObjects = (pg.overlayObjects || []).filter(obj =>
+    obj.type === 'image' && obj.smartText && obj.dataURL
+  );
+  if (!smartObjects.length) return null;
+
+  const maxSide = Math.max(pg.widthPt || 1, pg.heightPt || 1);
+  const rasterScale = Math.max(1, Math.min(3, 4096 / maxSide));
+  const visualCanvas = document.createElement('canvas');
+  visualCanvas.width = Math.max(1, Math.round(pg.widthPt * rasterScale));
+  visualCanvas.height = Math.max(1, Math.round(pg.heightPt * rasterScale));
+  const ctx = visualCanvas.getContext('2d');
+  if (!ctx) throw new Error('Trình duyệt không thể tạo lớp xuất PDF.');
+
+  for (const obj of smartObjects) {
+    const image = await _loadExportImage(obj.dataURL);
+    const objectScale = Number(obj.coordinateScale) > 0
+      ? Number(obj.coordinateScale)
+      : fallbackScale;
+    // Pixel-snap both edges. Fractional destination bounds create a one-pixel
+    // dark fringe in some PDF viewers when they interpolate the PNG alpha mask.
+    const x = Math.round((obj.x / objectScale) * rasterScale);
+    const y = Math.round((obj.y / objectScale) * rasterScale);
+    const right = Math.round(((obj.x + obj.w) / objectScale) * rasterScale);
+    const bottom = Math.round(((obj.y + obj.h) / objectScale) * rasterScale);
+    const width = Math.max(1, right - x);
+    const height = Math.max(1, bottom - y);
+    const rotation = ((Number(obj.rotation) || 0) * Math.PI) / 180;
+
+    ctx.save();
+    ctx.translate(x + width / 2, y + height / 2);
+    if (rotation) ctx.rotate(rotation);
+    ctx.drawImage(image, -width / 2, -height / 2, width, height);
+    ctx.restore();
+  }
+
+  const normalizedRot = ((Number(totalRot) || 0) % 360 + 360) % 360;
+  if (normalizedRot === 0) return visualCanvas.toDataURL('image/png');
+
+  const rawCanvas = document.createElement('canvas');
+  const swapsAxes = normalizedRot === 90 || normalizedRot === 270;
+  rawCanvas.width = swapsAxes ? visualCanvas.height : visualCanvas.width;
+  rawCanvas.height = swapsAxes ? visualCanvas.width : visualCanvas.height;
+  const rawCtx = rawCanvas.getContext('2d');
+  if (!rawCtx) throw new Error('Trình duyệt không thể xoay lớp xuất PDF.');
+
+  if (normalizedRot === 90) {
+    rawCtx.translate(0, rawCanvas.height);
+    rawCtx.rotate(-Math.PI / 2);
+  } else if (normalizedRot === 180) {
+    rawCtx.translate(rawCanvas.width, rawCanvas.height);
+    rawCtx.rotate(Math.PI);
+  } else if (normalizedRot === 270) {
+    rawCtx.translate(rawCanvas.width, 0);
+    rawCtx.rotate(Math.PI / 2);
+  }
+  rawCtx.drawImage(visualCanvas, 0, 0);
+  return rawCanvas.toDataURL('image/png');
 }
 
 // Hàm mới: Crop ngay lập tức và hiển thị kết quả
@@ -221,7 +308,26 @@ async function _generateEditedPdfBytes() {
     const rawPdfW = rawPdfSize.width;
     const rawPdfH = rawPdfSize.height;
 
+    // Smart Text is exported as one visual page overlay. This avoids losing a
+    // replacement on PDFs that use CropBox offsets or an internal page rotation.
+    const smartOverlayURL = await _buildSmartTextPageOverlay(pg, pageScale, totalRot);
+    if (smartOverlayURL) {
+      const smartOverlay = await outDoc.embedPng(_dataUrlBytes(smartOverlayURL));
+      const targetBox = page && typeof page.getCropBox === 'function'
+        ? page.getCropBox()
+        : { x: 0, y: 0, width: rawPdfW, height: rawPdfH };
+      page.drawImage(smartOverlay, {
+        x: targetBox.x,
+        y: targetBox.y,
+        width: targetBox.width,
+        height: targetBox.height
+      });
+    }
+
     for (const obj of pg.overlayObjects) {
+      // Already composited into the page-sized WYSIWYG layer above.
+      if (obj.type === 'image' && obj.smartText && obj.dataURL) continue;
+
       // Map visual coords (y từ trên xuống) → PDF raw coords (y từ dưới lên)
       // dựa theo totalRot (tổng xoay của visual so với raw PDF)
       let pdfX, pdfY, pdfW, pdfH;
@@ -271,7 +377,7 @@ async function _generateEditedPdfBytes() {
       } else if (obj.type === 'image' && obj.dataURL) {
         try {
           const isJ = obj.dataURL.startsWith('data:image/jpeg') || obj.dataURL.startsWith('data:image/jpg');
-          const imgB = Uint8Array.from(atob(obj.dataURL.split(',')[1]), c => c.charCodeAt(0));
+          const imgB = _dataUrlBytes(obj.dataURL);
           let imgE;
           try { imgE = isJ ? await outDoc.embedJpg(imgB) : await outDoc.embedPng(imgB); }
           catch {
