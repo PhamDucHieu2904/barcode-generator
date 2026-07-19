@@ -65,7 +65,16 @@ function _openPageEditor(pg) {
   overlayEl.style.cssText = 'position:absolute;inset:0;overflow:visible;';
   pageEl.appendChild(overlayEl);
 
-  pg.overlayObjects.forEach(obj => _renderOverlayObject(obj, overlayEl, pg));
+  pg.overlayObjects.forEach(obj => {
+    if (obj.rectPt) {
+      obj.x = obj.rectPt.x * editorScale;
+      obj.y = obj.rectPt.y * editorScale;
+      obj.w = obj.rectPt.w * editorScale;
+      obj.h = obj.rectPt.h * editorScale;
+      obj.coordinateScale = editorScale;
+    }
+    _renderOverlayObject(obj, overlayEl, pg);
+  });
 
   pageEl.addEventListener('mousedown', e => { if (e.target === pageEl || e.target === bgLayer || e.target === overlayEl) _deselectAll(pg); });
   
@@ -73,6 +82,11 @@ function _openPageEditor(pg) {
   area.appendChild(wrapper);
   area._currentPg = pg; area._overlayEl = overlayEl;
   if (typeof _updateCanvasPanAvailability === 'function') _updateCanvasPanAvailability();
+  if (typeof _ensureAdaptivePagePreview === 'function') {
+    _ensureAdaptivePagePreview(pg, false).catch(error =>
+      console.warn('[PDF Preview] Adaptive render fallback:', error)
+    );
+  }
 }
 
 /* ════════════════════════════════════════════
@@ -244,6 +258,32 @@ function _showSelectionChrome(obj, pg, objEl) {
   _bindRotateHandle(objEl, obj, rotHandle);
   chrome.appendChild(rotHandle);
 
+  if (obj.smartText) {
+    const editBtn = document.createElement('button');
+    const isVector = obj.smartText.renderMode === 'vector';
+    editBtn.type = 'button';
+    editBtn.className = `obj-btn obj-btn-smart-edit${isVector ? ' is-vector' : ''}`;
+    editBtn.innerHTML = isVector
+      ? '<span class="obj-smart-mode-glyph">V</span>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+    editBtn.title = isVector
+      ? 'Chỉnh lại Smart Text · Ctrl+click: chuyển sang bản vá raster'
+      : 'Chỉnh lại Smart Text · Ctrl+click: chuyển sang chữ vector';
+    editBtn.setAttribute('aria-label', editBtn.title);
+    editBtn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const toggleMode = e.ctrlKey || e.metaKey;
+      const requestedMode = toggleMode
+        ? (isVector ? 'raster' : 'vector')
+        : (isVector ? 'vector' : 'raster');
+      if (typeof _openSmartTextObjectEditor === 'function') {
+        _openSmartTextObjectEditor(obj, pg, requestedMode);
+      }
+    });
+    chrome.appendChild(editBtn);
+  }
+
   const handles = [
     { cls:'rh-n', dir:'n' }, { cls:'rh-s', dir:'s' },
     { cls:'rh-w', dir:'w' }, { cls:'rh-e', dir:'e' },
@@ -320,6 +360,27 @@ function _renderOverlayObject(obj, overlayEl, pg) {
     img.src = obj.dataURL || '';
     inner.appendChild(img);
     el.appendChild(inner);
+
+    if (obj.smartText?.renderMode === 'vector' && obj.smartText.vectorText) {
+      const vector = obj.smartText.vectorText;
+      const NS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(NS, 'svg');
+      svg.classList.add('smart-vector-text-layer');
+      svg.setAttribute('viewBox', `0 0 ${Math.max(1, vector.canvasWidth || 1)} ${Math.max(1, vector.canvasHeight || 1)}`);
+      svg.setAttribute('preserveAspectRatio', 'none');
+      const text = document.createElementNS(NS, 'text');
+      text.setAttribute('x', String(vector.x || 0));
+      text.setAttribute('y', String(vector.baseline || 0));
+      text.setAttribute('fill', vector.color || obj.smartText.textColor || '#000000');
+      text.setAttribute('font-family', vector.fontFamily || obj.smartText.fontFamily || 'Arial');
+      text.setAttribute('font-size', String(Math.max(0.1, vector.fontSize || 12)));
+      text.setAttribute('font-weight', vector.fontWeight || obj.smartText.fontWeight || 'normal');
+      text.setAttribute('font-style', vector.fontStyle || obj.smartText.fontStyle || 'normal');
+      text.setAttribute('text-anchor', vector.align === 'center' ? 'middle' : (vector.align === 'right' ? 'end' : 'start'));
+      text.textContent = vector.text || obj.smartText.replacementText || '';
+      svg.appendChild(text);
+      el.appendChild(svg);
+    }
 
   } else if (obj.type === 'shape') {
     el.classList.add('edit-obj-shape');
@@ -411,7 +472,10 @@ function _bindObjectMove(el, obj, pg) {
     function onUp() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      if (obj.x !== startOX || obj.y !== startOY) _saveHistory();
+      if (obj.x !== startOX || obj.y !== startOY) {
+        if (obj.rectPt && typeof _syncObjectRectPt === 'function') _syncObjectRectPt(obj);
+        _saveHistory();
+      }
     }
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   });
@@ -467,7 +531,10 @@ function _bindResizeHandle(el, obj, handleEl, dir) {
     function onUp() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      if (obj.w !== startW || obj.h !== startH || obj.x !== startOX || obj.y !== startOY) _saveHistory();
+      if (obj.w !== startW || obj.h !== startH || obj.x !== startOX || obj.y !== startOY) {
+        if (obj.rectPt && typeof _syncObjectRectPt === 'function') _syncObjectRectPt(obj);
+        _saveHistory();
+      }
     }
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   });

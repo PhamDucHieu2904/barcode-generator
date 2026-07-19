@@ -89,72 +89,186 @@ function _dataUrlBytes(dataURL) {
   return Uint8Array.from(binary, char => char.charCodeAt(0));
 }
 
-/**
- * Build one transparent, page-sized overlay for Smart Text replacements.
- *
- * The editor stores these patches in visual (top-left) coordinates while a PDF
- * page can have an internal /Rotate value. Pre-rotating the complete overlay in
- * the opposite direction lets PDF viewers rotate it together with the original
- * page, producing the same result as the editor preview.
- */
-async function _buildSmartTextPageOverlay(pg, fallbackScale, totalRot) {
-  const smartObjects = (pg.overlayObjects || []).filter(obj =>
-    obj.type === 'image' && obj.smartText && obj.dataURL
-  );
-  if (!smartObjects.length) return null;
+const _smartVectorFontBytes = new Map();
+const _smartVectorDocumentFonts = new WeakMap();
 
-  const maxSide = Math.max(pg.widthPt || 1, pg.heightPt || 1);
-  const rasterScale = Math.max(1, Math.min(3, 4096 / maxSide));
-  const visualCanvas = document.createElement('canvas');
-  visualCanvas.width = Math.max(1, Math.round(pg.widthPt * rasterScale));
-  visualCanvas.height = Math.max(1, Math.round(pg.heightPt * rasterScale));
-  const ctx = visualCanvas.getContext('2d');
-  if (!ctx) throw new Error('Trình duyệt không thể tạo lớp xuất PDF.');
+function _smartVectorStandardFontName(family, weight, style) {
+  const name = String(family || '').toLowerCase();
+  const bold = weight === 'bold' || Number(weight) >= 600;
+  const italic = style === 'italic';
+  let group = 'Helvetica';
+  if (name.includes('times') || name.includes('georgia') || name.includes('serif')) group = 'TimesRoman';
+  else if (name.includes('courier') || name.includes('mono')) group = 'Courier';
+  const suffix = bold && italic ? (group === 'TimesRoman' ? 'BoldItalic' : 'BoldOblique')
+    : bold ? 'Bold'
+    : italic ? (group === 'TimesRoman' ? 'Italic' : 'Oblique')
+    : '';
+  return PDFLib.StandardFonts[group + suffix];
+}
 
-  for (const obj of smartObjects) {
-    const image = await _loadExportImage(obj.dataURL);
-    const objectScale = Number(obj.coordinateScale) > 0
-      ? Number(obj.coordinateScale)
-      : fallbackScale;
-    // Pixel-snap both edges. Fractional destination bounds create a one-pixel
-    // dark fringe in some PDF viewers when they interpolate the PNG alpha mask.
-    const x = Math.round((obj.x / objectScale) * rasterScale);
-    const y = Math.round((obj.y / objectScale) * rasterScale);
-    const right = Math.round(((obj.x + obj.w) / objectScale) * rasterScale);
-    const bottom = Math.round(((obj.y + obj.h) / objectScale) * rasterScale);
-    const width = Math.max(1, right - x);
-    const height = Math.max(1, bottom - y);
-    const rotation = ((Number(obj.rotation) || 0) * Math.PI) / 180;
+function _smartVectorGoogleFallbackFamily(family) {
+  const name = String(family || '').toLowerCase();
+  if (name.includes('times')) return 'Tinos';
+  if (name.includes('courier')) return 'Cousine';
+  if (name.includes('georgia')) return 'Noto Serif';
+  return 'Arimo';
+}
 
-    ctx.save();
-    ctx.translate(x + width / 2, y + height / 2);
-    if (rotation) ctx.rotate(rotation);
-    ctx.drawImage(image, -width / 2, -height / 2, width, height);
-    ctx.restore();
+async function _fetchSmartVectorFontBytes(family, weight, style, text) {
+  const numericWeight = weight === 'bold' || Number(weight) >= 600 ? 700 : 400;
+  const italicAxis = style === 'italic' ? 1 : 0;
+  const familyParam = String(family || 'Arimo').trim().replace(/\s+/g, '+');
+  const cacheKey = `${familyParam}|${italicAxis}|${numericWeight}|${text}`;
+  if (_smartVectorFontBytes.has(cacheKey)) return _smartVectorFontBytes.get(cacheKey);
+
+  const load = (async () => {
+    const base = `https://fonts.googleapis.com/css2?family=${familyParam}`;
+    const suffix = `&text=${encodeURIComponent(text || 'Text')}&display=swap`;
+    let response = await fetch(`${base}:ital,wght@${italicAxis},${numericWeight}${suffix}`);
+    if (!response.ok) response = await fetch(base + suffix);
+    if (!response.ok) throw new Error(`Không tải được font vector ${family}.`);
+    const css = await response.text();
+    const match = css.match(/url\((?:['"])?(https:\/\/[^)'"]+)(?:['"])?\)/i);
+    if (!match) throw new Error(`Google Fonts không trả về file font cho ${family}.`);
+    const fontResponse = await fetch(match[1]);
+    if (!fontResponse.ok) throw new Error(`Không tải được dữ liệu font ${family}.`);
+    return new Uint8Array(await fontResponse.arrayBuffer());
+  })();
+  _smartVectorFontBytes.set(cacheKey, load);
+  try { return await load; }
+  catch (error) { _smartVectorFontBytes.delete(cacheKey); throw error; }
+}
+
+async function _embedSmartVectorFont(outDoc, smartText, text) {
+  let documentCache = _smartVectorDocumentFonts.get(outDoc);
+  if (!documentCache) {
+    documentCache = new Map();
+    _smartVectorDocumentFonts.set(outDoc, documentCache);
   }
+  const family = smartText.fontFamily || 'Arial';
+  const weight = smartText.fontWeight || 'normal';
+  const style = smartText.fontStyle || 'normal';
+  const catalogItem = typeof SMART_FONT_CATALOG !== 'undefined'
+    ? SMART_FONT_CATALOG.find(item => item.family === family)
+    : null;
+  const cacheKey = `${family}|${weight}|${style}|${text}`;
+  if (documentCache.has(cacheKey)) return documentCache.get(cacheKey);
 
-  const normalizedRot = ((Number(totalRot) || 0) % 360 + 360) % 360;
-  if (normalizedRot === 0) return visualCanvas.toDataURL('image/png');
+  const promise = (async () => {
+    if (catalogItem?.system || !catalogItem) {
+      const standard = await outDoc.embedFont(_smartVectorStandardFontName(family, weight, style));
+      try {
+        standard.encodeText(text);
+        return standard;
+      } catch (_) {
+        // Standard PDF fonts are WinAnsi-only. Use a metric-compatible Google
+        // font when the replacement contains Vietnamese/Cyrillic/Unicode.
+      }
+    }
+    const fontkitGlobal = globalThis.fontkit;
+    if (!fontkitGlobal) throw new Error('Fontkit chưa sẵn sàng để nhúng font vector.');
+    outDoc.registerFontkit(fontkitGlobal);
+    const downloadFamily = catalogItem?.system || !catalogItem
+      ? _smartVectorGoogleFallbackFamily(family)
+      : family;
+    const bytes = await _fetchSmartVectorFontBytes(downloadFamily, weight, style, text);
+    return outDoc.embedFont(bytes, { subset: true });
+  })();
+  documentCache.set(cacheKey, promise);
+  try { return await promise; }
+  catch (error) { documentCache.delete(cacheKey); throw error; }
+}
 
-  const rawCanvas = document.createElement('canvas');
+function _mapVisualPointToPdfPage(point, page, totalRot) {
+  const box = page && typeof page.getCropBox === 'function'
+    ? page.getCropBox()
+    : { x: 0, y: 0, ...page.getSize() };
+  const rotation = ((Number(totalRot) || 0) % 360 + 360) % 360;
+  if (rotation === 90) return { x: box.x + point.y, y: box.y + point.x };
+  if (rotation === 180) return { x: box.x + box.width - point.x, y: box.y + point.y };
+  if (rotation === 270) return { x: box.x + box.width - point.y, y: box.y + box.height - point.x };
+  return { x: box.x + point.x, y: box.y + box.height - point.y };
+}
+
+async function _drawSmartVectorText(outDoc, page, obj, visualRect, totalRot) {
+  const smartText = obj.smartText || {};
+  const vector = smartText.vectorText;
+  const text = String(vector?.text || smartText.replacementText || '');
+  if (!vector || !text) return;
+  const canvasWidth = Math.max(1, Number(vector.canvasWidth) || 1);
+  const canvasHeight = Math.max(1, Number(vector.canvasHeight) || 1);
+  const size = Math.max(0.1, (Number(vector.fontSize) || 12) * visualRect.h / canvasHeight);
+  const font = await _embedSmartVectorFont(outDoc, smartText, text);
+  let anchorX = visualRect.x + (Number(vector.x) || 0) * visualRect.w / canvasWidth;
+  const baselineY = visualRect.y + (Number(vector.baseline) || 0) * visualRect.h / canvasHeight;
+  const textWidth = font.widthOfTextAtSize(text, size);
+  if (vector.align === 'center') anchorX -= textWidth / 2;
+  else if (vector.align === 'right') anchorX -= textWidth;
+  const point = _mapVisualPointToPdfPage({ x: anchorX, y: baselineY }, page, totalRot);
+  const color = hexToRgb(vector.color || smartText.textColor || '#000000');
+  page.drawText(text, {
+    x: point.x,
+    y: point.y,
+    size,
+    font,
+    color: PDFLib.rgb(color.r, color.g, color.b),
+    rotate: PDFLib.degrees(((Number(totalRot) || 0) % 360 + 360) % 360)
+  });
+}
+
+async function _prepareSmartPatchForPdf(dataURL, pageRotation) {
+  const normalizedRot = ((Number(pageRotation) || 0) % 360 + 360) % 360;
+  if (normalizedRot === 0) return dataURL;
+  const image = await _loadExportImage(dataURL);
+  const canvas = document.createElement('canvas');
   const swapsAxes = normalizedRot === 90 || normalizedRot === 270;
-  rawCanvas.width = swapsAxes ? visualCanvas.height : visualCanvas.width;
-  rawCanvas.height = swapsAxes ? visualCanvas.width : visualCanvas.height;
-  const rawCtx = rawCanvas.getContext('2d');
-  if (!rawCtx) throw new Error('Trình duyệt không thể xoay lớp xuất PDF.');
+  canvas.width = swapsAxes ? image.naturalHeight : image.naturalWidth;
+  canvas.height = swapsAxes ? image.naturalWidth : image.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Trình duyệt không thể xoay ảnh chữ khi xuất PDF.');
 
+  // A PDF page rotates all raw page content when displayed. Rotate the patch in
+  // the opposite direction first so it stays upright in visual page space.
   if (normalizedRot === 90) {
-    rawCtx.translate(0, rawCanvas.height);
-    rawCtx.rotate(-Math.PI / 2);
+    ctx.translate(0, canvas.height);
+    ctx.rotate(-Math.PI / 2);
   } else if (normalizedRot === 180) {
-    rawCtx.translate(rawCanvas.width, rawCanvas.height);
-    rawCtx.rotate(Math.PI);
+    ctx.translate(canvas.width, canvas.height);
+    ctx.rotate(Math.PI);
   } else if (normalizedRot === 270) {
-    rawCtx.translate(rawCanvas.width, 0);
-    rawCtx.rotate(Math.PI / 2);
+    ctx.translate(canvas.width, 0);
+    ctx.rotate(Math.PI / 2);
   }
-  rawCtx.drawImage(visualCanvas, 0, 0);
-  return rawCanvas.toDataURL('image/png');
+  ctx.drawImage(image, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
+function _mapVisualRectToPdfPage(rectPt, page, totalRot) {
+  const targetBox = page && typeof page.getCropBox === 'function'
+    ? page.getCropBox()
+    : { x: 0, y: 0, ...page.getSize() };
+  const vx = rectPt.x, vy = rectPt.y, vw = rectPt.w, vh = rectPt.h;
+  const rotation = ((Number(totalRot) || 0) % 360 + 360) % 360;
+  let x, y, width, height;
+
+  if (rotation === 90) {
+    x = targetBox.x + vy;
+    y = targetBox.y + vx;
+    width = vh; height = vw;
+  } else if (rotation === 180) {
+    x = targetBox.x + targetBox.width - vx - vw;
+    y = targetBox.y + vy;
+    width = vw; height = vh;
+  } else if (rotation === 270) {
+    x = targetBox.x + targetBox.width - vy - vh;
+    y = targetBox.y + targetBox.height - vx - vw;
+    width = vh; height = vw;
+  } else {
+    x = targetBox.x + vx;
+    y = targetBox.y + targetBox.height - vy - vh;
+    width = vw; height = vh;
+  }
+  return { x, y, width, height };
 }
 
 // Hàm mới: Crop ngay lập tức và hiển thị kết quả
@@ -213,6 +327,8 @@ async function _applyCropToPage(currentPg, cropbox) {
         await pdfPage.render({ canvasContext: ctx, viewport }).promise;
         
         pg.renderURL = canvas.toDataURL('image/png');
+        pg.previewURLLow = pg.renderURL;
+        pg.renderScale = 2.0;
       } else if (pg.imageDataURL) {
         const img = new Image();
         await new Promise(res => { img.onload = res; img.src = pg.imageDataURL; });
@@ -226,6 +342,8 @@ async function _applyCropToPage(currentPg, cropbox) {
         
         pg.imageDataURL = canvas.toDataURL('image/png');
         pg.renderURL = pg.imageDataURL;
+        pg.previewURLLow = pg.renderURL;
+        pg.renderScale = Math.max(scaleX, scaleY);
         pg.origWidthPt = pg.widthPt = pdfW;
         pg.origHeightPt = pg.heightPt = pdfH;
         // KHÔNG reset pg.rotation
@@ -235,6 +353,7 @@ async function _applyCropToPage(currentPg, cropbox) {
       pg.overlayObjects.forEach(o => {
         o.x -= shiftX;
         o.y -= shiftY;
+        if (o.rectPt && typeof _syncObjectRectPt === 'function') _syncObjectRectPt(o, pageScale);
       });
     }
     
@@ -303,61 +422,19 @@ async function _generateEditedPdfBytes() {
     const totalRot   = (builtInRot + userRot) % 360;
 
     // pg.widthPt/heightPt là visual dimensions (sau tất cả rotation)
-    // Raw PDF dimensions của copied page (lấy từ page object thực tế):
-    const rawPdfSize = page && page.getSize ? page.getSize() : { width: pg.widthPt, height: pg.heightPt };
-    const rawPdfW = rawPdfSize.width;
-    const rawPdfH = rawPdfSize.height;
-
-    // Smart Text is exported as one visual page overlay. This avoids losing a
-    // replacement on PDFs that use CropBox offsets or an internal page rotation.
-    const smartOverlayURL = await _buildSmartTextPageOverlay(pg, pageScale, totalRot);
-    if (smartOverlayURL) {
-      const smartOverlay = await outDoc.embedPng(_dataUrlBytes(smartOverlayURL));
-      const targetBox = page && typeof page.getCropBox === 'function'
-        ? page.getCropBox()
-        : { x: 0, y: 0, width: rawPdfW, height: rawPdfH };
-      page.drawImage(smartOverlay, {
-        x: targetBox.x,
-        y: targetBox.y,
-        width: targetBox.width,
-        height: targetBox.height
-      });
-    }
-
     for (const obj of pg.overlayObjects) {
-      // Already composited into the page-sized WYSIWYG layer above.
-      if (obj.type === 'image' && obj.smartText && obj.dataURL) continue;
-
       // Map visual coords (y từ trên xuống) → PDF raw coords (y từ dưới lên)
       // dựa theo totalRot (tổng xoay của visual so với raw PDF)
-      let pdfX, pdfY, pdfW, pdfH;
-      const vx = obj.x / pageScale; // visual left (pts)
-      const vy = obj.y / pageScale; // visual top  (pts)
-      const vw = obj.w / pageScale; // visual width (pts)
-      const vh = obj.h / pageScale; // visual height(pts)
-
-      if (totalRot === 0) {
-        pdfX = vx;
-        pdfY = rawPdfH - vy - vh;
-        pdfW = vw; pdfH = vh;
-      } else if (totalRot === 90) {
-        // visual y → pdf x; visual x → pdf (rawH - x), swapped dims
-        pdfX = vy;
-        pdfY = rawPdfH - vx - vw;
-        pdfW = vh; pdfH = vw;
-      } else if (totalRot === 180) {
-        pdfX = rawPdfW - vx - vw;
-        pdfY = vy;
-        pdfW = vw; pdfH = vh;
-      } else if (totalRot === 270) {
-        pdfX = rawPdfW - vy - vh;
-        pdfY = vx;
-        pdfW = vh; pdfH = vw;
-      } else {
-        pdfX = vx;
-        pdfY = rawPdfH - vy - vh;
-        pdfW = vw; pdfH = vh;
-      }
+      const objectScale = Number(obj.coordinateScale) > 0 ? Number(obj.coordinateScale) : pageScale;
+      const visualRect = obj.rectPt || {
+        x: obj.x / objectScale,
+        y: obj.y / objectScale,
+        w: obj.w / objectScale,
+        h: obj.h / objectScale
+      };
+      const mappedRect = _mapVisualRectToPdfPage(visualRect, page, totalRot);
+      const pdfX = mappedRect.x, pdfY = mappedRect.y;
+      const pdfW = mappedRect.width, pdfH = mappedRect.height;
 
       if (obj.type === 'text') {
         try {
@@ -374,6 +451,30 @@ async function _generateEditedPdfBytes() {
           }
         } catch(e2) { console.error("Lỗi khi vẽ Text", e2); }
         
+      } else if (obj.type === 'image' && obj.smartText && obj.dataURL) {
+        const isVector = obj.smartText.renderMode === 'vector';
+        const backgroundURL = isVector
+          ? (obj.smartText.backgroundDataURL || obj.dataURL)
+          : obj.dataURL;
+        // Embed the native-PPI patch itself. Vector mode embeds only the clean
+        // background here, then draws real selectable PDF text above it.
+        const preparedURL = await _prepareSmartPatchForPdf(backgroundURL, totalRot);
+        const imgE = await outDoc.embedPng(_dataUrlBytes(preparedURL));
+        page.drawImage(imgE, { x: pdfX, y: pdfY, width: pdfW, height: pdfH });
+        if (isVector) {
+          try {
+            await _drawSmartVectorText(outDoc, page, obj, visualRect, totalRot);
+          } catch (vectorError) {
+            console.warn('[Smart Text] Vector export fallback to raster:', vectorError);
+            const rasterURL = obj.smartText.rasterDataURL;
+            if (rasterURL) {
+              const rasterPrepared = await _prepareSmartPatchForPdf(rasterURL, totalRot);
+              const rasterImage = await outDoc.embedPng(_dataUrlBytes(rasterPrepared));
+              page.drawImage(rasterImage, { x: pdfX, y: pdfY, width: pdfW, height: pdfH });
+            }
+          }
+        }
+
       } else if (obj.type === 'image' && obj.dataURL) {
         try {
           const isJ = obj.dataURL.startsWith('data:image/jpeg') || obj.dataURL.startsWith('data:image/jpg');

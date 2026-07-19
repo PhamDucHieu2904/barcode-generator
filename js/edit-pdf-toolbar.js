@@ -56,6 +56,7 @@ function _bindKeyboardShortcuts() {
         newObj.id    = uid();
         newObj.x    += 20;  // Lệch nhẹ để phân biệt với bản gốc
         newObj.y    += 20;
+        if (newObj.rectPt && typeof _syncObjectRectPt === 'function') _syncObjectRectPt(newObj);
         newObj.selected = false;
         pg.overlayObjects.push(newObj);
         const area = document.getElementById('edit-canvas-area');
@@ -391,6 +392,7 @@ async function _createBlurredEdgeImage(dataURL) {
       obj.y = newCy - newH / 2;
       obj.w = newW;
       obj.h = newH;
+      if (obj.rectPt && typeof _syncObjectRectPt === 'function') _syncObjectRectPt(obj, pageScale);
 
       // Với line: cập nhật lineStartRel / lineEndRel
       if (obj.shapeType === 'line' && obj.lineStartRel && obj.lineEndRel) {
@@ -670,6 +672,8 @@ function _updateTextControls(obj) {
    HỆ THỐNG ĐIỀU KHIỂN ZOOM (Phóng to / Thu nhỏ Canvas)
    ════════════════════════════════════════════ */
 
+let _adaptivePreviewTimer = null;
+
 function _updateCanvasZoom() {
   const area = document.getElementById('edit-canvas-area');
   if (!area || !area._currentPg) return;
@@ -683,6 +687,14 @@ function _updateCanvasZoom() {
   pageEl.style.transform = `scale(${editZoom})`;
   if (typeof _syncCurrentSelectionChrome === 'function') _syncCurrentSelectionChrome();
   _updateCanvasPanAvailability();
+  if (typeof _ensureAdaptivePagePreview === 'function') {
+    clearTimeout(_adaptivePreviewTimer);
+    _adaptivePreviewTimer = setTimeout(() => {
+      _ensureAdaptivePagePreview(pg, false).catch(error =>
+        console.warn('[PDF Preview] Zoom render fallback:', error)
+      );
+    }, 140);
+  }
 }
 
 function _updateCanvasPanAvailability() {

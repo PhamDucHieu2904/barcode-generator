@@ -409,9 +409,17 @@ function applyCompositeScanEffects(canvas, options, backgroundHex) {
 async function finalizeScanCompression(canvas, quality) {
   const jpegQuality = _scanClamp(Number.isFinite(quality) ? quality : 1, 0.55, 1);
   if (jpegQuality >= 0.985) return canvas;
+  const sourceAlpha = canvas.getContext('2d', { willReadFrequently: true })
+    .getImageData(0,0,canvas.width,canvas.height).data;
   const image = await _scanLoadImage(canvas.toDataURL('image/jpeg', jpegQuality));
   const output = document.createElement('canvas');
   output.width=canvas.width; output.height=canvas.height;
-  output.getContext('2d').drawImage(image,0,0);
+  const outputCtx = output.getContext('2d', { willReadFrequently: true });
+  outputCtx.drawImage(image,0,0);
+  const outputData = outputCtx.getImageData(0,0,output.width,output.height);
+  for (let offset=3; offset<outputData.data.length; offset+=4) {
+    outputData.data[offset] = sourceAlpha[offset];
+  }
+  outputCtx.putImageData(outputData,0,0);
   return output;
 }

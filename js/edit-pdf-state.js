@@ -61,6 +61,18 @@ function hexToRgb(hex) {
  */
 function _getCurrentPg() { if (!editSelectedPage) return null; return editPages.find(p => p.id === editSelectedPage) || null; }
 
+function _syncObjectRectPt(obj, scale = editorScale) {
+  const safeScale = Number(scale) > 0 ? Number(scale) : 1;
+  obj.rectPt = {
+    x: obj.x / safeScale,
+    y: obj.y / safeScale,
+    w: obj.w / safeScale,
+    h: obj.h / safeScale
+  };
+  obj.coordinateScale = safeScale;
+  return obj.rectPt;
+}
+
 /* ════════════════════════════════════════════
    UNDO / REDO HISTORY MANAGER
    ════════════════════════════════════════════ */

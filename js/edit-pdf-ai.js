@@ -9,6 +9,7 @@ let _aiDragState = null;       // Trạng thái kéo vùng chọn
 let _aiSelectionEl = null;     // DOM element vùng chọn
 let _aiOverlayDimEl = null;    // DOM element làm tối xung quanh
 let _aiSelectionRect = null;   // { x, y, w, h } trong tọa độ overlay
+let _aiEditingObjectId = null; // Smart Text object đang được chỉnh lại
 
 /* ════════════════════════════════════════════
    KHỞI TẠO — gọi từ initEditPDF()
@@ -17,7 +18,7 @@ function initAITool() {
   const btn = document.getElementById('ai-fill-btn');
   if (!btn) return;
 
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', async () => {
     const pg = _getCurrentPg();
     if (!pg) { alert('Vui lòng chọn một trang trước.'); return; }
 
@@ -26,6 +27,20 @@ function initAITool() {
       return;
     }
 
+    if (typeof _ensureAdaptivePagePreview === 'function') {
+      btn.disabled = true;
+      document.body.style.cursor = 'wait';
+      try {
+        await _ensureAdaptivePagePreview(pg, true);
+      } catch (error) {
+        console.warn('[Smart Text] Native preview fallback:', error);
+      } finally {
+        btn.disabled = false;
+        document.body.style.cursor = '';
+      }
+    }
+
+    _aiEditingObjectId = null;
     _aiActive = true;
     btn.classList.add('active');
 
@@ -43,6 +58,26 @@ function initAITool() {
 
     _bindAICanvasEvents();
   });
+}
+
+function _openSmartTextObjectEditor(obj, pg, requestedMode) {
+  if (!obj?.smartText || !pg) return;
+  _cancelAITool();
+  const objectScale = Math.max(0.01, Number(obj.coordinateScale) || editorScale || 1);
+  const sourceRectPt = obj.smartText.sourceRectPt || obj.rectPt || {
+    x: obj.x / objectScale,
+    y: obj.y / objectScale,
+    w: obj.w / objectScale,
+    h: obj.h / objectScale
+  };
+  _aiEditingObjectId = obj.id;
+  _aiSelectionRect = {
+    x: sourceRectPt.x * editorScale,
+    y: sourceRectPt.y * editorScale,
+    w: sourceRectPt.w * editorScale,
+    h: sourceRectPt.h * editorScale
+  };
+  _showAIPromptDialog(obj, requestedMode);
 }
 
 /* ════════════════════════════════════════════
@@ -140,9 +175,14 @@ function _bindAICanvasEvents() {
 /* ════════════════════════════════════════════
    DIALOG NHẬP PROMPT
    ════════════════════════════════════════════ */
-function _showAIPromptDialog() {
+function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
   // Remove dialog cũ nếu có
   document.getElementById('ai-prompt-dialog')?.remove();
+  const editingSmartText = editingObj?.smartText || null;
+  if (!editingSmartText) _aiEditingObjectId = null;
+  const initialRenderMode = requestedRenderMode === 'vector' || requestedRenderMode === 'raster'
+    ? requestedRenderMode
+    : (editingSmartText?.renderMode || 'raster');
 
   const dialog = document.createElement('div');
   dialog.id = 'ai-prompt-dialog';
@@ -156,12 +196,20 @@ function _showAIPromptDialog() {
             <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
         </span>
-        <span class="ai-dialog-title">Sửa Chữ Nâng Cao</span>
+        <span class="ai-dialog-title">${editingSmartText ? 'Chỉnh Lại Chữ Nâng Cao' : 'Sửa Chữ Nâng Cao'}</span>
       </div>
       <div class="ai-dialog-body" style="padding-top: 10px;">
         
         <!-- Mode: Text -->
         <div id="ai-mode-text" style="display: block;">
+          <div class="ai-render-mode-row">
+            <label for="ai-render-mode">Kiểu kết quả</label>
+            <select id="ai-render-mode">
+              <option value="raster"${initialRenderMode === 'raster' ? ' selected' : ''}>Bản vá ảnh · hợp với scan</option>
+              <option value="vector"${initialRenderMode === 'vector' ? ' selected' : ''}>Chữ vector · hợp với PDF text</option>
+            </select>
+            <span id="ai-render-mode-note"></span>
+          </div>
           <div class="ai-font-detect-panel">
             <div class="ai-detect-status-row">
               <span id="ai-font-detect-status" class="ai-detect-status">Đang chuẩn bị nhận diện font…</span>
@@ -249,7 +297,7 @@ function _showAIPromptDialog() {
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
-          </span> Thay Chữ
+          </span> ${editingSmartText ? 'Cập nhật' : 'Thay Chữ'}
         </button>
       </div>
     </div>
@@ -258,13 +306,19 @@ function _showAIPromptDialog() {
   if (typeof populateSmartFontSelect === 'function') {
     populateSmartFontSelect(document.getElementById('ai-font-family'));
   }
+  if (editingSmartText) _applySmartTextSettingsToDialog(editingSmartText, initialRenderMode);
+  _syncAIRenderModeUI();
 
   // Hiển thị kích thước vùng chọn
   const pg = _getCurrentPg();
   if (_aiSelectionRect && pg) {
     const sizeEl = document.getElementById('ai-selection-size');
     if (sizeEl) {
-      sizeEl.textContent = `Vùng chọn: ${Math.round(_aiSelectionRect.w)} × ${Math.round(_aiSelectionRect.h)} px canvas`;
+      const ppiX = Math.round(Number(pg.rasterProfile?.ppiX) || 300);
+      const ppiY = Math.round(Number(pg.rasterProfile?.ppiY) || ppiX);
+      const ppiLabel = Math.abs(ppiX - ppiY) <= 2 ? `${ppiX}` : `${ppiX}×${ppiY}`;
+      const detectLabel = pg.rasterProfile?.detected ? 'tự nhận diện' : 'ước tính';
+      sizeEl.textContent = `Vùng chọn: ${Math.round(_aiSelectionRect.w)} × ${Math.round(_aiSelectionRect.h)} px canvas · nguồn ${ppiLabel} PPI (${detectLabel})`;
     }
   }
 
@@ -275,6 +329,16 @@ function _showAIPromptDialog() {
   if (pg && _aiSelectionRect) {
     _captureSelectionRegion(pg, _aiSelectionRect).then(async base64 => {
       capturedBase64ForPreview = base64;
+
+      if (editingSmartText) {
+        detectedScanProfile = editingSmartText;
+        const statusEl = document.getElementById('ai-font-detect-status');
+        const progressEl = document.getElementById('ai-font-detect-progress');
+        if (statusEl) statusEl.textContent = `Đang dùng font ${editingSmartText.fontFamily || 'Arial'} · bấm Dò lại nếu cần`;
+        if (progressEl) progressEl.style.width = '100%';
+        _updateLivePreview();
+        return;
+      }
 
       const updateDetectProgress = (status, progress) => {
         const statusEl = document.getElementById('ai-font-detect-status');
@@ -449,6 +513,7 @@ function _showAIPromptDialog() {
       textAlign: document.getElementById('ai-text-align')?.value || 'left',
       textColor: document.getElementById('ai-text-color')?.value || '#000000',
       fontSizePct: parseFloat(document.getElementById('ai-font-size-slider')?.value || '70') / 100,
+      renderMode: document.getElementById('ai-render-mode')?.value || 'raster',
       ..._readAIScanEffectControls()
     };
 
@@ -457,7 +522,14 @@ function _showAIPromptDialog() {
     }
     const renderObj = await _localSmartTextReplacement(capturedBase64ForPreview, prompt, manualStyle);
     if (sequence !== livePreviewSequence || !document.getElementById('ai-prompt-dialog')) return;
-    container.innerHTML = `<img src="${renderObj.dataURL}" style="max-width: 100%; max-height: 100px; object-fit: contain; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">`;
+    if (manualStyle.renderMode === 'vector') {
+      _renderAIVectorPreview(container, renderObj);
+    } else {
+      const previewImage = document.createElement('img');
+      previewImage.src = renderObj.dataURL;
+      previewImage.style.cssText = 'max-width:100%;max-height:100px;object-fit:contain;border:1px solid #eee;box-shadow:0 1px 3px rgba(0,0,0,.1);';
+      container.replaceChildren(previewImage);
+    }
   }
 
   // Focus textarea & trigger preview on type
@@ -518,6 +590,10 @@ function _showAIPromptDialog() {
   fontControls.forEach(el => el.addEventListener('change', _updateLivePreview));
   const colorInput = document.getElementById('ai-text-color');
   if (colorInput) colorInput.addEventListener('input', _updateLivePreview);
+  document.getElementById('ai-render-mode')?.addEventListener('change', () => {
+    _syncAIRenderModeUI();
+    _updateLivePreview();
+  });
 
   document.getElementById('ai-font-redetect')?.addEventListener('click', async () => {
     const sourceText = document.getElementById('ai-source-text')?.value?.trim();
@@ -560,6 +636,93 @@ function _showAIPromptDialog() {
   });
 }
 
+function _applySmartTextSettingsToDialog(smartText, renderMode) {
+  const setValue = (id, value) => {
+    const input = document.getElementById(id);
+    if (input && value !== undefined && value !== null) input.value = value;
+  };
+  const setText = (id, value) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  };
+  setValue('ai-source-text', smartText.sourceText || '');
+  setValue('ai-prompt-input', smartText.replacementText || '');
+  setValue('ai-font-family', smartText.fontFamily || 'Arial');
+  setValue('ai-font-weight', smartText.fontWeight || 'normal');
+  setValue('ai-font-style', smartText.fontStyle || 'normal');
+  setValue('ai-text-align', smartText.textAlign || 'left');
+  setValue('ai-text-color', smartText.textColor || '#000000');
+  setValue('ai-render-mode', renderMode || smartText.renderMode || 'raster');
+
+  const sizePct = Math.round((Number(smartText.fontSizePct) || 0.7) * 100);
+  setValue('ai-font-size-slider', sizePct); setText('ai-font-size-val', sizePct);
+  const strength = Math.round((Number(smartText.scanStrength) || 0) * 100);
+  const sharpen = Math.round((Number(smartText.sharpenAmount) || 0) * 100);
+  const spread = Math.round((Number(smartText.inkSpread) || 0) * 100);
+  const contrast = Math.round((Number(smartText.contrast) || 1) * 100);
+  const noise = Math.round((Number(smartText.noiseAlpha) || 0) * 100);
+  const jpeg = Math.round((smartText.jpegQuality == null ? 1 : Number(smartText.jpegQuality)) * 100);
+  const blur = Number(smartText.blurPx) || 0;
+  setValue('ai-appearance-mode', smartText.appearanceMode || 'match');
+  setValue('ai-scan-strength', strength); setText('ai-scan-strength-val', strength);
+  setValue('ai-blur-slider', blur); setText('ai-blur-val', blur.toFixed(1));
+  setValue('ai-sharpen-slider', sharpen); setText('ai-sharpen-val', sharpen);
+  setValue('ai-spread-slider', spread); setText('ai-spread-val', spread);
+  setValue('ai-contrast-slider', contrast); setText('ai-contrast-val', contrast);
+  setValue('ai-noise-slider', noise); setText('ai-noise-val', noise);
+  setValue('ai-jpeg-slider', jpeg); setText('ai-jpeg-val', jpeg);
+  setValue('ai-bg-noise', Number(smartText.backgroundNoise) || 0);
+  setValue('ai-ink-noise', Number(smartText.inkNoise) || 0);
+  const profileStatus = document.getElementById('ai-scan-profile-status');
+  if (profileStatus) profileStatus.textContent = 'Đã nạp lại toàn bộ thông số của object hiện tại.';
+}
+
+function _syncAIRenderModeUI() {
+  const dialog = document.getElementById('ai-prompt-dialog');
+  const mode = document.getElementById('ai-render-mode')?.value || 'raster';
+  const note = document.getElementById('ai-render-mode-note');
+  dialog?.classList.toggle('ai-vector-mode', mode === 'vector');
+  if (note) {
+    note.textContent = mode === 'vector'
+      ? 'Nền vẫn được làm sạch; chữ xuất PDF là text vector.'
+      : 'Chữ và hiệu ứng được hòa vào ảnh nền theo PPI nguồn.';
+  }
+}
+
+function _renderAIVectorPreview(container, renderObj) {
+  const vector = renderObj?.vectorText;
+  if (!container || !vector) return;
+  const width = Math.max(1, vector.canvasWidth || 1);
+  const height = Math.max(1, vector.canvasHeight || 1);
+  const scale = Math.min(1, 400 / width, 100 / height);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ai-vector-preview';
+  wrapper.style.width = `${Math.max(1, width * scale)}px`;
+  wrapper.style.height = `${Math.max(1, height * scale)}px`;
+
+  const image = document.createElement('img');
+  image.src = renderObj.backgroundDataURL || renderObj.dataURL;
+  wrapper.appendChild(image);
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  const text = document.createElementNS(NS, 'text');
+  text.setAttribute('x', String(vector.x || 0));
+  text.setAttribute('y', String(vector.baseline || 0));
+  text.setAttribute('fill', vector.color || '#000000');
+  text.setAttribute('font-family', vector.fontFamily || 'Arial');
+  text.setAttribute('font-size', String(Math.max(0.1, vector.fontSize || 12)));
+  text.setAttribute('font-weight', vector.fontWeight || 'normal');
+  text.setAttribute('font-style', vector.fontStyle || 'normal');
+  text.setAttribute('text-anchor', vector.align === 'center' ? 'middle' : (vector.align === 'right' ? 'end' : 'start'));
+  text.textContent = vector.text || '';
+  svg.appendChild(text);
+  wrapper.appendChild(svg);
+  container.replaceChildren(wrapper);
+}
+
 function _readAIScanEffectControls() {
   return {
     appearanceMode: document.getElementById('ai-appearance-mode')?.value || 'match',
@@ -582,6 +745,7 @@ function _handleAICancel() {
   document.getElementById('ai-prompt-dialog')?.remove();
   _removeAISelectionEl();
   _cancelAITool();
+  _aiEditingObjectId = null;
 }
 
 /* ════════════════════════════════════════════
@@ -590,6 +754,9 @@ function _handleAICancel() {
 async function _handleAICreate() {
   const pg = _getCurrentPg();
   if (!pg || !_aiSelectionRect) return;
+  const editingObj = _aiEditingObjectId
+    ? pg.overlayObjects.find(item => item.id === _aiEditingObjectId && item.smartText)
+    : null;
 
   let resultDataURL;
   let expandLeft = 0, expandRight = 0, expandTop = 0, expandBottom = 0;
@@ -605,7 +772,8 @@ async function _handleAICreate() {
 
   try {
     // ── 1. Capture vùng chọn từ background image của page ──
-    const capturedBase64 = await _captureSelectionRegion(pg, _aiSelectionRect);
+    const capture = await _captureSelectionRegionDetailed(pg, _aiSelectionRect);
+    const capturedBase64 = capture.base64;
 
     const manualFontFamily = document.getElementById('ai-font-family')?.value || 'Arial';
     const manualFontWeight = document.getElementById('ai-font-weight')?.value || 'bold';
@@ -613,6 +781,7 @@ async function _handleAICreate() {
     const manualTextAlign = document.getElementById('ai-text-align')?.value || 'left';
     const manualTextColor = document.getElementById('ai-text-color')?.value || '#000000';
     const manualFontSizePct = parseFloat(document.getElementById('ai-font-size-slider')?.value || '70') / 100;
+    const renderMode = document.getElementById('ai-render-mode')?.value === 'vector' ? 'vector' : 'raster';
     const scanEffects = _readAIScanEffectControls();
     const detectedSourceText = document.getElementById('ai-source-text')?.value?.trim() || '';
 
@@ -624,6 +793,7 @@ async function _handleAICreate() {
       textColor: manualTextColor,
       fontSizePct: manualFontSizePct,
       sourceText: detectedSourceText,
+      renderMode,
       ...scanEffects
     };
 
@@ -633,63 +803,77 @@ async function _handleAICreate() {
     }
     const renderObj = await _localSmartTextReplacement(capturedBase64, prompt, manualStyle);
     
-    resultDataURL = renderObj.dataURL;
+    resultDataURL = renderMode === 'vector'
+      ? (renderObj.backgroundDataURL || renderObj.dataURL)
+      : renderObj.dataURL;
     expandLeft = renderObj.expandLeft || 0;
     expandRight = renderObj.expandRight || 0;
     expandTop = renderObj.expandTop || 0;
     expandBottom = renderObj.expandBottom || 0;
 
-    // ── 3. Tính toán tỷ lệ Scale để convert Offset về tọa độ PDF ──
-    const imgForScale = new Image();
-    imgForScale.crossOrigin = 'anonymous';
-    imgForScale.src = pg.renderURL;
-    await new Promise(r => { imgForScale.onload = r; imgForScale.onerror = r; });
-    
-    const canvasW = pg.widthPt * editorScale;
-    const canvasH = pg.heightPt * editorScale;
-    const pageRot = ((pg.rotation || 0) % 360 + 360) % 360;
-    const orientedNaturalW = (pageRot === 90 || pageRot === 270) ? imgForScale.naturalHeight : imgForScale.naturalWidth;
-    const orientedNaturalH = (pageRot === 90 || pageRot === 270) ? imgForScale.naturalWidth : imgForScale.naturalHeight;
-    const scaleX = orientedNaturalW ? (orientedNaturalW / canvasW) : 1;
-    const scaleY = orientedNaturalH ? (orientedNaturalH / canvasH) : 1;
-    
-    const pdfExpandLeft = expandLeft / scaleX;
-    const pdfExpandRight = expandRight / scaleX;
-    const pdfExpandTop = expandTop / scaleY;
-    const pdfExpandBottom = expandBottom / scaleY;
+    // Convert native patch pixels directly to PDF points. This remains stable
+    // across browser resize, zoom and different monitor pixel ratios.
+    const pixelsPerPoint = Math.max(0.01, Number(capture.pixelsPerPoint) || 1);
+    const expandLeftPt = expandLeft / pixelsPerPoint;
+    const expandRightPt = expandRight / pixelsPerPoint;
+    const expandTopPt = expandTop / pixelsPerPoint;
+    const expandBottomPt = expandBottom / pixelsPerPoint;
+    const rectPt = {
+      x: capture.rectPt.x - expandLeftPt,
+      y: capture.rectPt.y - expandTopPt,
+      w: capture.rectPt.w + expandLeftPt + expandRightPt,
+      h: capture.rectPt.h + expandTopPt + expandBottomPt
+    };
 
     // ── 4. Tạo image object và thêm vào overlay ──
     const area = document.getElementById('edit-canvas-area');
     if (!area || !area._overlayEl) throw new Error('Canvas area not found');
 
-    const obj = {
-      id: uid(),
-      type: 'image',
-      x: _aiSelectionRect.x - pdfExpandLeft,
-      y: _aiSelectionRect.y - pdfExpandTop,
-      w: _aiSelectionRect.w + pdfExpandLeft + pdfExpandRight,
-      h: _aiSelectionRect.h + pdfExpandTop + pdfExpandBottom,
-      dataURL: resultDataURL,
-      // Object coordinates are stored in the unzoomed editor canvas coordinate
-      // system. Keep the scale used at creation so PDF export does not depend on
-      // a later resize of the browser/editor panel.
-      coordinateScale: editorScale,
-      selected: false,
-      smartText: {
-        sourceText: detectedSourceText,
-        replacementText: prompt,
-        sourceRect: { ..._aiSelectionRect },
-        fontFamily: manualFontFamily,
-        fontWeight: manualFontWeight,
-        fontStyle: manualFontStyle,
-        textAlign: manualTextAlign,
-        textColor: manualTextColor,
-        fontSizePct: manualFontSizePct,
-        ...scanEffects
-      }
+    const expansionPt = {
+      left: expandLeftPt, right: expandRightPt,
+      top: expandTopPt, bottom: expandBottomPt
     };
-
-    pg.overlayObjects.push(obj);
+    const finalRectPt = _resolveUpdatedSmartRect(editingObj, rectPt, capture.rectPt, expansionPt);
+    const smartText = {
+      sourceText: detectedSourceText,
+      replacementText: prompt,
+      sourceRect: { ..._aiSelectionRect },
+      sourceRectPt: { ...capture.rectPt },
+      generatedRectPt: { ...rectPt },
+      expansionPt,
+      fontFamily: manualFontFamily,
+      fontWeight: manualFontWeight,
+      fontStyle: manualFontStyle,
+      textAlign: manualTextAlign,
+      textColor: manualTextColor,
+      fontSizePct: manualFontSizePct,
+      renderMode,
+      rasterDataURL: renderObj.dataURL,
+      backgroundDataURL: renderObj.backgroundDataURL || renderObj.dataURL,
+      vectorText: renderObj.vectorText || null,
+      masterPpi: Math.round(pixelsPerPoint * 72),
+      pixelsPerPoint,
+      nativeSource: capture.native,
+      ...scanEffects
+    };
+    const objectState = {
+      type: 'image',
+      x: finalRectPt.x * editorScale,
+      y: finalRectPt.y * editorScale,
+      w: finalRectPt.w * editorScale,
+      h: finalRectPt.h * editorScale,
+      dataURL: resultDataURL,
+      coordinateScale: editorScale,
+      rectPt: finalRectPt,
+      selected: false,
+      smartText
+    };
+    let obj = editingObj;
+    if (obj) Object.assign(obj, objectState);
+    else {
+      obj = { id: uid(), ...objectState };
+      pg.overlayObjects.push(obj);
+    }
     _renderOverlayObject(obj, area._overlayEl, pg);
     _selectObject(obj, pg);
     _saveHistory();
@@ -698,6 +882,7 @@ async function _handleAICreate() {
     document.getElementById('ai-prompt-dialog')?.remove();
     _removeAISelectionEl();
     _cancelAITool();
+    _aiEditingObjectId = null;
 
   } catch (err) {
     console.error('[AI Fill] Error:', err);
@@ -706,10 +891,114 @@ async function _handleAICreate() {
   }
 }
 
+function _resolveUpdatedSmartRect(existingObj, generatedRectPt, sourceRectPt, newExpansionPt) {
+  if (!existingObj) return { ...generatedRectPt };
+  const scale = Math.max(0.01, Number(existingObj.coordinateScale) || editorScale || 1);
+  const current = existingObj.rectPt || {
+    x: existingObj.x / scale, y: existingObj.y / scale,
+    w: existingObj.w / scale, h: existingObj.h / scale
+  };
+  const oldGenerated = existingObj.smartText?.generatedRectPt;
+  if (!oldGenerated?.w || !oldGenerated?.h) return { ...current };
+
+  const oldSource = existingObj.smartText?.sourceRectPt || sourceRectPt;
+  const scaleX = current.w / oldGenerated.w;
+  const scaleY = current.h / oldGenerated.h;
+  const currentSourceX = current.x + (oldSource.x - oldGenerated.x) * scaleX;
+  const currentSourceY = current.y + (oldSource.y - oldGenerated.y) * scaleY;
+  return {
+    x: currentSourceX - newExpansionPt.left * scaleX,
+    y: currentSourceY - newExpansionPt.top * scaleY,
+    w: generatedRectPt.w * scaleX,
+    h: generatedRectPt.h * scaleY
+  };
+}
+
 /* ════════════════════════════════════════════
    CAPTURE VÙNG CHỌN TỪ PDF BACKGROUND
    ════════════════════════════════════════════ */
+function _smartSelectionRectInPoints(rect) {
+  const scale = Number(editorScale) > 0 ? Number(editorScale) : 1;
+  return {
+    x: rect.x / scale,
+    y: rect.y / scale,
+    w: rect.w / scale,
+    h: rect.h / scale
+  };
+}
+
+function _smartWorkingPixelsPerPoint(pg, rectPt) {
+  const ppiX = Number(pg?.rasterProfile?.ppiX) || 300;
+  const ppiY = Number(pg?.rasterProfile?.ppiY) || 300;
+  const desired = Math.sqrt(ppiX * ppiY) / 72;
+  const pixelLimit = Math.sqrt(12000000 / Math.max(1, rectPt.w * rectPt.h));
+  const sideLimit = 8192 / Math.max(1, rectPt.w, rectPt.h);
+  return Math.max(1, Math.min(desired, pixelLimit, sideLimit));
+}
+
+async function _captureSelectionRegionDetailed(pg, rect) {
+  const rectPt = _smartSelectionRectInPoints(rect);
+  const pixelsPerPoint = _smartWorkingPixelsPerPoint(pg, rectPt);
+
+  if (pg?.pdfBytes && pg.pdfPageIndex != null && typeof _getEditPdfJsDocument === 'function') {
+    try {
+      const pdfDoc = await _getEditPdfJsDocument(pg.pdfBytes);
+      const page = await pdfDoc.getPage(pg.pdfPageIndex + 1);
+      const rotation = ((Number(page.rotate) || 0) + (Number(pg.rotation) || 0) + 360) % 360;
+      const viewport = page.getViewport({ scale: pixelsPerPoint, rotation });
+      const cropX = Math.round(rectPt.x * pixelsPerPoint);
+      const cropY = Math.round(rectPt.y * pixelsPerPoint);
+      const cropW = Math.max(1, Math.round(rectPt.w * pixelsPerPoint));
+      const cropH = Math.max(1, Math.round(rectPt.h * pixelsPerPoint));
+      const alignedRectPt = {
+        x: cropX / pixelsPerPoint,
+        y: cropY / pixelsPerPoint,
+        w: cropW / pixelsPerPoint,
+        h: cropH / pixelsPerPoint
+      };
+      const canvas = document.createElement('canvas');
+      canvas.width = cropW;
+      canvas.height = cropH;
+      await page.render({
+        canvasContext: canvas.getContext('2d'),
+        viewport,
+        transform: [1, 0, 0, 1, -cropX, -cropY],
+        intent: 'display'
+      }).promise;
+      return {
+        base64: canvas.toDataURL('image/png').split(',')[1],
+        pixelsPerPoint,
+        rectPt: alignedRectPt,
+        widthPx: cropW,
+        heightPx: cropH,
+        native: true
+      };
+    } catch (error) {
+      console.warn('[Smart Text] Native crop fallback:', error);
+    }
+  }
+
+  const base64 = await _captureSelectionRegionFromPreview(pg, rect);
+  const image = new Image();
+  image.src = 'data:image/png;base64,' + base64;
+  await new Promise(resolve => { image.onload = resolve; image.onerror = resolve; });
+  const fallbackPixelsPerPoint = (image.naturalWidth || Math.max(1, rect.w)) / Math.max(0.01, rectPt.w);
+  return {
+    base64,
+    pixelsPerPoint: fallbackPixelsPerPoint,
+    rectPt,
+    widthPx: image.naturalWidth || Math.max(1, Math.round(rect.w)),
+    heightPx: image.naturalHeight || Math.max(1, Math.round(rect.h)),
+    native: false
+  };
+}
+
 async function _captureSelectionRegion(pg, rect) {
+  const capture = await _captureSelectionRegionDetailed(pg, rect);
+  return capture.base64;
+}
+
+async function _captureSelectionRegionFromPreview(pg, rect) {
   return new Promise((resolve, reject) => {
     if (!pg.renderURL) {
       reject(new Error('Trang chưa được render. Vui lòng chọn lại trang.'));
@@ -785,13 +1074,13 @@ function _setAIDialogLoading(loading) {
 
   if (loading) {
     createBtn.disabled = true;
-    createBtn.innerHTML = `<span class="ai-spinner"></span> Đang tạo...`;
+    createBtn.innerHTML = `<span class="ai-spinner"></span> ${_aiEditingObjectId ? 'Đang cập nhật...' : 'Đang tạo...'}`;
     if (cancelBtn) cancelBtn.disabled = true;
     if (textarea)  textarea.disabled = true;
     if (dialog) dialog.classList.add('loading');
   } else {
     createBtn.disabled = false;
-    createBtn.innerHTML = `<span class="ai-btn-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></span> Thay Chữ`;
+    createBtn.innerHTML = `<span class="ai-btn-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></span> ${_aiEditingObjectId ? 'Cập nhật' : 'Thay Chữ'}`;
     if (cancelBtn) cancelBtn.disabled = false;
     if (textarea)  textarea.disabled = false;
     if (dialog) dialog.classList.remove('loading');
@@ -982,6 +1271,22 @@ function _smartTextExpansionPadding(style, strength) {
   return Math.max(1, Math.ceil(blur * 2 + spread + sharpen * 0.5));
 }
 
+function _smartEstimateInkBaseline(minY, maxY, metrics) {
+  const ascent = Math.max(0, Number(metrics?.actualBoundingBoxAscent) || 0);
+  const descent = Math.max(0, Number(metrics?.actualBoundingBoxDescent) || 0);
+  const metricHeight = ascent + descent;
+  if (!Number.isFinite(minY) || !Number.isFinite(maxY) || maxY <= minY || metricHeight <= 0) {
+    return Number.isFinite(maxY) ? maxY : 0;
+  }
+
+  // minY/maxY are pixel centres. Their geometric span is maxY - minY, not
+  // maxY - minY + 1. The old inclusive count put all-cap text one source
+  // pixel below the original baseline; high editor zoom made that very visible.
+  const detectedInkSpan = maxY - minY;
+  const sourceScale = detectedInkSpan / metricHeight;
+  return minY + ascent * sourceScale;
+}
+
 function _featherSmartPatchEdges(canvas, featherPx = 2) {
   const width = canvas.width, height = canvas.height;
   const feather = Math.max(0, Math.min(featherPx, Math.floor(Math.min(width, height) / 4)));
@@ -1002,6 +1307,117 @@ function _featherSmartPatchEdges(canvas, featherPx = 2) {
   }
   ctx.putImageData(imageData, 0, 0);
   return canvas;
+}
+
+function _smartDilateMask(mask, width, height, radius) {
+  let current = new Uint8Array(mask);
+  const passes = Math.max(0, Math.ceil(radius || 0));
+  for (let pass = 0; pass < passes; pass++) {
+    const next = new Uint8Array(current);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const index = y * width + x;
+        if (current[index]) continue;
+        let hit = false;
+        for (let oy = -1; oy <= 1 && !hit; oy++) {
+          const sy = y + oy;
+          if (sy < 0 || sy >= height) continue;
+          for (let ox = -1; ox <= 1; ox++) {
+            const sx = x + ox;
+            if (sx >= 0 && sx < width && current[sy * width + sx]) { hit = true; break; }
+          }
+        }
+        if (hit) next[index] = 1;
+      }
+    }
+    current = next;
+  }
+  return current;
+}
+
+function _smartInpaintBackground(sourcePixels, width, height, eraseMask, backgroundRgb) {
+  const stride = width + 1;
+  const size = stride * (height + 1);
+  const sumR = new Float64Array(size), sumG = new Float64Array(size);
+  const sumB = new Float64Array(size), counts = new Uint32Array(size);
+
+  for (let y = 1; y <= height; y++) {
+    let rowR = 0, rowG = 0, rowB = 0, rowCount = 0;
+    for (let x = 1; x <= width; x++) {
+      const pixel = (y - 1) * width + (x - 1);
+      if (!eraseMask[pixel]) {
+        const offset = pixel * 4;
+        rowR += sourcePixels[offset];
+        rowG += sourcePixels[offset + 1];
+        rowB += sourcePixels[offset + 2];
+        rowCount++;
+      }
+      const integral = y * stride + x;
+      const above = integral - stride;
+      sumR[integral] = sumR[above] + rowR;
+      sumG[integral] = sumG[above] + rowG;
+      sumB[integral] = sumB[above] + rowB;
+      counts[integral] = counts[above] + rowCount;
+    }
+  }
+
+  const query = (integral, x0, y0, x1, y1) => {
+    const a = y0 * stride + x0, b = y0 * stride + x1;
+    const c = y1 * stride + x0, d = y1 * stride + x1;
+    return integral[d] - integral[b] - integral[c] + integral[a];
+  };
+  const output = new Uint8ClampedArray(sourcePixels);
+  const radius = Math.max(3, Math.round(Math.min(width, height) * 0.18));
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixel = y * width + x;
+      if (!eraseMask[pixel]) continue;
+      const x0 = Math.max(0, x - radius), y0 = Math.max(0, y - radius);
+      const x1 = Math.min(width, x + radius + 1), y1 = Math.min(height, y + radius + 1);
+      const count = query(counts, x0, y0, x1, y1);
+      const offset = pixel * 4;
+      output[offset] = count ? Math.round(query(sumR, x0, y0, x1, y1) / count) : backgroundRgb[0];
+      output[offset + 1] = count ? Math.round(query(sumG, x0, y0, x1, y1) / count) : backgroundRgb[1];
+      output[offset + 2] = count ? Math.round(query(sumB, x0, y0, x1, y1) / count) : backgroundRgb[2];
+      output[offset + 3] = 255;
+    }
+  }
+  return output;
+}
+
+function _smartBlendProcessedPatch(baseCanvas, processedCanvas, coreMask, featherRadius = 2) {
+  const width = baseCanvas.width, height = baseCanvas.height;
+  const baseCtx = baseCanvas.getContext('2d', { willReadFrequently: true });
+  const processedCtx = processedCanvas.getContext('2d', { willReadFrequently: true });
+  const baseData = baseCtx.getImageData(0, 0, width, height);
+  const processedData = processedCtx.getImageData(0, 0, width, height);
+  const weights = new Uint8Array(width * height);
+  let expanded = new Uint8Array(coreMask);
+  for (let pixel = 0; pixel < coreMask.length; pixel++) {
+    if (coreMask[pixel]) weights[pixel] = 255;
+  }
+  const rings = Math.max(1, Math.ceil(featherRadius));
+  for (let ring = 1; ring <= rings; ring++) {
+    const next = _smartDilateMask(expanded, width, height, 1);
+    const ringWeight = Math.round(255 * (1 - ring / (rings + 1)));
+    for (let pixel = 0; pixel < next.length; pixel++) {
+      if (next[pixel] && !expanded[pixel]) weights[pixel] = Math.max(weights[pixel], ringWeight);
+    }
+    expanded = next;
+  }
+
+  for (let pixel = 0; pixel < weights.length; pixel++) {
+    const weight = weights[pixel] / 255;
+    const offset = pixel * 4;
+    if (weight <= 0) continue;
+    for (let channel = 0; channel < 4; channel++) {
+      baseData.data[offset + channel] = Math.round(
+        baseData.data[offset + channel] * (1 - weight) + processedData.data[offset + channel] * weight
+      );
+    }
+  }
+  baseCtx.putImageData(baseData, 0, 0);
+  return baseCanvas;
 }
 
 function _localSmartTextReplacement(base64, newText, manualStyle) {
@@ -1037,7 +1453,8 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
       const finalText = style.isUppercase ? newText.toUpperCase() : newText;
 
       const W = img.width, H = img.height;
-      const data = ctx.getImageData(0, 0, W, H).data;
+      const sourceImageData = ctx.getImageData(0, 0, W, H);
+      const data = sourceImageData.data;
       
       // Lấy màu nền từ viền crop, dùng được cả chữ tối/nền sáng và chữ sáng/nền tối.
       const border = Math.max(1, Math.round(Math.min(W, H) * 0.08));
@@ -1052,11 +1469,14 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
 
       let minX = W, maxX = -1, minY = H, maxY = -1;
       let hasInk = false;
+      const rawInkMask = new Uint8Array(W * H);
+      const eraseThreshold = Math.max(14, Number(style.backgroundNoise || 0) * 2.5);
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           const i = (y * W + x) * 4;
            const dr=data[i]-bgR, dg=data[i+1]-bgG, db=data[i+2]-bgB;
            const distance=Math.sqrt(dr*dr*0.3 + dg*dg*0.59 + db*db*0.11);
+           if (distance > eraseThreshold) rawInkMask[y * W + x] = 1;
            if (distance > 28) {
              if (x < minX) minX = x;
              if (x > maxX) maxX = x;
@@ -1101,9 +1521,7 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
           const sourceMetrics = ctx.measureText(sourceText);
           const sourceMetricHeight = sourceMetrics.actualBoundingBoxAscent + sourceMetrics.actualBoundingBoxDescent;
           if (sourceMetricHeight > 0) {
-            const detectedInkHeight = maxY - minY + 1;
-            const sourceScale = detectedInkHeight / sourceMetricHeight;
-            drawY = minY + sourceMetrics.actualBoundingBoxAscent * sourceScale;
+            drawY = _smartEstimateInkBaseline(minY, maxY, sourceMetrics);
           } else {
             drawY = maxY - finalMetrics.actualBoundingBoxDescent;
           }
@@ -1126,6 +1544,15 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
 
       const strength = Math.max(0, Math.min(1.5, style.scanStrength));
       const effectPadding = _smartTextExpansionPadding(style, strength);
+      const eraseRadius = Math.max(1, Math.ceil(style.blurPx * strength * 2 + 1));
+      const eraseMask = _smartDilateMask(rawInkMask, W, H, eraseRadius);
+      const cleanedSourcePixels = _smartInpaintBackground(
+        sourceImageData.data,
+        W,
+        H,
+        eraseMask,
+        [bgR, bgG, bgB]
+      );
       let expandLeft = 0, expandRight = 0, expandTop = 0, expandBottom = 0;
       if (textLeft < 0) expandLeft = Math.ceil(-textLeft) + effectPadding;
       if (textRight > img.width) expandRight = Math.ceil(textRight - img.width) + effectPadding;
@@ -1139,8 +1566,23 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
         drawY += expandTop;
       }
 
-      ctx.fillStyle = style.backgroundColor;
-      ctx.fillRect(0, 0, c.width, c.height);
+      const baseCanvas = document.createElement('canvas');
+      baseCanvas.width = c.width; baseCanvas.height = c.height;
+      const baseCtx = baseCanvas.getContext('2d', { willReadFrequently: true });
+      baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+      const cleanedImageData = baseCtx.createImageData(W, H);
+      cleanedImageData.data.set(cleanedSourcePixels);
+      baseCtx.putImageData(cleanedImageData, expandLeft, expandTop);
+
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.drawImage(baseCanvas, 0, 0);
+
+      const editMask = new Uint8Array(c.width * c.height);
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          if (eraseMask[y * W + x]) editMask[(y + expandTop) * c.width + x + expandLeft] = 1;
+        }
+      }
 
       const textCanvas = document.createElement('canvas');
       textCanvas.width = c.width; textCanvas.height = c.height;
@@ -1158,6 +1600,11 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
         applyTextInkSpread(textCanvas, safeInkSpread * strength);
       }
       const effectiveBlur = style.blurPx * strength;
+      const textPixels = textCtx.getImageData(0, 0, textCanvas.width, textCanvas.height).data;
+      for (let pixel = 0; pixel < editMask.length; pixel++) {
+        if (textPixels[pixel * 4 + 3] > 2) editMask[pixel] = 1;
+      }
+      const effectMask = _smartDilateMask(editMask, c.width, c.height, Math.ceil(effectiveBlur * 2 + 1));
       if (effectiveBlur > 0.01) ctx.filter = `blur(${effectiveBlur}px)`;
       ctx.drawImage(textCanvas, 0, 0);
       ctx.filter = 'none';
@@ -1183,13 +1630,43 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
         outputCanvas = await finalizeScanCompression(c, effectiveQuality);
       }
 
-      // Avoid a visible rectangular seam against the scanned page. Keeping a
-      // very small alpha feather is enough to blend background/noise differences
-      // without softening the text in the middle of the patch.
-      outputCanvas = _featherSmartPatchEdges(outputCanvas, 2);
+      // Keep a separate clean-background master for vector mode. The source
+      // glyph is removed, but the replacement glyph is not rasterized into it.
+      const cleanBackgroundCanvas = document.createElement('canvas');
+      cleanBackgroundCanvas.width = baseCanvas.width;
+      cleanBackgroundCanvas.height = baseCanvas.height;
+      cleanBackgroundCanvas.getContext('2d').drawImage(baseCanvas, 0, 0);
+      _featherSmartPatchEdges(cleanBackgroundCanvas, 1);
+
+      // Keep untouched scan pixels outside the irregular old/new glyph mask.
+      // This preserves the source paper texture and JPEG grid at the rectangle
+      // boundary instead of manufacturing a different background patch.
+      outputCanvas = _smartBlendProcessedPatch(
+        baseCanvas,
+        outputCanvas,
+        effectMask,
+        Math.max(2, Math.ceil(effectiveBlur + 1))
+      );
+      // One native pixel of alpha transition lets the PDF renderer blend the
+      // patch over the identical source pixels below it without a hairline.
+      outputCanvas = _featherSmartPatchEdges(outputCanvas, 1);
 
       resolve({ 
         dataURL: outputCanvas.toDataURL('image/png'),
+        backgroundDataURL: cleanBackgroundCanvas.toDataURL('image/png'),
+        vectorText: {
+          text: finalText,
+          x: drawX,
+          baseline: drawY,
+          fontSize: exactFontSize,
+          fontFamily: style.fontFamily,
+          fontWeight: style.fontWeight,
+          fontStyle: style.fontStyle,
+          color: style.textColor,
+          align,
+          canvasWidth: outputCanvas.width,
+          canvasHeight: outputCanvas.height
+        },
         maskURL: null,
         offsetX: -expandLeft,
         offsetY: -expandTop,
