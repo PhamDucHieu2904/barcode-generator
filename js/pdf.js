@@ -397,7 +397,7 @@ async function initGuide() {
   async function loadGuideData() {
     if (guideData) return guideData;
     try {
-      const res = await fetch('js/guide-data.json');
+      const res = await fetch('js/guide-data.json?v=20260720-1');
       guideData = await res.json();
       return guideData;
     } catch (e) {
