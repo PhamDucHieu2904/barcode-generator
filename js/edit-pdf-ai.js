@@ -224,7 +224,7 @@ function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
           </div>
           <p class="ai-dialog-hint">Nhập chữ mới bạn muốn chèn vào bản scan</p>
           <textarea id="ai-prompt-input" class="ai-prompt-textarea" 
-            placeholder="Ví dụ: CÔNG TY"
+            placeholder="Ví dụ: THIẾT KẾ VINUT"
             rows="2" spellcheck="false"></textarea>
           
           <div class="ai-font-controls" style="margin-top: 8px; display: flex; gap: 8px; font-size: 12px; align-items: center;">
@@ -238,12 +238,6 @@ function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
             <select id="ai-font-style" style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; outline: none; background: #fff; width: 85px;">
               <option value="normal">Thẳng</option>
               <option value="italic">Nghiêng</option>
-            </select>
-
-            <select id="ai-text-align" style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; outline: none; background: #fff; width: 70px;" title="Căn chữ">
-              <option value="left">Trái</option>
-              <option value="center">Giữa</option>
-              <option value="right">Phải</option>
             </select>
 
             <input type="color" id="ai-text-color" value="#000000" style="padding: 0; border: 1px solid #ccc; border-radius: 4px; height: 26px; width: 30px; cursor: pointer;" title="Màu chữ">
@@ -274,6 +268,7 @@ function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
               <label><span>Contrast <b id="ai-contrast-val">100</b>%</span><input id="ai-contrast-slider" type="range" min="70" max="140" step="1" value="100"></label>
               <label><span>Noise <b id="ai-noise-val">0</b>%</span><input id="ai-noise-slider" type="range" min="0" max="100" step="1" value="0"></label>
               <label><span>JPEG <b id="ai-jpeg-val">100</b>%</span><input id="ai-jpeg-slider" type="range" min="60" max="100" step="1" value="100"></label>
+              <label title="Làm nhạt lõi nét và gom mật độ mực về hai mép trong như Photoshop Smart Sharpen"><span>Smart sharpen <b id="ai-smart-sharpen-val">0</b>%</span><input id="ai-smart-sharpen-slider" type="range" min="0" max="100" step="1" value="0"></label>
             </div>
             <input id="ai-bg-noise" type="hidden" value="0">
             <input id="ai-ink-noise" type="hidden" value="0">
@@ -432,6 +427,7 @@ function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
     _setEffectControl('ai-contrast-slider', Math.round(profile.contrast * 100), 'ai-contrast-val');
     _setEffectControl('ai-noise-slider', Math.round(profile.noiseAlpha * 100), 'ai-noise-val');
     _setEffectControl('ai-jpeg-slider', Math.round(profile.jpegQuality * 100), 'ai-jpeg-val');
+    _setEffectControl('ai-smart-sharpen-slider', Math.round((Number(profile.smartSharpen) || 0) * 100), 'ai-smart-sharpen-val');
     const bgNoise = document.getElementById('ai-bg-noise');
     const inkNoise = document.getElementById('ai-ink-noise');
     if (bgNoise) bgNoise.value = profile.backgroundNoise || 0;
@@ -449,6 +445,7 @@ function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
     _setEffectControl('ai-contrast-slider', 100, 'ai-contrast-val');
     _setEffectControl('ai-noise-slider', 0, 'ai-noise-val');
     _setEffectControl('ai-jpeg-slider', 100, 'ai-jpeg-val');
+    _setEffectControl('ai-smart-sharpen-slider', 0, 'ai-smart-sharpen-val');
     const bgNoise = document.getElementById('ai-bg-noise');
     const inkNoise = document.getElementById('ai-ink-noise');
     if (bgNoise) bgNoise.value = 0;
@@ -510,9 +507,10 @@ function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
       fontFamily: document.getElementById('ai-font-family')?.value || 'Arial', 
       fontWeight: document.getElementById('ai-font-weight')?.value || 'bold', 
       fontStyle: document.getElementById('ai-font-style')?.value || 'normal',
-      textAlign: document.getElementById('ai-text-align')?.value || 'left',
+      textAlign: 'left',
       textColor: document.getElementById('ai-text-color')?.value || '#000000',
       fontSizePct: parseFloat(document.getElementById('ai-font-size-slider')?.value || '70') / 100,
+      sourceText: document.getElementById('ai-source-text')?.value?.trim() || '',
       renderMode: document.getElementById('ai-render-mode')?.value || 'raster',
       ..._readAIScanEffectControls()
     };
@@ -555,7 +553,8 @@ function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
     ['ai-spread-slider','ai-spread-val',true],
     ['ai-contrast-slider','ai-contrast-val',true],
     ['ai-noise-slider','ai-noise-val',true],
-    ['ai-jpeg-slider','ai-jpeg-val',true]
+    ['ai-jpeg-slider','ai-jpeg-val',true],
+    ['ai-smart-sharpen-slider','ai-smart-sharpen-val',true]
   ];
   effectSliders.forEach(([inputId, valueId, markManual]) => {
     document.getElementById(inputId)?.addEventListener('input', e => {
@@ -586,7 +585,7 @@ function _showAIPromptDialog(editingObj = null, requestedRenderMode = null) {
     }
   });
   
-  const fontControls = dialog.querySelectorAll('#ai-font-family, #ai-font-weight, #ai-font-style, #ai-text-align, #ai-text-color');
+  const fontControls = dialog.querySelectorAll('#ai-font-family, #ai-font-weight, #ai-font-style, #ai-text-color');
   fontControls.forEach(el => el.addEventListener('change', _updateLivePreview));
   const colorInput = document.getElementById('ai-text-color');
   if (colorInput) colorInput.addEventListener('input', _updateLivePreview);
@@ -650,7 +649,6 @@ function _applySmartTextSettingsToDialog(smartText, renderMode) {
   setValue('ai-font-family', smartText.fontFamily || 'Arial');
   setValue('ai-font-weight', smartText.fontWeight || 'normal');
   setValue('ai-font-style', smartText.fontStyle || 'normal');
-  setValue('ai-text-align', smartText.textAlign || 'left');
   setValue('ai-text-color', smartText.textColor || '#000000');
   setValue('ai-render-mode', renderMode || smartText.renderMode || 'raster');
 
@@ -662,6 +660,7 @@ function _applySmartTextSettingsToDialog(smartText, renderMode) {
   const contrast = Math.round((Number(smartText.contrast) || 1) * 100);
   const noise = Math.round((Number(smartText.noiseAlpha) || 0) * 100);
   const jpeg = Math.round((smartText.jpegQuality == null ? 1 : Number(smartText.jpegQuality)) * 100);
+  const smartSharpen = Math.round((Number(smartText.smartSharpen) || 0) * 100);
   const blur = Number(smartText.blurPx) || 0;
   setValue('ai-appearance-mode', smartText.appearanceMode || 'match');
   setValue('ai-scan-strength', strength); setText('ai-scan-strength-val', strength);
@@ -671,6 +670,7 @@ function _applySmartTextSettingsToDialog(smartText, renderMode) {
   setValue('ai-contrast-slider', contrast); setText('ai-contrast-val', contrast);
   setValue('ai-noise-slider', noise); setText('ai-noise-val', noise);
   setValue('ai-jpeg-slider', jpeg); setText('ai-jpeg-val', jpeg);
+  setValue('ai-smart-sharpen-slider', smartSharpen); setText('ai-smart-sharpen-val', smartSharpen);
   setValue('ai-bg-noise', Number(smartText.backgroundNoise) || 0);
   setValue('ai-ink-noise', Number(smartText.inkNoise) || 0);
   const profileStatus = document.getElementById('ai-scan-profile-status');
@@ -734,7 +734,8 @@ function _readAIScanEffectControls() {
     noiseAlpha: parseFloat(document.getElementById('ai-noise-slider')?.value || '0') / 100,
     backgroundNoise: parseFloat(document.getElementById('ai-bg-noise')?.value || '0'),
     inkNoise: parseFloat(document.getElementById('ai-ink-noise')?.value || '0'),
-    jpegQuality: parseFloat(document.getElementById('ai-jpeg-slider')?.value || '100') / 100
+    jpegQuality: parseFloat(document.getElementById('ai-jpeg-slider')?.value || '100') / 100,
+    smartSharpen: parseFloat(document.getElementById('ai-smart-sharpen-slider')?.value || '0') / 100
   };
 }
 
@@ -778,7 +779,7 @@ async function _handleAICreate() {
     const manualFontFamily = document.getElementById('ai-font-family')?.value || 'Arial';
     const manualFontWeight = document.getElementById('ai-font-weight')?.value || 'bold';
     const manualFontStyle = document.getElementById('ai-font-style')?.value || 'normal';
-    const manualTextAlign = document.getElementById('ai-text-align')?.value || 'left';
+    const manualTextAlign = 'left';
     const manualTextColor = document.getElementById('ai-text-color')?.value || '#000000';
     const manualFontSizePct = parseFloat(document.getElementById('ai-font-size-slider')?.value || '70') / 100;
     const renderMode = document.getElementById('ai-render-mode')?.value === 'vector' ? 'vector' : 'raster';
@@ -1448,6 +1449,7 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
         backgroundNoise: manualStyle?.backgroundNoise || 0,
         inkNoise: manualStyle?.inkNoise || 0,
         jpegQuality: manualStyle?.jpegQuality ?? 1,
+        smartSharpen: Math.max(0, Math.min(1, Number(manualStyle?.smartSharpen) || 0)),
         scanStrength: manualStyle?.appearanceMode === 'clean' ? 0 : (manualStyle?.scanStrength ?? 1)
       };
       const finalText = style.isUppercase ? newText.toUpperCase() : newText;
@@ -1495,14 +1497,19 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
       }
 
       const align = manualStyle?.textAlign || 'left';
+      const sourceText = String(manualStyle?.sourceText || '').trim();
+      // Cỡ font phải được suy ra từ chính chuỗi gốc. Nếu dùng bounding box của
+      // chuỗi thay thế, một từ có cả ascender (h) và descender (p/g/y) sẽ bị
+      // thu nhỏ để nhét tổng chiều cao vào hộp nét của từ gốc.
+      const sizingText = sourceText || finalText;
       ctx.font = `${style.fontStyle} ${style.fontWeight} 100px "${style.fontFamily}", sans-serif`;
-      const metrics100 = ctx.measureText(finalText);
-      const visualHeight100 = metrics100.actualBoundingBoxAscent + metrics100.actualBoundingBoxDescent;
-      const safeHeight100 = visualHeight100 > 0 ? visualHeight100 : 100;
+      const sizingMetrics100 = ctx.measureText(sizingText);
+      const sizingHeight100 = sizingMetrics100.actualBoundingBoxAscent + sizingMetrics100.actualBoundingBoxDescent;
+      const safeSizingHeight100 = sizingHeight100 > 0 ? sizingHeight100 : 100;
 
       const fontSizePct = manualStyle?.fontSizePct !== undefined ? manualStyle.fontSizePct : 0.7;
-      const targetVisualHeight = Math.floor(img.height * fontSizePct);
-      const exactFontSize = (targetVisualHeight / safeHeight100) * 100;
+      const targetSourceInkHeight = Math.max(1, Math.floor(img.height * fontSizePct));
+      const exactFontSize = (targetSourceInkHeight / safeSizingHeight100) * 100;
       ctx.font = `${style.fontStyle} ${style.fontWeight} ${exactFontSize}px "${style.fontFamily}", sans-serif`;
 
       const finalMetrics = ctx.measureText(finalText);
@@ -1516,7 +1523,6 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
         // makes capitals/numbers look a few pixels too high when their descent
         // differs from the source word. Estimate the original baseline from the
         // OCR text rendered with the chosen font, then place the replacement on it.
-        const sourceText = String(manualStyle?.sourceText || '').trim();
         if (sourceText) {
           const sourceMetrics = ctx.measureText(sourceText);
           const sourceMetricHeight = sourceMetrics.actualBoundingBoxAscent + sourceMetrics.actualBoundingBoxDescent;
@@ -1543,6 +1549,7 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
       let textBottom = drawY + finalMetrics.actualBoundingBoxDescent;
 
       const strength = Math.max(0, Math.min(1.5, style.scanStrength));
+      const effectiveSmartSharpen = Math.max(0, Math.min(1, style.smartSharpen * Math.min(1, strength)));
       const effectPadding = _smartTextExpansionPadding(style, strength);
       const eraseRadius = Math.max(1, Math.ceil(style.blurPx * strength * 2 + 1));
       const eraseMask = _smartDilateMask(rawInkMask, W, H, eraseRadius);
@@ -1600,14 +1607,22 @@ function _localSmartTextReplacement(base64, newText, manualStyle) {
         applyTextInkSpread(textCanvas, safeInkSpread * strength);
       }
       const effectiveBlur = style.blurPx * strength;
+      if (typeof applyTextSubpixelBlur === 'function' && effectiveBlur > 0.01) {
+        applyTextSubpixelBlur(textCanvas, effectiveBlur);
+      }
+      if (typeof applyTextInnerSharpen === 'function' && effectiveSmartSharpen > 0.005) {
+        // Smart Sharpen là bước hoàn thiện sau blur của máy scan. Bán kính tối
+        // thiểu 1.25 px giữ viền đủ dày ở các crop chữ nhỏ; chữ lớn vẫn giới
+        // hạn ở 5 px như ví dụ Photoshop.
+        const smartRadius = Math.max(1.25, Math.min(5, exactFontSize * 0.055));
+        applyTextInnerSharpen(textCanvas, effectiveSmartSharpen, smartRadius);
+      }
       const textPixels = textCtx.getImageData(0, 0, textCanvas.width, textCanvas.height).data;
       for (let pixel = 0; pixel < editMask.length; pixel++) {
         if (textPixels[pixel * 4 + 3] > 2) editMask[pixel] = 1;
       }
       const effectMask = _smartDilateMask(editMask, c.width, c.height, Math.ceil(effectiveBlur * 2 + 1));
-      if (effectiveBlur > 0.01) ctx.filter = `blur(${effectiveBlur}px)`;
       ctx.drawImage(textCanvas, 0, 0);
-      ctx.filter = 'none';
 
       let seed = 2166136261;
       for (let i=0; i<finalText.length; i++) seed = Math.imul(seed ^ finalText.charCodeAt(i), 16777619);

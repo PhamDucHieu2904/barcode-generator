@@ -573,10 +573,95 @@ async function _generateEditedPdfBytes() {
   return await outDoc.save();
 }
 
+function _canvasToPngBytes(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(async blob => {
+      if (!blob) {
+        reject(new Error('Không thể tạo ảnh cho trang PDF.'));
+        return;
+      }
+      resolve(new Uint8Array(await blob.arrayBuffer()));
+    }, 'image/png');
+  });
+}
+
+async function _flattenedPageTargetPpi(pg) {
+  const profile = pg?.rasterProfile;
+  if (profile?.detected && profile.type === 'scan') {
+    const ppiX = Number(profile.ppiX);
+    const ppiY = Number(profile.ppiY);
+    if (ppiX >= 36 && ppiY >= 36) return Math.round(Math.sqrt(ppiX * ppiY));
+  }
+
+  // Trang được thêm trực tiếp từ một ảnh không có rasterProfile của pdf.js.
+  // Tính PPI từ số pixel thật của ảnh và kích thước nó được đặt trên trang.
+  if (pg?.imageDataURL) {
+    try {
+      const image = await _loadExportImage(pg.imageDataURL);
+      const imageWidth = image.naturalWidth || image.width;
+      const imageHeight = image.naturalHeight || image.height;
+      const pointsPerPixel = Math.min(
+        (Number(pg.widthPt) || 595) / Math.max(1, imageWidth),
+        (Number(pg.heightPt) || 842) / Math.max(1, imageHeight)
+      );
+      const imagePpi = 72 / Math.max(0.001, pointsPerPixel);
+      if (Number.isFinite(imagePpi) && imagePpi >= 36) return Math.round(imagePpi);
+    } catch (_) { /* Vector/default fallback below. */ }
+  }
+
+  // PDF vector, PDF hỗn hợp hoặc trang không xác định luôn được raster ở 300 PPI.
+  return 300;
+}
+
+async function _generateFlattenedPdfBytes() {
+  const editedBytes = await _generateEditedPdfBytes();
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(editedBytes) }).promise;
+  const outDoc = await PDFLib.PDFDocument.create();
+  const maxCanvasPixels = 120000000;
+  const maxCanvasSide = 16384;
+
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+    const sourcePage = await pdf.getPage(pageNumber);
+    const ppi = await _flattenedPageTargetPpi(editPages[pageNumber - 1]);
+    const viewport = sourcePage.getViewport({ scale: ppi / 72 });
+    const pixelWidth = Math.max(1, Math.round(viewport.width));
+    const pixelHeight = Math.max(1, Math.round(viewport.height));
+    if (pixelWidth > maxCanvasSide || pixelHeight > maxCanvasSide || pixelWidth * pixelHeight > maxCanvasPixels) {
+      throw new Error(`Trang ${pageNumber} ở ${ppi} PPI vượt giới hạn ảnh của trình duyệt (${pixelWidth} × ${pixelHeight}px).`);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = pixelWidth;
+    canvas.height = pixelHeight;
+    const context = canvas.getContext('2d', { alpha: false });
+    if (!context) throw new Error('Trình duyệt không thể tạo canvas để gộp trang.');
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, pixelWidth, pixelHeight);
+    await sourcePage.render({ canvasContext: context, viewport, background: '#ffffff' }).promise;
+
+    const image = await outDoc.embedPng(await _canvasToPngBytes(canvas));
+    const pageWidthPt = pixelWidth * 72 / ppi;
+    const pageHeightPt = pixelHeight * 72 / ppi;
+    const outputPage = outDoc.addPage([pageWidthPt, pageHeightPt]);
+    outputPage.drawImage(image, { x: 0, y: 0, width: pageWidthPt, height: pageHeightPt });
+
+    // Nhả backing store sớm để PDF nhiều trang không giữ toàn bộ bitmap trong RAM.
+    canvas.width = 1;
+    canvas.height = 1;
+  }
+
+  return outDoc.save();
+}
+
 // Hàm 2: Download bản PDF
 async function _buildAndDownloadEditPDF() {
   const outBytes = await _generateEditedPdfBytes();
   triggerDownload(new Blob([outBytes], { type: 'application/pdf' }), 'edited.pdf');
+}
+
+async function _buildAndDownloadFlattenedPDF() {
+  const outBytes = await _generateFlattenedPdfBytes();
+  triggerDownload(new Blob([outBytes], { type: 'application/pdf' }), 'edited-merged.pdf');
 }
 
 // Hàm 3: Export thành Image PNG (Chính xác 100% với bản PDF)

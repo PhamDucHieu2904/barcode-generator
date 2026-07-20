@@ -306,6 +306,55 @@
   gap: 8px;
 }
 
+/* ── Edit PDF download choices ── */
+.edit-download-menu {
+  position: relative;
+  margin-top: 12px;
+}
+.edit-download-menu > .pdf-download-btn {
+  width: 100%;
+}
+.edit-download-options {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: auto;
+  box-sizing: border-box;
+  bottom: calc(100% + 8px);
+  z-index: 40;
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #d8d8d8;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+.edit-download-options[hidden] { display: none; }
+.edit-download-option {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.edit-download-option:hover,
+.edit-download-option:focus-visible {
+  border-color: #111;
+  background: #f7f7f7;
+  outline: none;
+}
+.edit-download-option strong { font-size: 11px; line-height: 1.2; }
+.edit-download-option:disabled { opacity: 0.55; cursor: wait; }
+
 /* ── Guide Modal & Button ── */
 .pdf-panel-title { display: flex; justify-content: space-between; align-items: center; }
 .guide-btn {

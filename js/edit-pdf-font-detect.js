@@ -561,7 +561,8 @@ async function detectNearestGoogleFonts(base64, sourceText, hint, onProgress) {
   const variants = [
     { fontWeight: 'normal', fontStyle: 'normal' },
     { fontWeight: 'bold', fontStyle: 'normal' },
-    { fontWeight: 'normal', fontStyle: 'italic' }
+    { fontWeight: 'normal', fontStyle: 'italic' },
+    { fontWeight: 'bold', fontStyle: 'italic' }
   ];
   const results = [];
 

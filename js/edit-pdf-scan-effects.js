@@ -241,6 +241,9 @@ function analyzeScanEffectPixels(data, W, H) {
     contrast: Math.round(contrast * 100) / 100,
     gamma: 1,
     jpegQuality,
+    // Inner-edge sharpening is intentionally manual for now. Detecting it
+    // reliably requires comparing luminance across the interior of each glyph.
+    smartSharpen: 0,
     edgeIrregularity: Math.round(_scanClamp(edgeComplexity - 1, 0, 2) * 100) / 100,
     backgroundColor: '#' + background.map(value => Math.round(value).toString(16).padStart(2,'0')).join(''),
     confidence: Math.round(_scanClamp((strongCount / Math.max(1, W*H) * 4 + Math.min(1, contrastRange/120)) * 50, 10, 96))
@@ -310,7 +313,7 @@ function rememberScanEffectProfile(page, profile) {
   _scanProfileCache.set(page, samples);
   const numericKeys = [
     'blurPx', 'sharpenAmount', 'inkSpread', 'noiseAlpha', 'backgroundNoise',
-    'inkNoise', 'contrast', 'gamma', 'jpegQuality', 'edgeIrregularity', 'confidence'
+    'inkNoise', 'contrast', 'gamma', 'jpegQuality', 'smartSharpen', 'edgeIrregularity', 'confidence'
   ];
   const merged = { ...profile };
   numericKeys.forEach(key => {
@@ -351,6 +354,122 @@ function applyTextInkSpread(textCanvas, amount) {
     }
   }
   ctx.putImageData(imageData,0,0);
+}
+
+function _scanGaussianAlpha(source, width, height, sigma) {
+  if (!(sigma > 0)) return new Float32Array(source);
+  const radius = Math.max(1, Math.ceil(sigma * 3));
+  const kernel = new Float32Array(radius * 2 + 1);
+  let kernelSum = 0;
+  for (let offset = -radius; offset <= radius; offset++) {
+    const weight = Math.exp(-(offset * offset) / (2 * sigma * sigma));
+    kernel[offset + radius] = weight;
+    kernelSum += weight;
+  }
+  for (let index = 0; index < kernel.length; index++) kernel[index] /= kernelSum;
+
+  const horizontal = new Float32Array(width * height);
+  const output = new Float32Array(width * height);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let value = 0;
+      for (let offset = -radius; offset <= radius; offset++) {
+        const sampleX = _scanClamp(x + offset, 0, width - 1);
+        value += source[y * width + sampleX] * kernel[offset + radius];
+      }
+      horizontal[y * width + x] = value;
+    }
+  }
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let value = 0;
+      for (let offset = -radius; offset <= radius; offset++) {
+        const sampleY = _scanClamp(y + offset, 0, height - 1);
+        value += horizontal[sampleY * width + x] * kernel[offset + radius];
+      }
+      output[y * width + x] = value;
+    }
+  }
+  return output;
+}
+
+/**
+ * Mô phỏng Smart Sharpen mạnh trên chữ đã in: chỉ dùng đáp ứng high-pass ở
+ * phía trong glyph, giữ hai mép nét đậm trong khi hạ mật độ mực ở lõi nét.
+ * Không tạo halo/bóng ra ngoài hình chữ.
+ */
+function applyTextInnerSharpen(textCanvas, amount, radiusPx) {
+  const strength = _scanClamp(Number(amount) || 0, 0, 1);
+  if (strength < 0.005) return;
+
+  const ctx = textCanvas.getContext('2d', { willReadFrequently: true });
+  const imageData = ctx.getImageData(0, 0, textCanvas.width, textCanvas.height);
+  const data = imageData.data;
+  const alpha = new Float32Array(textCanvas.width * textCanvas.height);
+  for (let pixel = 0; pixel < alpha.length; pixel++) alpha[pixel] = data[pixel * 4 + 3];
+
+  // radiusPx corresponds to the visual edge band. Gaussian sigma is smaller
+  // because its kernel already extends to three sigma on each side.
+  const radius = _scanClamp(Number(radiusPx) || 1, 0.35, 5);
+  const blurred = _scanGaussianAlpha(alpha, textCanvas.width, textCanvas.height, Math.max(0.2, radius / 1.9));
+  // Giữ lại nhiều mật độ mực hơn ở lõi. Ở mức tối đa lõi vẫn còn 58%
+  // opacity thay vì 38%, tránh cảm giác toàn bộ chữ bị bạc màu.
+  const interiorFactor = 1 - strength * 0.42;
+  // Ngưỡng thấp hơn giúp dải mép đậm ăn sâu thêm vào trong khoảng 1–2 px,
+  // nhất là với chữ nhỏ trên tài liệu 300 PPI.
+  const edgeThreshold = Math.max(7, 30 - radius * 3);
+
+  for (let pixel = 0; pixel < alpha.length; pixel++) {
+    const originalAlpha = alpha[pixel];
+    if (originalAlpha <= 0) continue;
+    const innerHighPass = Math.max(0, originalAlpha - blurred[pixel]);
+    const edgeWeight = _scanClamp(innerHighPass / edgeThreshold, 0, 1);
+    const density = interiorFactor + (1 - interiorFactor) * edgeWeight;
+    data[pixel * 4 + 3] = Math.round(_scanClamp(originalAlpha * density, 0, 255));
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+/**
+ * Blur alpha với nội suy giữa hai mức pixel nguyên. Canvas filter trên Chromium
+ * có thể lượng tử hóa blur dưới 1px; nội suy này giúp 0.1…0.9 tạo ra chín mức
+ * khác nhau và vẫn liên tục khi đi qua 1px, 2px, 3px.
+ */
+function applyTextSubpixelBlur(textCanvas, amount) {
+  const blur = Math.max(0, Number(amount) || 0);
+  if (blur < 0.01) return;
+  const ctx = textCanvas.getContext('2d', { willReadFrequently: true });
+  const imageData = ctx.getImageData(0, 0, textCanvas.width, textCanvas.height);
+  const data = imageData.data;
+  const alpha = new Float32Array(textCanvas.width * textCanvas.height);
+  let solidOffset = 0;
+  for (let pixel = 0; pixel < alpha.length; pixel++) {
+    alpha[pixel] = data[pixel * 4 + 3];
+    if (data[pixel * 4 + 3] > data[solidOffset + 3]) solidOffset = pixel * 4;
+  }
+
+  const lower = Math.floor(blur);
+  const upper = Math.ceil(blur);
+  const fraction = blur - lower;
+  const lowerAlpha = lower > 0
+    ? _scanGaussianAlpha(alpha, textCanvas.width, textCanvas.height, lower)
+    : alpha;
+  const upperAlpha = upper === lower
+    ? lowerAlpha
+    : _scanGaussianAlpha(alpha, textCanvas.width, textCanvas.height, upper);
+  const inkColor = [data[solidOffset], data[solidOffset + 1], data[solidOffset + 2]];
+
+  for (let pixel = 0; pixel < alpha.length; pixel++) {
+    const offset = pixel * 4;
+    const value = lowerAlpha[pixel] * (1 - fraction) + upperAlpha[pixel] * fraction;
+    data[offset + 3] = Math.round(_scanClamp(value, 0, 255));
+    if (data[offset + 3] > 0) {
+      data[offset] = inkColor[0];
+      data[offset + 1] = inkColor[1];
+      data[offset + 2] = inkColor[2];
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
 }
 
 function _scanSeededRandom(seed) {

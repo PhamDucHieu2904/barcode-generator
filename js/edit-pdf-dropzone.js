@@ -14,8 +14,18 @@ function _bindEditDropZone() {
 }
 
 function _openEditFilePicker(accept) {
-  const input = document.createElement('input'); input.type = 'file'; input.accept = accept.join(','); input.multiple = accept.length > 1;
-  input.addEventListener('change', async () => _handleEditFileDrop(Array.from(input.files))); input.click();
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = accept.join(',');
+  input.multiple = accept.length > 1;
+  input.hidden = true;
+  document.body.appendChild(input);
+  input.addEventListener('change', async () => {
+    try { await _handleEditFileDrop(Array.from(input.files)); }
+    finally { input.remove(); }
+  }, { once: true });
+  input.addEventListener('cancel', () => input.remove(), { once: true });
+  input.click();
 }
 
 const EDIT_DEFAULT_SCAN_PPI = 300;

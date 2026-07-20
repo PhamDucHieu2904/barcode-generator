@@ -18,13 +18,13 @@ function _openPageEditor(pg) {
   wrapper.id = 'edit-page-wrapper';
   // Đặt margin auto để center khi nhỏ, nhưng vẫn align top-left khi zoom to tránh bị cắt
   wrapper.style.margin = '0 auto';
-  wrapper.style.width = Math.round(pg.widthPt * editorScale * editZoom) + 'px';
-  wrapper.style.height = Math.round(pg.heightPt * editorScale * editZoom) + 'px';
+  wrapper.style.width = (pg.widthPt * editorScale * editZoom) + 'px';
+  wrapper.style.height = (pg.heightPt * editorScale * editZoom) + 'px';
 
   const pageEl = document.createElement('div');
   pageEl.className = 'edit-page-canvas';
-  pageEl.style.width = Math.round(pg.widthPt * editorScale) + 'px';
-  pageEl.style.height = Math.round(pg.heightPt * editorScale) + 'px';
+  pageEl.style.width = (pg.widthPt * editorScale) + 'px';
+  pageEl.style.height = (pg.heightPt * editorScale) + 'px';
   pageEl.style.transform = `scale(${editZoom})`;
   // Zoom từ góc trên bên trái (upper left)
   pageEl.style.transformOrigin = 'top left';
@@ -39,8 +39,8 @@ function _openPageEditor(pg) {
     if (rot === 90 || rot === 270) {
       // Container đã swap: widthPt↔heightPt. renderURL vẫn là ảnh gốc (portrait).
       // Cần đặt img với kích thước ngược (h x w), căn giữa, rồi rotate → fill đúng container
-      const cW = Math.round(pg.widthPt * editorScale);   // chiều rộng container hiện tại
-      const cH = Math.round(pg.heightPt * editorScale);  // chiều cao container hiện tại
+      const cW = pg.widthPt * editorScale;   // chiều rộng container hiện tại
+      const cH = pg.heightPt * editorScale;  // chiều cao container hiện tại
       bgImg.style.cssText = `
         position:absolute;
         width:${cH}px; height:${cW}px;
@@ -403,9 +403,14 @@ function _renderOverlayObject(obj, overlayEl, pg) {
 }
 
 function _selectObject(obj, pg) {
-  // Nếu chọn sang một Object khác, ép tắt chế độ gõ chữ của Text hiện tại
-  if (document.activeElement && document.activeElement.classList.contains('edit-obj-textcontent')) {
-    document.activeElement.blur();
+  // Release toolbar/text focus so Arrow keys control the selected object immediately.
+  const activeElement = document.activeElement;
+  const shouldReleaseFocus = activeElement && (
+    activeElement.matches?.('input, select, textarea') ||
+    activeElement.classList?.contains('edit-obj-textcontent')
+  );
+  if (shouldReleaseFocus) {
+    activeElement.blur();
     window.getSelection().removeAllRanges();
   }
 
@@ -437,47 +442,100 @@ function _deselectAll(pg) {
   window.getSelection().removeAllRanges();
 }
 
+function _ensureObjectRectPt(obj) {
+  if (!obj.rectPt) _syncObjectRectPt(obj);
+  return obj.rectPt;
+}
+
+function _setObjectPositionPt(obj, pg, nextXPt, nextYPt) {
+  const rectPt = _ensureObjectRectPt(obj);
+  const widthPt = Math.max(0, Number(rectPt.w) || obj.w / editorScale || 0);
+  const heightPt = Math.max(0, Number(rectPt.h) || obj.h / editorScale || 0);
+  let xPt = Number(nextXPt) || 0;
+  let yPt = Number(nextYPt) || 0;
+
+  if (obj.type === 'cropbox') {
+    xPt = Math.max(0, Math.min(xPt, pg.widthPt - widthPt));
+    yPt = Math.max(0, Math.min(yPt, pg.heightPt - heightPt));
+  } else {
+    xPt = Math.max(0, xPt);
+    yPt = Math.max(0, yPt);
+  }
+
+  rectPt.x = xPt;
+  rectPt.y = yPt;
+  obj.x = xPt * editorScale;
+  obj.y = yPt * editorScale;
+  obj.coordinateScale = editorScale;
+  return rectPt;
+}
+
+function _refreshObjectPosition(obj) {
+  const area = document.getElementById('edit-canvas-area');
+  const el = area?._overlayEl?.querySelector(`[data-obj-id="${obj.id}"]`);
+  if (!el) return false;
+  el.style.left = `${obj.x}px`;
+  el.style.top = `${obj.y}px`;
+  _syncSelectionChrome(obj, el);
+  return true;
+}
+
+function _nudgeSelectedObject(deltaXPt, deltaYPt) {
+  const pg = _getCurrentPg();
+  if (!pg || !editSelectedObj) return false;
+  const obj = pg.overlayObjects.find(item => item.id === editSelectedObj);
+  if (!obj) return false;
+
+  const rectPt = _ensureObjectRectPt(obj);
+  const oldXPt = Number(rectPt.x) || 0;
+  const oldYPt = Number(rectPt.y) || 0;
+  _setObjectPositionPt(obj, pg, oldXPt + deltaXPt, oldYPt + deltaYPt);
+  if (rectPt.x === oldXPt && rectPt.y === oldYPt) return false;
+  _refreshObjectPosition(obj);
+  return true;
+}
+
 function _bindObjectMove(el, obj, pg) {
-  let startX, startY, startOX, startOY;
-  el.addEventListener('mousedown', e => {
+  let startX, startY, startXPt, startYPt, pointerId;
+  el.style.touchAction = 'none';
+  el.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;
     if (e.target.closest('.obj-btn-del') || e.target.closest('.obj-resize-handle') || e.target.closest('.obj-rotate-handle')) return;
     if (el.querySelector('[contenteditable="true"]')) return;
 
     e.preventDefault(); e.stopPropagation();
     _selectObject(obj, pg);
 
-    startX = e.clientX; startY = e.clientY; startOX = obj.x; startOY = obj.y;
+    const rectPt = _ensureObjectRectPt(obj);
+    startX = e.clientX;
+    startY = e.clientY;
+    startXPt = Number(rectPt.x) || 0;
+    startYPt = Number(rectPt.y) || 0;
+    pointerId = e.pointerId;
+    el.setPointerCapture?.(pointerId);
 
     function onMove(e2) {
-      let dx = (e2.clientX - startX) / editZoom;
-      let dy = (e2.clientY - startY) / editZoom;
-
-      let nx = startOX + dx;
-      let ny = startOY + dy;
-
-      if (obj.type === 'cropbox') {
-        nx = Math.max(0, Math.min(nx, pg.widthPt * editorScale - obj.w));
-        ny = Math.max(0, Math.min(ny, pg.heightPt * editorScale - obj.h));
-      } else {
-        nx = Math.max(0, nx);
-        ny = Math.max(0, ny);
-      }
-
-      obj.x = nx;
-      obj.y = ny;
-      el.style.left = obj.x + 'px';
-      el.style.top = obj.y + 'px';
-      _syncSelectionChrome(obj, el);
+      if (e2.pointerId !== pointerId) return;
+      const coalesced = typeof e2.getCoalescedEvents === 'function' ? e2.getCoalescedEvents() : null;
+      const sample = coalesced && coalesced.length ? coalesced[coalesced.length - 1] : e2;
+      const pointScale = Math.max(0.000001, editorScale * editZoom);
+      const dxPt = (sample.clientX - startX) / pointScale;
+      const dyPt = (sample.clientY - startY) / pointScale;
+      _setObjectPositionPt(obj, pg, startXPt + dxPt, startYPt + dyPt);
+      _refreshObjectPosition(obj);
     }
-    function onUp() {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      if (obj.x !== startOX || obj.y !== startOY) {
-        if (obj.rectPt && typeof _syncObjectRectPt === 'function') _syncObjectRectPt(obj);
-        _saveHistory();
-      }
+    function onUp(e2) {
+      if (e2.pointerId !== pointerId) return;
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+      if (el.hasPointerCapture?.(pointerId)) el.releasePointerCapture(pointerId);
+      const rectPt = _ensureObjectRectPt(obj);
+      if (rectPt.x !== startXPt || rectPt.y !== startYPt) _saveHistory();
     }
-    document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
   });
 }
 

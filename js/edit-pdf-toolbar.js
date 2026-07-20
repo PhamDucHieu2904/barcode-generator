@@ -12,10 +12,37 @@
  * Được extract ra khỏi initEditPDF() để đặt ở đây cho rõ ràng hơn.
  */
 function _bindKeyboardShortcuts() {
+  let nudgeHistoryPending = false;
+
+  const finishKeyboardNudge = e => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    if (nudgeHistoryPending) _saveHistory();
+    nudgeHistoryPending = false;
+  };
+
+  document.addEventListener('keyup', finishKeyboardNudge);
+  window.addEventListener('blur', () => {
+    if (nudgeHistoryPending) _saveHistory();
+    nudgeHistoryPending = false;
+  });
+
   document.addEventListener('keydown', e => {
     const activeTag = document.activeElement ? document.activeElement.tagName : '';
-    const isTyping = activeTag === 'INPUT' || activeTag === 'SELECT' || (document.activeElement && document.activeElement.isContentEditable);
+    const isTyping = activeTag === 'INPUT' || activeTag === 'SELECT' || activeTag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable);
     if (isTyping) return;
+
+    // Arrow: nudge 0.1 PDF point. Shift accelerates to 1 point.
+    // Coordinates stay fractional, so zooming in never forces an object onto a CSS pixel grid.
+    if (editSelectedObj && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+      const stepPt = e.shiftKey ? 1 : 0.1;
+      const deltaXPt = e.key === 'ArrowLeft' ? -stepPt : (e.key === 'ArrowRight' ? stepPt : 0);
+      const deltaYPt = e.key === 'ArrowUp' ? -stepPt : (e.key === 'ArrowDown' ? stepPt : 0);
+      if (typeof _nudgeSelectedObject === 'function' && _nudgeSelectedObject(deltaXPt, deltaYPt)) {
+        nudgeHistoryPending = true;
+      }
+      e.preventDefault();
+      return;
+    }
 
     // ── Delete / Backspace: xóa object ──
     if ((e.key === 'Delete' || e.key === 'Backspace') && editSelectedObj) {
@@ -282,7 +309,7 @@ async function _createBlurredEdgeImage(dataURL) {
   /* ESC huỷ tool shape/line + Ctrl standalone để cycle/swap combo */
   document.addEventListener('keydown', e => {
     const activeTag = document.activeElement ? document.activeElement.tagName : '';
-    const isTyping = activeTag === 'INPUT' || activeTag === 'SELECT' || (document.activeElement && document.activeElement.isContentEditable);
+    const isTyping = activeTag === 'INPUT' || activeTag === 'SELECT' || activeTag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable);
 
     if (e.key === 'Escape' && activeShapeTool) {
       activeShapeTool = null;
@@ -469,14 +496,55 @@ async function _createBlurredEdgeImage(dataURL) {
     });
   }
 
-const dlBtn = document.getElementById('edit-download-btn');
-  if (dlBtn) {
-    dlBtn.addEventListener('click', async () => {
+  const dlBtn = document.getElementById('edit-download-btn');
+  const dlOptions = document.getElementById('edit-download-options');
+  const dlFlattenBtn = document.getElementById('edit-download-flatten-btn');
+  const dlOriginalBtn = document.getElementById('edit-download-original-btn');
+
+  const closeDownloadOptions = () => {
+    if (dlOptions) dlOptions.hidden = true;
+    if (dlBtn) dlBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  const setDownloadBusy = (busy, label = 'Đang xử lý…') => {
+    if (dlBtn) {
+      dlBtn.disabled = busy;
+      dlBtn.textContent = busy ? label : 'Download PDF';
+    }
+    if (dlFlattenBtn) dlFlattenBtn.disabled = busy;
+    if (dlOriginalBtn) dlOriginalBtn.disabled = busy;
+  };
+
+  const runEditDownload = async mode => {
+    if (!editPages.length) { alert('Chưa có trang nào.'); return; }
+    closeDownloadOptions();
+    setDownloadBusy(true, mode === 'flatten' ? 'Đang gộp trang…' : 'Đang xử lý…');
+    try {
+      if (mode === 'flatten') await _buildAndDownloadFlattenedPDF();
+      else await _buildAndDownloadEditPDF();
+    } catch (e) {
+      console.error(e);
+      alert('Lỗi: ' + e.message);
+    } finally {
+      setDownloadBusy(false);
+    }
+  };
+
+  if (dlBtn && dlOptions) {
+    dlBtn.addEventListener('click', event => {
+      event.stopPropagation();
       if (!editPages.length) { alert('Chưa có trang nào.'); return; }
-      dlBtn.disabled = true; dlBtn.textContent = 'Đang xử lý…';
-      try { await _buildAndDownloadEditPDF(); } catch(e) { alert('Lỗi: ' + e.message); } finally { dlBtn.disabled = false; dlBtn.textContent = 'Download PDF'; }
+      dlOptions.hidden = !dlOptions.hidden;
+      dlBtn.setAttribute('aria-expanded', String(!dlOptions.hidden));
+    });
+    dlOptions.addEventListener('click', event => event.stopPropagation());
+    document.addEventListener('click', closeDownloadOptions);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeDownloadOptions();
     });
   }
+  if (dlFlattenBtn) dlFlattenBtn.addEventListener('click', () => runEditDownload('flatten'));
+  if (dlOriginalBtn) dlOriginalBtn.addEventListener('click', () => runEditDownload('original'));
 
   // ── Xử lý các nút EXPORT IMAGE ──
   const exportImgPageBtn = document.getElementById('edit-export-img-page');
@@ -682,8 +750,8 @@ function _updateCanvasZoom() {
   const pageEl = area.querySelector('.edit-page-canvas');
   if (!wrapper || !pageEl) return;
   
-  wrapper.style.width = Math.round(pg.widthPt * editorScale * editZoom) + 'px';
-  wrapper.style.height = Math.round(pg.heightPt * editorScale * editZoom) + 'px';
+  wrapper.style.width = (pg.widthPt * editorScale * editZoom) + 'px';
+  wrapper.style.height = (pg.heightPt * editorScale * editZoom) + 'px';
   pageEl.style.transform = `scale(${editZoom})`;
   if (typeof _syncCurrentSelectionChrome === 'function') _syncCurrentSelectionChrome();
   _updateCanvasPanAvailability();
