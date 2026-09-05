@@ -1,0 +1,1400 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MASTER PROMPT – PREMIUM FRUIT BEVERAGE HERO POSTER
+DỰA TRÊN HÌNH ẢNH SẢN PHẨM ĐÍNH KÈM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+1. BIẾN ĐẦU VÀO CÓ THỂ CHỈNH SỬA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hình ảnh sản phẩm:
+[SỬ DỤNG CHÍNH XÁC HÌNH ẢNH SẢN PHẨM ĐƯỢC ĐÍNH KÈM]
+
+MÀU NỀN:
+[Cam]
+
+TRÁI CÂY:
+[Trái Cam]
+
+Slogan chính:
+[INSERT MAIN SLOGAN IN ENGLISH]
+
+Dòng mô tả phụ:
+[INSERT SUB-DESCRIPTION IN ENGLISH]
+
+
+QUY TẮC TỰ NHẬN DIỆN:
+
+Trước khi tạo hình, hãy phân tích kỹ hình ảnh sản phẩm được cung cấp để tự động nhận diện:
+
+• Loại bao bì: chai PET, chai thủy tinh, lon nhôm, hộp, v.v.
+• Hình dáng thực tế của sản phẩm.
+• Tỷ lệ chiều cao / chiều rộng.
+• Màu sắc chủ đạo của bao bì.
+• Logo thương hiệu.
+• Tên thương hiệu.
+• Tên sản phẩm nếu đọc được.
+• Hương vị nếu đọc được.
+• Hình ảnh trái cây hoặc nguyên liệu trên bao bì.
+• Màu nắp.
+• Chất liệu chai/lon.
+• Độ trong hoặc màu sắc của chất lỏng bên trong nếu nhìn thấy được.
+
+Không được sáng tạo lại bao bì.
+
+Không được thay đổi thiết kế sản phẩm.
+
+Nếu thông tin trên bao bì không đọc được chắc chắn,
+KHÔNG tự bịa thông tin.
+
+Nếu:
+
+[INSERT MAIN SLOGAN IN ENGLISH]
+
+vẫn chưa được người dùng thay đổi,
+hãy tự động tạo một slogan tiếng Anh ngắn, mạnh, dễ nhớ và phù hợp với sản phẩm/hương vị đã nhận diện.
+
+Nếu:
+
+[INSERT SUB-DESCRIPTION IN ENGLISH]
+
+vẫn chưa được thay đổi,
+hãy tự động tạo một dòng mô tả tiếng Anh ngắn, tự nhiên, mang phong cách quảng cáo đồ uống quốc tế.
+
+Không tự tạo các claim như:
+
+100% Natural
+Healthy
+Organic
+Vitamin Rich
+No Sugar
+Zero Sugar
+Freshly Squeezed
+Boost Immunity
+
+trừ khi thông tin đó thực sự xuất hiện trên bao bì hoặc được người dùng cung cấp.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. MỤC TIÊU HÌNH ẢNH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tạo một poster quảng cáo đồ uống trái cây cao cấp theo phong cách:
+
+Premium CGI beverage advertising,
+hyper-realistic commercial product photography,
+cinematic frozen-motion photography,
+high-speed liquid photography,
+high-end fruit beverage campaign,
+vibrant refreshing advertising,
+premium advertising agency key visual.
+
+Không tạo một ảnh sản phẩm đơn giản đặt trước background.
+
+Poster phải giống như một khoảnh khắc hành động cực nhanh vừa được đóng băng:
+
+sản phẩm đang bay lơ lửng giữa một vụ nổ lớn của nước / nước trái cây,
+đá viên,
+trái cây,
+lá,
+giọt nước
+và các hạt chất lỏng cực nhỏ.
+
+Tất cả chuyển động phải hội tụ về HERO PRODUCT.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. TỶ LỆ VÀ CANVAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Poster dọc.
+
+Tỷ lệ chính xác:
+
+4:5 vertical advertising poster.
+
+Ví dụ:
+
+2048 × 2560 px
+3072 × 3840 px
+4096 × 5120 px
+
+Bố cục full-frame.
+
+Không có viền.
+
+Không đặt sản phẩm trên bàn.
+
+Không có pedestal.
+
+Không có mặt đất.
+
+Không có đường chân trời rõ ràng.
+
+Không tạo cảm giác studio photography thông thường.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. HERO PRODUCT – YÊU CẦU QUAN TRỌNG NHẤT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sử dụng CHÍNH XÁC hình ảnh sản phẩm đính kèm làm HERO PRODUCT.
+
+Đây là đối tượng quan trọng nhất của toàn bộ hình ảnh.
+
+BẮT BUỘC:
+
+• Giữ nguyên hình dáng sản phẩm.
+• Giữ nguyên chiều cao và chiều rộng thực tế.
+• Giữ nguyên tỷ lệ thân chai/lon.
+• Giữ nguyên phần cổ.
+• Giữ nguyên phần vai chai nếu có.
+• Giữ nguyên nắp.
+• Giữ nguyên màu nắp.
+• Giữ nguyên logo.
+• Giữ nguyên typography.
+• Giữ nguyên artwork.
+• Giữ nguyên màu sắc nhận diện.
+• Giữ nguyên tên thương hiệu.
+• Giữ nguyên tên sản phẩm.
+• Giữ nguyên hình ảnh trái cây trên nhãn.
+• Giữ nguyên vị trí các thành phần trên nhãn.
+• Giữ nguyên độ trong của chai nếu là chai trong suốt.
+• Giữ nguyên màu chất lỏng.
+• Không redesign packaging.
+• Không simplified packaging.
+• Không tạo phiên bản chai khác.
+• Không biến chai thành lon.
+• Không biến lon thành chai.
+• Không tạo thêm sản phẩm thứ hai.
+• Không duplicate hero product.
+• Không sửa logo.
+• Không viết lại text trên sản phẩm.
+• Không thêm text mới lên nhãn.
+• Không để splash che logo.
+• Không để trái cây che tên thương hiệu.
+
+Mặt trước sản phẩm phải luôn đọc được rõ ràng.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. KÍCH THƯỚC VÀ VỊ TRÍ SẢN PHẨM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bố cục phải bám sát hình tham chiếu.
+
+Hero product rất lớn.
+
+Chiếm khoảng:
+
+72–76% chiều cao toàn poster.
+
+Chiều rộng lớn nhất của sản phẩm khoảng:
+
+36–43% chiều rộng poster,
+tùy theo hình dáng thực tế của sản phẩm.
+
+Vị trí tương đối:
+
+X ≈ 50–52% chiều rộng khung hình.
+
+Y ≈ 48–51% chiều cao khung hình.
+
+Phần đầu/nắp sản phẩm nằm khoảng:
+
+9–13% từ mép trên.
+
+Phần đáy sản phẩm nằm khoảng:
+
+83–87% từ mép trên.
+
+Không đặt sản phẩm quá thấp.
+
+Không thu nhỏ sản phẩm.
+
+Không để quá nhiều khoảng trống xung quanh.
+
+Hero product phải có cảm giác gần camera và rất nổi bật.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ĐỘ NGHIÊNG CỦA SẢN PHẨM – CỰC KỲ QUAN TRỌNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Không dựng sản phẩm hoàn toàn thẳng đứng.
+
+Không nghiêng quá mạnh.
+
+Tạo một chuyển động nhẹ giống hình tham chiếu:
+
+ROLL sản phẩm khoảng:
+
++5° đến +8° clockwise
+
+tức phần đáy lệch nhẹ sang PHẢI so với phần nắp.
+
+Ưu tiên khoảng:
+
++6° clockwise.
+
+Mặt nhãn vẫn gần như hướng trực tiếp vào camera.
+
+YAW:
+
+0° đến 4° tối đa.
+
+Không xoay sang ngang khiến label bị hẹp.
+
+PITCH:
+
+rất nhẹ,
+khoảng 0–3°,
+chỉ đủ tạo cảm giác hero shot.
+
+Không biến sản phẩm thành góc 3/4 mạnh.
+
+Không làm mất khả năng đọc nhãn.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. CAMERA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Commercial beverage hero shot.
+
+Camera nằm hơi thấp hơn trung tâm sản phẩm.
+
+Tạo cảm giác camera đang nhìn hơi hướng lên HERO PRODUCT.
+
+Low-angle rất nhẹ.
+
+Không dramatic low-angle quá mức.
+
+Equivalent lens:
+
+40–50mm.
+
+Ưu tiên:
+
+45mm commercial product lens look.
+
+Không fisheye.
+
+Không ultra-wide distortion.
+
+Không kéo giãn cổ chai.
+
+Không phình đáy chai.
+
+Không méo logo.
+
+Camera tương đối gần sản phẩm để tạo cảm giác sản phẩm lớn,
+nhưng vẫn bảo toàn hình học bao bì.
+
+Product-facing camera.
+
+Perspective tự nhiên.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. ĐỘ NGHIÊNG VÀ DÒNG CHUYỂN ĐỘNG CỦA BACKGROUND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ĐÂY LÀ ĐIỂM QUAN TRỌNG.
+
+KHÔNG xoay toàn bộ canvas.
+
+KHÔNG tạo horizon bị nghiêng.
+
+Cảm giác background nghiêng phải được tạo bằng:
+
+• Gradient ánh sáng.
+• Hướng splash.
+• Quỹ đạo trái cây.
+• Quỹ đạo đá viên.
+• Chuỗi giọt nước.
+• Hướng lá.
+• Hướng motion flow.
+
+Main visual flow:
+
+bắt đầu từ LOWER LEFT,
+
+di chuyển chéo lên qua HERO PRODUCT,
+
+sau đó tiếp tục tới UPPER RIGHT.
+
+Góc của visual movement khoảng:
+
+25°–35° so với phương ngang.
+
+Dòng chuyển động phụ uốn ngược trở lại phía trên trái,
+tạo thành một S-CURVE rất nhẹ quanh sản phẩm.
+
+Không tạo vòng tròn hoàn hảo quanh chai.
+
+Không xếp trái cây đều như một pattern.
+
+Không bố trí tất cả vật thể đối xứng.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. BACKGROUND COLOR SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Màu background chủ đạo:
+
+[MÀU NỀN]
+
+Không sử dụng một màu phẳng.
+
+Background phải có ít nhất 3–4 tầng tonal variation của:
+
+[MÀU NỀN].
+
+Thiết kế gradient theo hệ thống giống hình tham chiếu:
+
+UPPER LEFT:
+vùng sáng nhất toàn poster.
+
+Gần như white-hot glow hòa với phiên bản sáng nhất của
+[MÀU NỀN].
+
+CENTER:
+màu [MÀU NỀN] rực rỡ, saturated nhưng sạch.
+
+UPPER RIGHT:
+phiên bản sâu hơn, tối hơn và đậm hơn của [MÀU NỀN].
+
+LOWER AREA:
+màu đậm vừa,
+nhưng vẫn sáng và giàu năng lượng.
+
+Tạo cảm giác background có chiều sâu rất lớn.
+
+Không flat gradient.
+
+Thêm:
+
+• atmospheric glow,
+• soft bokeh,
+• tiny luminous particles,
+• liquid mist,
+• subtle haze,
+• specular particles,
+• light falloff,
+• cinematic depth.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. NGUỒN SÁNG CHÍNH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ánh sáng phải bám cực sát hình tham chiếu.
+
+Nguồn sáng lớn nằm NGOÀI KHUNG HÌNH ở:
+
+UPPER LEFT.
+
+Ánh sáng đi chéo:
+
+UPPER LEFT → CENTER → LOWER RIGHT.
+
+Tạo một vùng glow rất mạnh tại góc trên trái.
+
+Glow gần như overexposed,
+nhưng vẫn phải giữ được detail ở những vùng quan trọng.
+
+Key light:
+
+bright white daylight
+với một chút tint phù hợp với [MÀU NỀN].
+
+Không để màu của background làm sai màu bao bì.
+
+Cường độ mạnh.
+
+Specular rất rõ.
+
+High-key advertising lighting.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. LIGHTING SETUP CHI TIẾT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KEY LIGHT:
+
+Nguồn sáng cực lớn từ upper-left / rear-left.
+
+Ánh sáng đánh vào:
+
+• vai chai,
+• cổ chai,
+• nắp,
+• cạnh trái của sản phẩm,
+• trái cây,
+• giọt nước,
+• splash.
+
+Tạo bright specular highlight.
+
+BACK LIGHT:
+
+Nguồn backlight cực mạnh chiếu xuyên qua:
+
+• lát trái cây,
+• nước,
+• splash,
+• đá viên.
+
+Làm ruột trái cây phát sáng.
+
+Tạo translucency.
+
+Tạo glowing liquid edge.
+
+RIM LIGHT:
+
+Rim light sáng rõ quanh silhouette sản phẩm.
+
+Đặc biệt ở:
+
+• vai chai,
+• cổ chai,
+• viền nắp,
+• cạnh phải và cạnh trái sản phẩm.
+
+FILL LIGHT:
+
+Fill mềm từ phía trước.
+
+Giữ cho label sáng rõ.
+
+Không để phần chính diện sản phẩm chìm vào bóng tối.
+
+BOUNCE LIGHT:
+
+Ánh sáng phản chiếu từ background và liquid lên sản phẩm.
+
+Phải tinh tế.
+
+Không đổi màu artwork của bao bì.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. TRÁI CÂY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hệ thống trái cây chính:
+
+[TRÁI CÂY]
+
+AI phải hiểu đúng hình thái thực tế của loại trái cây này.
+
+Tùy loại trái cây,
+sử dụng kết hợp phù hợp giữa:
+
+• trái nguyên,
+• trái cắt đôi,
+• quarter cut,
+• wedge,
+• slice,
+• cross-section,
+• segment,
+• pulp,
+• peel,
+• seed,
+• leaf,
+• fruit flesh.
+
+KHÔNG ép mọi loại trái cây phải có lát tròn nếu hình thái tự nhiên không phù hợp.
+
+Chất lượng:
+
+extremely fresh,
+juicy,
+wet,
+glossy,
+realistic fruit texture,
+high-detail skin,
+translucent flesh,
+freshly cut surface,
+tiny water droplets,
+subsurface scattering.
+
+Trái cây phải nhìn có thể ăn được.
+
+Không plastic fruit.
+
+Không wax toy fruit.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. VỊ TRÍ TRÁI CÂY – BÁM THEO ẢNH THAM CHIẾU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tạo khoảng 5–8 cụm trái cây chính.
+
+Không rải đều.
+
+Bố cục đề xuất:
+
+UPPER LEFT:
+
+Một miếng hoặc lát trái cây nhỏ
+bay gần vùng ánh sáng,
+có backlight mạnh.
+
+MID LEFT:
+
+Một miếng trái cây tương đối lớn,
+đặt phía sau sản phẩm.
+
+Khoảng cách với camera trung bình.
+
+UPPER RIGHT:
+
+Một wedge / slice / segment
+bay chéo cùng chiều chuyển động.
+
+RIGHT LOWER-MID:
+
+Một miếng trái cây lớn và sắc nét,
+đóng vai trò counterweight với phần trái.
+
+BOTTOM LEFT FOREGROUND:
+
+Một miếng [TRÁI CÂY] rất lớn,
+rất gần camera,
+bị crop một phần bởi mép frame.
+
+Depth of field làm miếng này hơi out-of-focus.
+
+Đây là một đặc điểm rất quan trọng của hình tham chiếu.
+
+Có thể thêm 1–2 miếng nhỏ phía sau chai.
+
+Không đặt toàn bộ trái cây vào cùng một mặt phẳng.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. LÁ VÀ GARNISH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nếu phù hợp với [TRÁI CÂY],
+thêm một số lá xanh tự nhiên.
+
+Khoảng:
+
+3–6 lá.
+
+Lá phải có:
+
+fresh green color,
+subtle translucency,
+visible veins,
+wet glossy surface,
+tiny droplets.
+
+Không tạo quá nhiều lá.
+
+Lá chỉ dùng để tạo tương phản màu và chuyển động.
+
+Một số lá phía trước.
+
+Một số phía sau.
+
+Một số blur nhẹ.
+
+Quỹ đạo lá phải đi cùng hướng với splash.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. LIQUID SPLASH – TRUNG TÂM CỦA CHUYỂN ĐỘNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tạo một vụ nổ chất lỏng lớn xung quanh HERO PRODUCT.
+
+Liquid phải có cảm giác vừa bị nổ tung trong không trung.
+
+Không phải một splash nhỏ phía dưới.
+
+Splash chính chiếm phần lớn MIDGROUND và LOWER MIDGROUND.
+
+Liquid color:
+
+tự động suy luận dựa trên:
+
+• màu đồ uống,
+• [TRÁI CÂY],
+• [MÀU NỀN],
+• hình ảnh sản phẩm.
+
+Có thể là:
+
+clear water,
+translucent fruit juice,
+hoặc hỗn hợp giữa nước trong và liquid có màu.
+
+Ưu tiên chất lỏng trong,
+có khả năng truyền sáng,
+không quá đặc.
+
+
+MAIN SPLASH:
+
+Tạo dòng liquid lớn từ lower-left,
+
+uốn qua phía sau sản phẩm,
+
+bùng ra hai bên phần thân,
+
+sau đó chạy lên upper-right.
+
+Một phần nước:
+
+đi PHÍA SAU sản phẩm.
+
+Một phần nhỏ:
+
+đi PHÍA TRƯỚC sản phẩm.
+
+Nhưng tuyệt đối không che:
+
+• logo,
+• tên thương hiệu,
+• tên sản phẩm,
+• artwork quan trọng.
+
+
+Splash geometry:
+
+• irregular,
+• asymmetrical,
+• torn liquid edges,
+• thin liquid membranes,
+• thick liquid areas,
+• liquid sheets,
+• liquid ribbons,
+• liquid threads,
+• detached droplets.
+
+
+Không tạo một vòng nước hình tròn hoàn hảo.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. GIỌT NƯỚC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tạo hàng trăm micro droplets.
+
+Phân bố thành CỤM,
+không rải đều như noise.
+
+Có:
+
+• tiny droplets,
+• medium droplets,
+• large isolated droplets,
+• elongated droplets,
+• spherical droplets,
+• liquid trails.
+
+Các giọt gần camera có thể blur nhẹ.
+
+Các giọt ngang mặt sản phẩm phải rất sắc nét.
+
+Các giọt phải bắt được nguồn sáng upper-left.
+
+Cạnh giọt:
+
+bright crisp highlight.
+
+Bên trong:
+
+realistic refraction.
+
+Không tạo giọt nhựa.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. ĐÁ VIÊN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Thêm các viên đá pha lê bay trong không trung.
+
+Khoảng:
+
+5–9 viên chính.
+
+Không quá nhiều.
+
+Vị trí tham khảo:
+
+• một viên phía upper-right,
+• một viên phía mid-right,
+• một viên phía lower-right,
+• một hoặc hai viên phía lower-left,
+• một viên foreground gần mép dưới,
+• một vài viên nhỏ ở background.
+
+Ice cube material:
+
+crystal-clear ice,
+transparent,
+high transmission,
+realistic refraction,
+internal bubbles,
+tiny cracks,
+wet surface,
+rounded irregular edges.
+
+Không tạo tất cả đá cùng một hình dạng.
+
+Một số viên sắc nét.
+
+Một số viên blur.
+
+Một số quay ở các góc khác nhau.
+
+Đá phải phản chiếu màu environment.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. BỀ MẶT HERO PRODUCT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sản phẩm phải có cảm giác CỰC LẠNH.
+
+Thêm condensation chân thực trên bề mặt.
+
+Bao gồm:
+
+• tiny condensation droplets,
+• medium water beads,
+• vài giọt lớn,
+• một vài water trails chạy xuống.
+
+Không phủ quá nhiều lên logo.
+
+Nếu chai trong suốt:
+
+giữ đúng transmission và refraction của PET / glass.
+
+Nếu lon:
+
+giữ đúng chất liệu nhôm.
+
+Nếu chai PET:
+
+tạo highlight dài mềm theo chiều thân chai.
+
+Nếu chai thủy tinh:
+
+tạo specular và thickness tự nhiên.
+
+Không biến chất liệu sản phẩm thành kim loại nếu nó không phải kim loại.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. PHÂN LỚP CHIỀU SÂU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Poster phải có ít nhất 4 lớp chiều sâu rõ ràng.
+
+
+EXTREME FOREGROUND:
+
+• Một miếng [TRÁI CÂY] lớn bị crop.
+• Một vài giọt nước lớn.
+• Có thể có một viên đá.
+• Blur nhẹ.
+
+
+FOREGROUND:
+
+• Trái cây.
+• Đá.
+• Lá.
+• Splash fragments.
+
+
+MIDGROUND:
+
+HERO PRODUCT.
+
+Đây là vùng sắc nét nhất toàn poster.
+
+Splash chính tương tác trực tiếp với sản phẩm.
+
+
+BACKGROUND:
+
+• Splash phụ.
+• Trái cây nhỏ.
+• Bokeh.
+• Mist.
+• Micro droplets.
+• Atmospheric glow.
+
+
+FAR BACKGROUND:
+
+[MÀU NỀN] gradient + light source.
+
+
+Không để mọi vật thể đều sắc nét như nhau.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. DEPTH OF FIELD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hero product:
+
+TACK SHARP.
+
+Logo:
+
+TACK SHARP.
+
+Tên sản phẩm:
+
+TACK SHARP.
+
+Trái cây gần midground:
+
+sharp.
+
+Trái cây rất gần camera:
+
+slightly blurred.
+
+Background droplets:
+
+soft.
+
+Không dùng depth of field quá mạnh.
+
+Không làm toàn bộ background biến thành blur.
+
+Vẫn phải nhìn thấy splash và hệ thống vật thể.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. TYPOGRAPHY / SLOGAN AREA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tạo một vùng typography ở PHÍA TRÊN POSTER.
+
+Ưu tiên:
+
+UPPER LEFT hoặc UPPER CENTER-LEFT.
+
+Không đặt slogan đè lên nắp sản phẩm.
+
+Không đặt slogan quá sát mép.
+
+Khoảng safe area:
+
+X = 7–45%
+Y = 5–18%
+
+tùy hình dáng sản phẩm.
+
+Do sản phẩm nghiêng về bên phải,
+headline ưu tiên đặt phía trái để cân bằng bố cục.
+
+
+SLOGAN CHÍNH:
+
+[INSERT MAIN SLOGAN IN ENGLISH]
+
+
+Nếu placeholder này chưa được thay đổi:
+
+AI phải tự nhận diện sản phẩm và [TRÁI CÂY],
+sau đó sáng tạo 01 slogan tiếng Anh phù hợp.
+
+Yêu cầu slogan:
+
+• 2–6 từ.
+• Ngắn.
+• Có sức mạnh.
+• Dễ nhớ.
+• Mang cảm giác refreshment / fruit / energy / enjoyment.
+• Tự nhiên như quảng cáo quốc tế.
+• Không dùng claim không được xác minh.
+• Không quá corporate.
+• Không viết thành một câu dài.
+
+Typography:
+
+bold modern sans-serif,
+premium beverage advertising,
+high readability,
+strong hierarchy.
+
+Có thể sử dụng:
+
+uppercase,
+bold condensed,
+hoặc bold geometric sans-serif.
+
+Không sử dụng quá nhiều hiệu ứng 3D.
+
+Không để typography cạnh tranh với sản phẩm.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. DÒNG MÔ TẢ PHỤ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[INSERT SUB-DESCRIPTION IN ENGLISH]
+
+
+Nếu placeholder chưa được người dùng thay:
+
+AI tự tạo một câu tiếng Anh ngắn dựa trên:
+
+• loại sản phẩm,
+• hương vị,
+• [TRÁI CÂY],
+• cảm giác tổng thể của poster.
+
+Độ dài:
+
+khoảng 5–12 từ.
+
+Đặt ngay dưới slogan chính.
+
+Font nhỏ hơn khoảng:
+
+25–35% kích thước headline.
+
+Clean sans-serif.
+
+Không tạo paragraph dài.
+
+Không tạo ingredient description.
+
+Không tạo nutritional claim.
+
+Không thêm website hoặc địa chỉ.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. QUY TẮC RENDER TEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nếu hệ thống tạo ảnh có khả năng render typography chính xác:
+
+hãy sử dụng CHÍNH XÁC slogan và dòng mô tả đã xác định.
+
+Không đổi từ.
+
+Không viết sai chính tả.
+
+Không thêm câu khác.
+
+
+Nếu hệ thống KHÔNG thể đảm bảo text chính xác:
+
+không sinh random text,
+không sinh gibberish typography.
+
+Thay vào đó:
+
+tạo một CLEAN TEXT-SAFE AREA ở vị trí slogan,
+có độ tương phản tốt,
+để typography được thêm thủ công sau trong Photoshop / Illustrator.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. COLOR GRADING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phong cách:
+
+high-end beverage commercial grading.
+
+Vibrant.
+
+High contrast.
+
+High color separation.
+
+Crisp.
+
+Juicy.
+
+Glossy.
+
+Bright.
+
+Energetic.
+
+Không vintage.
+
+Không faded.
+
+Không matte film look.
+
+Không low saturation.
+
+
+Background:
+
+[MÀU NỀN] phải rực rỡ và có chiều sâu.
+
+
+Hero product:
+
+giữ chính xác màu gốc.
+
+Không color grade mạnh lên artwork.
+
+
+Fruit:
+
+rực rỡ nhưng tự nhiên.
+
+Không neon.
+
+
+Highlights:
+
+bright clean white.
+
+
+Deep areas:
+
+phiên bản đậm hơn của [MÀU NỀN],
+không dùng black crush.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. MICRO DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Thêm rất nhiều micro detail để tạo cảm giác premium CGI:
+
+• tiny droplets,
+• condensation,
+• micro bubbles,
+• thin liquid threads,
+• small splash fragments,
+• internal ice bubbles,
+• micro cracks in ice,
+• translucent fruit fibers,
+• wet fruit surface,
+• leaf veins,
+• specular sparkle,
+• bokeh highlights,
+• airborne liquid mist,
+• tiny fruit pulp particles,
+• realistic surface tension,
+• realistic refraction,
+• realistic reflection.
+
+Nhưng phải kiểm soát.
+
+Khu vực logo luôn sạch.
+
+Khu vực typography luôn có khoảng thở.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. CẢM GIÁC CHUYỂN ĐỘNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Toàn cảnh giống ảnh được chụp bằng high-speed flash.
+
+Frozen motion.
+
+Không motion blur trên hero product.
+
+Không motion blur trên logo.
+
+Splash đang dừng giữa không trung.
+
+Đá đang bay.
+
+Trái cây đang xoay.
+
+Lá đang bay.
+
+Giọt nước đang tách khỏi dòng liquid.
+
+Tạo cảm giác thời gian đã bị đóng băng ở khoảnh khắc đẹp nhất.
+
+
+Main flow:
+
+LOWER LEFT
+→ CENTER HERO PRODUCT
+→ UPPER RIGHT.
+
+
+Secondary visual flow:
+
+UPPER RIGHT
+→ CURVE BACK TOWARD UPPER LEFT HEADLINE.
+
+
+Tất cả vật thể phải đi theo hệ thống chuyển động này.
+
+Không random directions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. CÂN BẰNG BỐ CỤC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Asymmetrical controlled composition.
+
+Không đối xứng hoàn hảo.
+
+HERO PRODUCT:
+
+center dominant.
+
+BOTTOM LEFT:
+
+foreground fruit lớn.
+
+RIGHT LOWER:
+
+fruit tương đối lớn.
+
+UPPER RIGHT:
+
+fruit + ice.
+
+LEFT MID:
+
+fruit hoặc leaf.
+
+UPPER LEFT:
+
+light source + typography.
+
+Hệ thống này phải tạo thành một tam giác / S-curve thị giác,
+đưa mắt người xem liên tục quay về HERO PRODUCT.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. CHẤT LƯỢNG CUỐI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Kết quả phải giống:
+
+international beverage advertising campaign,
+premium global brand commercial,
+high-budget CGI campaign,
+high-end product photography,
+professional Photoshop compositing,
+cinematic liquid simulation,
+award-winning advertising key visual.
+
+8K detail.
+
+Ultra sharp.
+
+HDR.
+
+Photorealistic CGI.
+
+Accurate optical materials.
+
+Perfect product fidelity.
+
+Perfect packaging fidelity.
+
+Strong depth.
+
+Strong visual impact.
+
+Extremely refreshing.
+
+Juicy.
+
+Cold.
+
+Energetic.
+
+Premium.
+
+Poster phải gây ấn tượng ngay trong 1 giây đầu tiên.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. ĐIỀU TUYỆT ĐỐI KHÔNG ĐƯỢC LÀM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Không thay đổi sản phẩm.
+
+Không redesign label.
+
+Không làm sai logo.
+
+Không đổi nắp.
+
+Không thay đổi tỷ lệ chai/lon.
+
+Không biến dạng sản phẩm.
+
+Không duplicate product.
+
+Không thêm sản phẩm khác.
+
+Không dựng sản phẩm hoàn toàn thẳng đứng.
+
+Không nghiêng sản phẩm quá 10°.
+
+Không xoay toàn bộ poster.
+
+Không tạo horizon nghiêng.
+
+Không dùng fisheye.
+
+Không dùng extreme perspective.
+
+Không để splash che label.
+
+Không để trái cây che logo.
+
+Không đặt sản phẩm trên bàn.
+
+Không pedestal.
+
+Không human hand.
+
+Không người mẫu.
+
+Không mascot.
+
+Không background đơn giản.
+
+Không flat gradient.
+
+Không minimal composition.
+
+Không symmetrical fruit ring.
+
+Không đặt tất cả trái cây quanh sản phẩm thành vòng tròn.
+
+Không random floating objects.
+
+Không plastic fruit.
+
+Không jelly-like water.
+
+Không solid glass splash.
+
+Không fake ice.
+
+Không muddy color.
+
+Không flat lighting.
+
+Không dull product.
+
+Không fake packaging typography.
+
+Không random logo.
+
+Không watermark.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. NEGATIVE PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+low quality,
+low resolution,
+blurry,
+soft hero product,
+distorted product,
+deformed bottle,
+deformed can,
+wrong bottle shape,
+wrong can shape,
+wrong packaging,
+redesigned packaging,
+altered label,
+incorrect logo,
+fake logo,
+misspelled brand,
+unreadable label,
+warped typography,
+random text,
+gibberish text,
+duplicate product,
+multiple bottles,
+multiple cans,
+cropped hero product,
+hidden logo,
+fruit covering label,
+splash covering brand name,
+wrong cap,
+wrong cap color,
+wrong liquid color,
+incorrect proportions,
+extreme product tilt,
+perfectly upright static product,
+rotated canvas,
+tilted horizon,
+fisheye,
+ultra wide distortion,
+flat perspective,
+boring studio photo,
+product on table,
+product on pedestal,
+simple gradient,
+flat background,
+empty composition,
+minimal poster,
+generic stock photo,
+symmetrical composition,
+perfect fruit circle,
+evenly distributed fruit,
+random floating objects,
+chaotic motion,
+weak visual hierarchy,
+plastic fruit,
+wax fruit,
+fake fruit,
+jelly liquid,
+solid glass splash,
+fake water,
+unrealistic refraction,
+unrealistic ice,
+identical ice cubes,
+opaque ice,
+dirty ice,
+muddy colors,
+flat lighting,
+weak rim light,
+burned product highlights,
+crushed shadows,
+heavy bloom,
+excessive fog,
+heavy motion blur,
+blurry logo,
+blurry label,
+incorrect reflection,
+incorrect shadow,
+cartoon style,
+illustration style,
+low-detail CGI,
+cheap 3D rendering,
+human,
+human hand,
+mascot,
+unrelated object,
+unrelated brand,
+watermark,
+signature.

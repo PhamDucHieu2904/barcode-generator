@@ -1,0 +1,80 @@
+Tạo một hình ảnh quảng cáo sản phẩm cao cấp theo phong cách macro product photography siêu chân thực, sử dụng hình ảnh sản phẩm được cung cấp làm tham chiếu tuyệt đối.
+
+SẢN PHẨM CHÍNH
+- Sản phẩm: [LON NƯỚC ép táo Jus de pomme thương hiệu Ayola].
+- Hương vị hoặc thành phần chủ đạo: [Apple].
+- Màu thương hiệu chính: [Trắng đỏ].
+- Giữ nguyên chính xác 100% hình dáng, tỷ lệ, nắp, đáy, logo, nhãn, typography, màu sắc, hình minh họa và toàn bộ thông tin được in trên bao bì gốc.
+- Không tự thiết kế lại bao bì, không thay đổi logo, không viết lại chữ, không bóp méo nhãn.
+- Sản phẩm phải giống ảnh tham chiếu như một ảnh chụp thật, không mang cảm giác CGI hoặc mô hình 3D.
+
+BỐ CỤC
+- Khung hình dọc tỷ lệ 4:5 hoặc 9:16.
+- Sản phẩm nằm ở trung tâm khung hình, chiếm khoảng 55–65% diện tích.
+- Đặt sản phẩm theo đường chéo nhẹ, nghiêng khoảng 15–25 độ để tạo cảm giác năng động và cao cấp.
+- Góc máy cận cảnh, hơi thấp hơn tâm sản phẩm, tạo cảm giác sản phẩm lớn và nổi bật.
+- Bao quanh sản phẩm là những khối đá viên trong suốt kích thước lớn, hình dạng hơi không đồng đều, được xếp chồng tự nhiên.
+- Một số khối đá nằm gần ống kính để tạo foreground và chiều sâu không gian.
+- Không để đá hoặc trái cây che phần logo và tên sản phẩm chính.
+- Bố cục dày, giàu chi tiết nhưng vẫn sạch sẽ, có điểm nhìn rõ ràng tập trung vào sản phẩm.
+
+ĐÁ VIÊN VÀ TRÁI CÂY
+- Bên trong mỗi khối đá có các miếng [TÊN TRÁI CÂY] được đông lạnh tự nhiên.
+- Kết hợp trái nguyên quả, lát cắt đôi và lát cắt ngang để tạo sự đa dạng.
+- Phần ruột trái cây phải mọng nước, màu sắc tươi, cấu trúc thịt quả và hạt rõ nét.
+- Trái cây bên trong đá có độ biến dạng khúc xạ nhẹ đúng vật lý, không bị méo kỳ dị.
+- Khối đá phải cực kỳ trong suốt, có độ dày thực tế, cạnh bo nhẹ và bề mặt hơi tan.
+- Bên trong đá có các bọt khí siêu nhỏ, vết nứt mảnh, tinh thể đóng băng và các lớp khúc xạ ánh sáng chân thực.
+- Một số vị trí có lớp sương trắng mỏng do đông lạnh, nhưng phần lớn đá vẫn trong và sạch.
+- Bề mặt đá phủ những giọt nước li ti, có một vài giọt lớn đang chảy xuống.
+- Đá phải có cảm giác lạnh, nặng, ướt và thật, không giống nhựa hoặc thủy tinh nhân tạo.
+
+BỀ MẶT SẢN PHẨM
+- Toàn bộ sản phẩm được phủ lớp ngưng tụ lạnh tự nhiên.
+- Hàng trăm giọt nước có kích thước khác nhau bám trên bề mặt.
+- Có giọt siêu nhỏ dạng sương, giọt tròn trung bình và một vài giọt lớn đang chảy dọc thân sản phẩm.
+- Giọt nước phải phản chiếu ánh sáng studio rõ nét và có độ trong suốt chân thực.
+- Mép trên, nắp và các vùng kim loại có một lớp sương lạnh cực mỏng.
+- Bề mặt sản phẩm vẫn sạch, sắc nét và nhìn rõ toàn bộ thiết kế nhãn.
+
+ÁNH SÁNG STUDIO
+- Ánh sáng quảng cáo cao cấp, mạnh nhưng được kiểm soát chính xác.
+- Nguồn sáng chính là softbox lớn đặt phía trên bên trái, tạo vùng sáng mềm chạy dọc thân sản phẩm.
+- Một nguồn rim light lạnh đặt phía sau bên phải, làm nổi đường viền sản phẩm và cạnh đá.
+- Một nguồn sáng phản chiếu nhẹ từ phía trước để giữ logo, chữ và hình ảnh trên bao bì luôn rõ.
+- Ánh sáng trắng lạnh trung tính, khoảng 5200K–5800K.
+- Kết hợp một chút ánh sáng màu [MÀU CHỦ ĐẠO] phản chiếu từ phông nền lên đá và bề mặt ướt.
+- Highlight trên đá và giọt nước phải sáng, sắc và có độ lấp lánh cao cấp.
+- Vùng tối sâu, giàu tương phản nhưng không làm mất chi tiết.
+- Tuyệt đối không ám vàng, không ánh sáng cam, không màu da cam bẩn.
+
+PHÔNG NỀN VÀ MÀU SẮC
+- Phông nền studio màu [MÀU CHỦ ĐẠO ĐẬM], chuyển gradient từ sáng ở khu vực phía sau sản phẩm sang tối ở các góc.
+- Có một vùng ánh sáng mềm phía sau sản phẩm để tách chủ thể khỏi nền.
+- Phần góc trên và hai bên tối hơn, tạo chiều sâu và cảm giác điện ảnh.
+- Bảng màu giới hạn, đồng bộ giữa sản phẩm, trái cây và phông nền.
+- Màu sắc tươi, sạch, đậm nhưng không neon và không quá bão hòa.
+- Color grading mang phong cách quảng cáo mỹ phẩm và đồ uống cao cấp.
+- Màu trắng phải sạch, màu đỏ hoặc màu trái cây phải sâu, mọng và sang trọng.
+
+CAMERA VÀ CHẤT LƯỢNG HÌNH ẢNH
+- Chụp bằng máy ảnh full-frame với ống kính macro 100mm.
+- Góc nhìn macro thương mại cao cấp.
+- Sản phẩm và logo nằm trong vùng nét hoàn hảo.
+- Sử dụng focus stacking để toàn bộ sản phẩm sắc nét, trong khi đá ở tiền cảnh và hậu cảnh mờ nhẹ tự nhiên.
+- Độ sâu trường ảnh vừa phải, không làm mờ phần bao bì.
+- Chi tiết cực cao ở bề mặt bao bì, giọt nước, cấu trúc trái cây, bọt khí và vết nứt trong đá.
+- Độ phân giải quảng cáo 8K, micro-detail rõ ràng, dynamic range cao nhưng tự nhiên.
+- Hình ảnh giống một buổi chụp studio thật bằng máy ảnh chuyên nghiệp.
+- Phong cách premium beverage advertising, luxury cosmetic campaign, editorial macro photography.
+- Photorealistic, physically accurate lighting, realistic refraction, realistic condensation, clean commercial composition.
+
+YÊU CẦU CUỐI CÙNG
+- Sản phẩm là chủ thể duy nhất và quan trọng nhất.
+- Bao bì phải được tái tạo chính xác từ ảnh tham chiếu.
+- Logo và tên sản phẩm phải rõ, thẳng, đúng chính tả và không bị biến dạng.
+- Đá và trái cây chỉ đóng vai trò tạo bối cảnh, không lấn át sản phẩm.
+- Hình ảnh phải tạo cảm giác cực lạnh, tươi mới, mọng nước, sạch sẽ và cao cấp.
+- Thành phẩm phải giống ảnh quảng cáo thực tế được chụp trong studio, không phải ảnh AI, không phải render 3D.
+Negative prompt:
+Bao bì bị thiết kế lại, sai logo, sai chữ, chữ vô nghĩa, typography méo, nhãn bị kéo giãn, sản phẩm biến dạng, thân lon cong bất thường, nắp sai cấu trúc, đá giống nhựa, đá quá đục, trái cây méo mó, trái cây bị nhân bản, thừa trái cây, vật thể lơ lửng, bố cục lộn xộn, đá che logo, giọt nước quá lớn, nước chảy quá nhiều, bề mặt bẩn, màu ám vàng, ánh sáng cam, màu neon, phơi sáng quá mức, highlight cháy trắng, bóng đen mất chi tiết, lens flare, bloom mạnh, sương mù dày, HDR giả, oversharpen, da nhựa, CGI, 3D render, cartoon, illustration, low resolution, blurry product, shallow depth of field làm mờ nhãn, duplicated objects, extra caps, extra cans, watermark, text overlay, poster layout.

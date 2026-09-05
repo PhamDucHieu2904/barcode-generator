@@ -51,6 +51,7 @@
     barcode:   document.getElementById('section-barcode'),
     pdf:       document.getElementById('section-pdf'),
     'ai-tool': document.getElementById('section-ai-tool'),
+    'prompt-generator': document.getElementById('section-prompt-generator'),
   };
 
   function activateSection(sectionKey) {
@@ -62,6 +63,7 @@
   /* ── Sidebar nav buttons ── */
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (btn.disabled) return;
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 

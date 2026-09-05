@@ -1,0 +1,1238 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MASTER PROMPT – PREMIUM FRUIT PRODUCT ADVERTISING
+REFERENCE COMPOSITION / DIAGONAL PRODUCT / GLOSSY PLATFORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hãy sử dụng HÌNH ẢNH SẢN PHẨM ĐÍNH KÈM làm HERO PRODUCT chính để tạo một poster quảng cáo sản phẩm cao cấp theo phong cách commercial product photography kết hợp CGI photorealistic.
+
+Mục tiêu là tái tạo chính xác tinh thần, bố cục, góc nghiêng, ánh sáng, độ sâu trường ảnh và cách sắp xếp trái cây của hình ảnh tham chiếu:
+
+• Sản phẩm nằm ở trung tâm phần dưới của poster.
+• Sản phẩm NGHIÊNG CHÉO nhẹ, không đứng thẳng.
+• Một bề mặt acrylic/glass bóng nằm phía dưới và cũng NGHIÊNG CHÉO theo phối cảnh.
+• Trái cây lớn bao quanh phần chân sản phẩm.
+• Background gradient sáng mạnh, sạch, giàu năng lượng.
+• Một số lá cây bay phía sau, out-of-focus.
+• Ánh sáng commercial high-key mạnh, bóng đẹp, giàu specular highlight.
+• Foreground có reflection của sản phẩm và trái cây trên mặt acrylic.
+• Tổng thể phải giống một campaign quảng cáo sản phẩm cao cấp được chụp trong studio chuyên nghiệp.
+
+KHÔNG tạo bố cục sản phẩm đứng thẳng chính giữa trên nền gradient đơn giản.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. THÔNG TIN CÓ THỂ THAY ĐỔI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MÀU NỀN:
+[Cam]
+
+TRÁI CÂY:
+[TRÁI Cam]
+
+SLOGAN CHÍNH:
+[INSERT MAIN SLOGAN IN ENGLISH]
+
+DÒNG MÔ TẢ PHỤ:
+[INSERT SUB-DESCRIPTION IN ENGLISH]
+
+HÌNH SẢN PHẨM:
+Sử dụng chính xác hình ảnh sản phẩm được người dùng đính kèm.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. TỰ ĐỘNG PHÂN TÍCH SẢN PHẨM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trước khi tạo poster, hãy phân tích kỹ hình ảnh sản phẩm đính kèm để nhận diện:
+
+• Loại sản phẩm.
+• Thương hiệu.
+• Tên sản phẩm.
+• Hương vị hoặc nguyên liệu chính nếu có thể nhận diện rõ.
+• Màu sắc chủ đạo của bao bì.
+• Chất liệu bao bì: lon, chai thủy tinh, chai PET, hộp, hũ, tuýp, dropper bottle...
+• Tỷ lệ chiều cao / chiều rộng chính xác.
+• Vị trí logo.
+• Vị trí tên sản phẩm.
+• Typography trên bao bì.
+• Artwork trái cây hoặc ingredient trên nhãn.
+• Phần nắp / cổ / đáy sản phẩm.
+• Những vùng quan trọng tuyệt đối không được che.
+
+Sử dụng kết quả phân tích này để lựa chọn màu ánh sáng phụ, vị trí trái cây và typography poster sao cho hài hòa với sản phẩm.
+
+TUYỆT ĐỐI KHÔNG tự thiết kế lại bao bì.
+
+Nếu sản phẩm có màu nhận diện riêng, màu nền [MÀU NỀN] vẫn là màu chính của background nhưng ánh sáng và reflection phải được điều chỉnh để sản phẩm nổi bật.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. QUY TẮC TỰ ĐỘNG TẠO SLOGAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nếu phần:
+
+[INSERT MAIN SLOGAN IN ENGLISH]
+
+vẫn chưa được người dùng thay đổi, hãy tự động tạo một MAIN SLOGAN bằng tiếng Anh dựa trên sản phẩm được nhận diện từ hình ảnh đính kèm.
+
+MAIN SLOGAN phải:
+
+• Ngắn gọn.
+• Khoảng 2–6 từ.
+• Mang tính quảng cáo.
+• Dễ đọc ngay lập tức.
+• Phù hợp với loại sản phẩm.
+• Phù hợp với nguyên liệu hoặc hương vị.
+• Có cảm giác fresh, premium, vibrant.
+• Không đưa ra claim y tế hoặc công dụng không thể xác minh từ bao bì.
+
+Ví dụ tinh thần:
+FRESHNESS IN EVERY DROP
+BRIGHTEN YOUR DAY
+A BURST OF FRESHNESS
+TASTE THE BRIGHT SIDE
+PURELY REFRESHING
+GLOW WITH FRESHNESS
+
+KHÔNG bắt buộc sử dụng các câu ví dụ trên.
+Hãy tự sáng tạo câu phù hợp với sản phẩm thực tế.
+
+Nếu phần:
+
+[INSERT SUB-DESCRIPTION IN ENGLISH]
+
+vẫn chưa được người dùng thay đổi, hãy tự tạo một dòng mô tả tiếng Anh khoảng 6–14 từ.
+
+Dòng mô tả phải bổ trợ cho main slogan, giải thích nhẹ sản phẩm hoặc cảm giác mà sản phẩm truyền tải.
+
+Chỉ tạo:
+1 MAIN SLOGAN
++
+1 SUB-DESCRIPTION
+
+Không tạo thêm paragraph.
+Không tạo thêm slogan phụ.
+Không thêm chữ ngẫu nhiên.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. TỶ LỆ VÀ KHUNG HÌNH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Poster quảng cáo dọc.
+
+Tỷ lệ ưu tiên:
+3:4.
+
+Có thể sử dụng:
+4:5 nếu nền tảng yêu cầu.
+
+High-resolution commercial advertising image.
+
+Bố cục full-frame.
+
+Không crop sản phẩm.
+
+Không để sản phẩm chạm mép poster.
+
+Chừa khoảng negative space lớn ở 30–38% phần trên poster để đặt slogan.
+
+Phần sản phẩm + trái cây + platform tập trung chủ yếu ở khoảng 45–100% chiều cao poster.
+
+Phần trên phải thoáng hơn phần dưới nhưng KHÔNG trống hoàn toàn; sử dụng gradient ánh sáng và một vài chiếc lá bay để tạo chiều sâu.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. BỐ CỤC TỔNG THỂ – CỰC KỲ QUAN TRỌNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tái tạo bố cục giống phong cách hình ảnh tham chiếu:
+
+PHẦN TRÊN:
+Khoảng 35–40% poster là background gradient sáng, tương đối thoáng.
+
+Một số lá xanh bay trong không khí.
+
+Các lá không nằm trên cùng một mặt phẳng.
+
+Một số lá ở khá gần camera nhưng out-of-focus mạnh.
+
+Một số lá ở background nhỏ hơn và mờ hơn.
+
+Không phân bố lá đều.
+
+PHẦN GIỮA:
+Bắt đầu xuất hiện cụm trái cây lớn.
+
+Một hoặc hai quả nằm phía sau sản phẩm.
+
+Các quả tạo thành một visual base tự nhiên đỡ lấy hero product.
+
+PHẦN DƯỚI:
+Hero product nằm giữa các trái cây.
+
+Một mặt acrylic/glass bóng nằm dưới toàn bộ cụm.
+
+Có reflection của sản phẩm và trái cây trên bề mặt.
+
+Một số lát trái cây gần camera bị crop nhẹ ở mép poster.
+
+Tổng thể phải mang tính bất đối xứng có kiểm soát.
+
+Không tạo trái cây thành vòng tròn đều quanh sản phẩm.
+
+Không tạo bố cục pyramid quá hoàn hảo.
+
+Không tạo cảm giác dựng sản phẩm kiểu catalogue.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ĐỘ NGHIÊNG CỦA HERO PRODUCT – BẮT BUỘC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Đây là yếu tố hình học quan trọng nhất của bố cục.
+
+HERO PRODUCT KHÔNG ĐƯỢC ĐỨNG THẲNG.
+
+Trục chính của sản phẩm phải:
+
+• Đáy nằm hơi lệch về BÊN TRÁI.
+• Phần cổ / nắp / đầu sản phẩm nằm lệch về BÊN PHẢI.
+• Nghiêng khoảng 12–16 độ so với phương thẳng đứng.
+
+Tạo cảm giác sản phẩm đang tựa nhẹ vào cụm trái cây.
+
+Không nghiêng quá 20 độ.
+
+Không đặt sản phẩm nằm ngang.
+
+Không nghiêng ngược hướng.
+
+Không biến sản phẩm thành tư thế thẳng đứng.
+
+Phần mặt trước của nhãn vẫn phải hướng rõ về camera.
+
+Logo và tên sản phẩm phải dễ đọc.
+
+Góc nghiêng tạo năng lượng thị giác nhưng không được làm méo artwork.
+
+Sản phẩm chiếm khoảng 40–48% chiều cao toàn poster tùy hình dáng bao bì.
+
+Điểm trung tâm của sản phẩm nằm hơi thấp hơn tâm poster.
+
+Phần đầu sản phẩm có thể nằm gần khoảng 38–45% chiều cao poster.
+
+Phần đáy nằm gần khoảng 78–85%.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. GIỮ NGUYÊN HÌNH ẢNH SẢN PHẨM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sử dụng chính xác sản phẩm từ hình ảnh reference do người dùng cung cấp.
+
+BẮT BUỘC:
+
+• Giữ nguyên logo.
+• Giữ nguyên tên thương hiệu.
+• Giữ nguyên tên sản phẩm.
+• Giữ nguyên typography.
+• Giữ nguyên màu sắc artwork.
+• Giữ nguyên artwork.
+• Giữ nguyên illustration.
+• Giữ nguyên icon.
+• Giữ nguyên cấu trúc nhãn.
+• Giữ nguyên hình dáng bao bì.
+• Giữ nguyên tỷ lệ chiều cao và chiều rộng.
+• Giữ nguyên thiết kế nắp.
+• Giữ nguyên màu nắp.
+• Giữ nguyên vật liệu.
+• Giữ nguyên màu chất lỏng nếu sản phẩm trong suốt.
+
+Không redesign.
+
+Không simplify.
+
+Không reinterpret.
+
+Không thay logo.
+
+Không thêm logo mới.
+
+Không thêm text lên bao bì.
+
+Không thay hình trái cây trên nhãn.
+
+Không đổi font.
+
+Không bóp méo hình chai/lon.
+
+Không làm phần cổ hoặc đáy lớn bất thường.
+
+Không che vùng logo bằng trái cây.
+
+Không để sản phẩm chìm vào background.
+
+Hero product phải là vật thể sắc nét nhất trong toàn bộ ảnh.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. PLATFORM NGHIÊNG – CỰC KỲ QUAN TRỌNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phía dưới sản phẩm phải có một tấm acrylic / plexiglass / glass platform bóng, trong hoặc bán trong suốt, mang màu tương đồng với [MÀU NỀN].
+
+Không đặt platform hoàn toàn nằm ngang trong ảnh.
+
+ĐƯỜNG MÉP PLATFORM PHẢI CHẠY CHÉO.
+
+Hình học mong muốn:
+
+• Mép platform ở BÊN TRÁI nằm CAO hơn.
+• Mép platform ở BÊN PHẢI nằm THẤP hơn.
+• Đường mép chạy chéo xuống về phía bên phải khoảng 6–10 độ.
+
+Đây phải là một đường diagonal perspective rõ nhưng tinh tế.
+
+Platform tạo cảm giác camera nhìn vào một mặt phẳng được xoay nhẹ trong không gian.
+
+Mặt platform:
+• Glossy.
+• Wet.
+• Reflective.
+• High specular.
+• Trong suốt hoặc translucent.
+• Có chiều dày thật.
+• Mép acrylic bắt sáng rõ.
+
+Có reflection của:
+• Hero product.
+• Trái cây.
+• Ánh sáng.
+
+Reflection KHÔNG quá hoàn hảo như gương.
+
+Có slight distortion và blur nhẹ do bề mặt acrylic / nước.
+
+Ở vùng foreground gần đáy poster, reflection có thể mềm hơn để tăng chiều sâu.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. TRÁI CÂY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sử dụng:
+
+[TRÁI CÂY]
+
+làm hệ thống visual chính.
+
+Nếu [TRÁI CÂY] là citrus hoặc loại quả phù hợp để cắt lát, tạo:
+
+• Trái nguyên quả.
+• Trái cắt đôi.
+• Lát cắt.
+• Wedge.
+• Một vài phần ruột quả gần camera.
+• Lá tự nhiên của loại trái cây đó.
+
+Nếu loại trái cây không phù hợp với một dạng cắt nhất định, hãy sử dụng hình thức trình bày tự nhiên nhất cho loại quả đó.
+
+Không tự động thêm cam, chanh hoặc grapefruit nếu chúng không nằm trong [TRÁI CÂY].
+
+Chỉ sử dụng ingredient bổ sung nếu nó xuất hiện rõ ràng trên sản phẩm hoặc được người dùng chỉ định.
+
+CHẤT LƯỢNG TRÁI CÂY:
+
+Ultra-photorealistic fresh fruit.
+
+Vỏ:
+• Micro texture rất rõ.
+• Có pores tự nhiên.
+• Có roughness.
+• Có specular highlight nhỏ.
+• Không quá bóng như nhựa.
+
+Ruột quả:
+• Juicy.
+• Translucent.
+• Moist.
+• Có subsurface scattering.
+• Các tép / thớ / hạt có chi tiết thật.
+• Có giọt nước rất nhỏ.
+
+Trái cây phải nhìn tươi, mọng, mới cắt.
+
+Không dùng fruit CGI quá sạch giống đồ chơi.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. BỐ TRÍ TRÁI CÂY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bố trí trái cây bám sát ngôn ngữ hình ảnh reference.
+
+Một cụm trái cây chính nằm phía SAU sản phẩm.
+
+Một quả tương đối lớn nằm sau vùng vai / thân trên của sản phẩm.
+
+Một hoặc hai quả nằm hai bên thân sản phẩm.
+
+Một lát cắt lớn có thể nằm ở foreground phía trái.
+
+Một lát hoặc nửa quả khác có thể nằm phía phải.
+
+Một vài trái cây được crop nhẹ bởi mép khung hình.
+
+Không để tất cả trái cây cùng kích thước.
+
+Kích thước phải thay đổi mạnh để tạo perspective:
+
+Foreground:
+lớn hơn.
+
+Midground:
+kích thước trung bình.
+
+Background:
+nhỏ hơn.
+
+Một số trái cây chạm nhau tự nhiên.
+
+Một số bị sản phẩm che một phần.
+
+Nhưng KHÔNG trái cây nào che:
+• Logo.
+• Tên sản phẩm.
+• Main artwork.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. GIỌT NƯỚC / CHẤT LỎNG NHỎ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Thêm một lượng vừa phải các giọt nước hoặc liquid droplets nhỏ quanh chân sản phẩm và trái cây.
+
+Không tạo splash khổng lồ.
+
+Đây KHÔNG phải poster splash-action.
+
+Cảm giác cần giống hình mẫu:
+những giọt nước nhỏ được đóng băng giữa không trung do sản phẩm và trái cây vừa được làm ướt.
+
+Một số giọt:
+• Rất nhỏ.
+• Trong suốt.
+• Có specular highlight.
+• Có refraction.
+• Một số nằm trên platform.
+• Một số bay cạnh sản phẩm.
+
+Không để droplets gây rối.
+
+Không phủ giọt nước lên logo.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. BACKGROUND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Background là gradient rất sáng, sạch, không có texture phức tạp.
+
+MÀU CHÍNH:
+[MÀU NỀN]
+
+Tạo gradient đa tầng thay vì một màu phẳng.
+
+Cấu trúc gradient:
+
+Vùng phía trên bên trái:
+sáng nhất.
+
+Có thể tiến gần white / cream / very pale version của [MÀU NỀN].
+
+Vùng giữa:
+màu sáng, saturated hơn.
+
+Vùng bên phải:
+đậm và rực hơn.
+
+Vùng dưới:
+tăng saturation để liên kết với trái cây và reflective platform.
+
+Gradient không được có banding.
+
+Không vignette tối.
+
+Không tạo góc tối.
+
+Không sử dụng texture giấy.
+
+Không tạo background environment cụ thể.
+
+Đây vẫn là high-end studio advertising background.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. LÁ BAY TRONG BACKGROUND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Thêm khoảng 4–7 chiếc lá tự nhiên bay phía sau sản phẩm.
+
+Không quá nhiều.
+
+Lá phải góp phần tạo chiều sâu chứ không trở thành chủ thể chính.
+
+Phân bố tương tự ngôn ngữ ảnh reference:
+
+• Một lá khá lớn ở bên trái, khoảng 28–40% chiều cao.
+• Một hoặc hai lá nhỏ ở vùng trung tâm phía trên.
+• Một lá ở vùng phải phía trên.
+• Một hoặc hai lá lớn ở bên phải mid-background.
+
+Các lá có rotation khác nhau.
+
+Một số lá:
+strong depth-of-field blur.
+
+Một số:
+medium blur.
+
+Không có lá nào sắc nét hơn hero product.
+
+Màu lá:
+deep natural green.
+
+Highlight trên lá:
+soft white / warm-neutral specular.
+
+Không neon green.
+
+Không lá giả bằng nhựa.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. VÙNG TYPOGRAPHY PHÍA TRÊN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tận dụng negative space ở 30–35% phía trên poster để đặt typography.
+
+Typography không được đè lên hero product.
+
+MAIN SLOGAN:
+
+[INSERT MAIN SLOGAN IN ENGLISH]
+
+Nếu placeholder chưa được thay:
+tự tạo slogan theo quy tắc ở mục 3.
+
+Vị trí ưu tiên:
+phía trên bên trái hoặc upper-center-left.
+
+Không đặt sát mép.
+Có khoảng breathing room lớn.
+
+STYLE CỦA MAIN SLOGAN (CỰC KỲ QUAN TRỌNG):
+• 2–6 từ.
+• High-impact display typography.
+• Sử dụng Bold / Extra-Bold sans-serif hiện đại, hoặc Elegant high-contrast serif tùy thuộc vào độ sang trọng của sản phẩm.
+• Strong visual weight (sức nặng thị giác cao).
+• Flawless dynamic kerning (khoảng cách các chữ hoàn hảo).
+• Crisp edges (đường nét chữ cực kỳ sắc sảo).
+• Tích hợp hiệu ứng premium print finishes: subtle embossing (thúc nổi tinh tế), spot UV gloss (phủ bóng cục bộ), hoặc soft metallic foil (ép kim nhẹ) để bề mặt text tương tác mượt mà với hướng ánh sáng của scene.
+• Modern editorial advertising layout.
+• Có hierarchy (phân cấp thị giác) tuyệt đối rõ ràng.
+
+Có thể xuống tối đa 2 dòng.
+
+DÒNG MÔ TẢ PHỤ:
+
+[INSERT SUB-DESCRIPTION IN ENGLISH]
+
+Đặt ngay bên dưới main slogan.
+
+Font:
+Clean, geometric regular hoặc medium.
+Nhỏ hơn headline khoảng 40–55%.
+Khoảng cách dòng (leading) thoáng.
+Không dài quá 2 dòng.
+
+MÀU CHỮ & ÁNH SÁNG TEXT:
+
+Tự chọn trắng tinh khiết, off-white, gold/silver foil tinh tế, hoặc màu tương phản mạnh nhất với [MÀU NỀN].
+
+Text phải có slight soft drop shadow hoặc subtle ambient occlusion để tách hoàn toàn khỏi nền gradient mờ ảo phía sau, đảm bảo khả năng đọc 100%.
+
+TUYỆT ĐỐI:
+no random text,
+no fake brand names,
+no gibberish typography,
+no duplicated slogan,
+no cheap 3D text effects,
+no overly decorative fonts.
+
+Nếu hệ thống không thể render typography chính xác, ưu tiên tạo một clean negative-space area rõ ràng ở vị trí typography để có thể thêm chữ thủ công về sau.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. CAMERA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Premium commercial product photography.
+
+Camera hướng chính diện nhẹ vào sản phẩm nhưng nhìn thấy rõ mặt platform phía dưới.
+
+Không top-down.
+
+Không low-angle cực đoan.
+
+Camera approximately at mid-product level with slight downward perspective toward the reflective platform.
+
+Lens equivalent:
+70–90mm commercial product photography lens.
+
+Có độ compression vừa phải.
+
+Không dùng ultra-wide.
+
+Không fisheye.
+
+Không perspective distortion mạnh.
+
+Hero product phải giữ đúng tỷ lệ.
+
+Focus:
+trên mặt trước của sản phẩm, đặc biệt logo và tên sản phẩm.
+
+Depth of field:
+shallow-to-medium.
+
+Product:
+razor sharp.
+
+Midground fruits:
+sharp nhưng thấp hơn hero product một chút.
+
+Foreground fruit:
+có thể mềm nhẹ ở phần gần camera.
+
+Background leaves:
+blur rõ.
+
+Background gradient:
+completely smooth.
+
+Bokeh phải tự nhiên.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. HƯỚNG CAMERA VÀ PHỐI CẢNH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Không để mọi đường ngang song song tuyệt đối với mép poster.
+
+Tạo một hệ diagonal geometry thống nhất:
+
+PLATFORM:
+cao ở trái → thấp ở phải.
+
+PRODUCT:
+đáy lệch trái → đầu lệch phải.
+
+FRUIT CLUSTER:
+chuyển động thị giác từ trái dưới → giữa → phải trên nhẹ.
+
+Sự đối nghịch giữa:
+đường platform chéo xuống bên phải
+và
+trục sản phẩm vươn lên bên phải
+
+tạo ra tension thị giác đặc trưng giống reference.
+
+Không tự sửa các đường này thành bố cục thẳng.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. ÁNH SÁNG – CỰC KỲ QUAN TRỌNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sử dụng hệ thống ánh sáng commercial beauty / food advertising high-key.
+
+Hình phải cực sáng, sạch, glossy và bắt mắt.
+
+Không flat lighting.
+
+LIGHTING SETUP:
+
+A. KEY LIGHT
+
+Một nguồn sáng lớn nhưng tương đối directional từ GÓC TRÊN BÊN TRÁI / FRONT-LEFT.
+
+Strong softbox-style commercial key light.
+
+Ánh sáng:
+bright white to slightly warm neutral.
+
+Khoảng:
+5000K–5600K.
+
+Không amber.
+Không sunset.
+
+Key light tạo:
+• Highlight rất mạnh trên vỏ trái cây.
+• Highlight dài trên chai / lon.
+• Bright specular trên kính hoặc nhựa trong.
+• Chi tiết texture rõ.
+• Shadow có hướng nhưng không quá đen.
+
+B. BACKGROUND LIGHT
+
+Một nguồn sáng mạnh chiếu vào background.
+
+Tạo vùng sáng gần trắng hoặc pale [MÀU NỀN] ở upper-left.
+
+Saturation tăng dần về upper-right / right side.
+
+Tạo cảm giác background phát sáng nhưng không bị overexposure toàn bộ.
+
+C. RIGHT / REAR ACCENT LIGHT
+
+Một nguồn ánh sáng phụ phía sau bên phải.
+
+Màu dựa trên [MÀU NỀN].
+
+Tạo rim light nhẹ quanh:
+• Viền sản phẩm.
+• Trái cây bên phải.
+• Lá.
+
+D. FRONT FILL
+
+Soft frontal fill.
+
+Giữ label sáng rõ.
+
+Không để vùng chữ trên bao bì rơi vào shadow.
+
+Không flatten toàn bộ hình.
+
+Fill phải thấp hơn key light.
+
+E. PLATFORM LIGHT
+
+Mặt acrylic phía dưới phải bắt ánh sáng mạnh.
+
+Có những vùng:
+• Orange / background color reflection.
+• Bright white streak.
+• Saturated glow.
+• Specular reflection.
+
+Tuy nhiên vẫn nhìn được chiều dày vật liệu.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. ĐẶC TÍNH ÁNH SÁNG TRÊN SẢN PHẨM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hero product phải có commercial lighting rất được kiểm soát.
+
+Nếu là chai thủy tinh:
+• Glass refraction rõ.
+• Highlight dài theo thân chai.
+• Mép chai sáng.
+• Chất lỏng bên trong có transmission.
+• Không tạo glass quá đục.
+
+Nếu là chai PET:
+• Specular mềm hơn.
+• Bề mặt nhựa vẫn có transparency/roughness đúng.
+
+Nếu là lon:
+• Metallic reflection.
+• Long soft highlight.
+• Rim sáng trên cạnh.
+
+Nếu là hộp giấy:
+• Texture giấy tinh tế.
+• Không quá reflective.
+
+Nếu là dropper / cosmetic bottle:
+• Glass clarity cao.
+• Metallic collar có anisotropic/reflection.
+• Rubber phần pipette mềm, matte, sạch.
+
+Luôn ưu tiên đúng vật liệu thật của sản phẩm reference.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. ÁNH SÁNG TRÊN TRÁI CÂY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trái cây phải có strong fresh-food lighting.
+
+Key light từ upper-left tạo các vùng specular mạnh.
+
+Các quả ở bên trái có highlight rộng.
+
+Các quả bên phải nhận:
+key + colored bounce.
+
+Phần ruột cắt:
+back/transmitted light nhẹ làm các tép quả trong và mọng.
+
+Có micro shadows giữa các tép.
+
+Không flatten texture.
+
+Không để trái cây tối đen.
+
+Không để highlight cháy trắng mất texture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. SHADOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Shadow phải có hướng consistent với key light upper-left.
+
+Shadow của trái cây và sản phẩm rơi chủ yếu về lower-right / rear-right trên platform.
+
+Shadow:
+soft-edged nhưng vẫn có contact shadow rõ.
+
+Điểm tiếp xúc giữa:
+• sản phẩm và platform,
+• trái cây và platform,
+• trái cây với nhau
+
+phải có contact shadow thật.
+
+Không để vật thể trông như đang floating.
+
+Không tạo shadow màu đen tuyệt đối.
+
+Shadow mang một chút màu phản xạ từ [MÀU NỀN].
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. REFLECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reflection phía dưới là một đặc điểm quan trọng của poster.
+
+Reflection của hero product xuất hiện trên acrylic platform.
+
+Reflection:
+• Hơi kéo dài theo phối cảnh.
+• Có độ mềm nhẹ.
+• Saturated bởi màu platform.
+• Không nét bằng vật thể thật.
+• Bị crop một phần bởi cạnh dưới poster.
+
+Một phần label có thể phản chiếu nhưng không cần đọc hoàn hảo.
+
+Reflection của trái cây cũng xuất hiện ở vùng xung quanh.
+
+Có thể thêm slight surface imperfections hoặc thin water layer để làm reflection organic hơn.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. NƯỚC VÀ ĐỘ ẨM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tạo cảm giác trái cây vừa được rửa và sản phẩm cực kỳ fresh.
+
+Thêm:
+• Micro water beads.
+• Small droplets.
+• Thin wet surface.
+• Một vài giọt nhỏ trên platform.
+
+Không phủ hàng trăm giọt lên sản phẩm nếu bao bì reference khô.
+
+Không biến cảnh thành splash advertisement.
+
+Water chỉ là supporting detail.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. COLOR GRADING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Commercial advertising color grading.
+
+High-key.
+
+Vibrant.
+
+Fresh.
+
+Clean.
+
+Premium.
+
+Strong color separation.
+
+Deep but clean saturation.
+
+Màu [MÀU NỀN] phải:
+• Saturated.
+• Bright.
+• Rich.
+• Không neon.
+• Không muddy.
+
+Trái cây giữ màu tự nhiên nhưng rực.
+
+Lá:
+deep natural green.
+
+Whites trên sản phẩm:
+neutral to slightly warm white.
+
+Không để toàn bộ ảnh bị phủ một lớp màu [MÀU NỀN].
+
+Color grading phải cho phép:
+• White stays white.
+• Green stays green.
+• Product artwork giữ nguyên màu.
+• Fruit color không bị đổi.
+
+Tăng local contrast ở hero product.
+
+Saturation background có thể cao hơn một chút nhưng không làm sản phẩm chìm.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. DEPTH OF FIELD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tạo ít nhất 4 lớp chiều sâu rõ ràng.
+
+LAYER 1 – EXTREME FOREGROUND:
+Mặt acrylic và một phần trái cây gần camera.
+Có thể blur nhẹ.
+
+LAYER 2 – HERO:
+Sản phẩm.
+Ultra sharp.
+
+LAYER 3 – MIDGROUND:
+Trái cây quanh sản phẩm.
+Sharp đến moderately sharp.
+
+LAYER 4 – BACKGROUND:
+Leaves + gradient.
+Leaves visibly out-of-focus.
+
+Không blur toàn bộ trái cây.
+
+Không sử dụng artificial radial blur.
+
+Depth phải đến từ lens optics tự nhiên.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. VẬT LIỆU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tất cả vật liệu photorealistic.
+
+PRODUCT:
+giữ đúng vật liệu reference.
+
+FRUIT:
+organic rough skin,
+moist pulp,
+subsurface scattering.
+
+LEAVES:
+organic,
+slightly waxy,
+subtle translucency.
+
+ACRYLIC:
+glossy,
+reflective,
+transparent/translucent,
+realistic edge refraction.
+
+WATER:
+clear,
+high specular,
+realistic surface tension.
+
+Không:
+plastic fruit,
+fake glossy leaves,
+opaque glass,
+flat metal,
+matte acrylic,
+jelly-like water.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. PHÂN CẤP THỊ GIÁC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Thứ tự ưu tiên khi người xem nhìn poster:
+
+1. HERO PRODUCT.
+2. MAIN SLOGAN.
+3. Trái cây lớn gần sản phẩm.
+4. SUB-DESCRIPTION.
+5. Reflection / platform.
+6. Leaves và các chi tiết background.
+
+Sản phẩm phải là vùng:
+• nét nhất,
+• có contrast cao nhất,
+• có highlight đẹp nhất,
+• có chi tiết tốt nhất.
+
+Không có trái cây nào nổi bật hơn sản phẩm.
+
+Không có chiếc lá nào gây chú ý hơn sản phẩm.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. PHONG CÁCH HÌNH ẢNH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Premium commercial product photography.
+
+High-end beauty advertising.
+
+Luxury freshness campaign.
+
+Vibrant fruit advertising.
+
+Photorealistic CGI integration.
+
+Professional studio lighting.
+
+High-end Photoshop compositing.
+
+Glossy commercial photography.
+
+Bold colorful advertising.
+
+Fresh ingredient campaign.
+
+Modern editorial product photography.
+
+High dynamic range.
+
+Crisp texture.
+
+Shallow depth of field.
+
+Realistic optical blur.
+
+Precise reflections.
+
+8K detail.
+
+Billboard-ready.
+
+Global advertising agency quality.
+
+NOT illustration.
+
+NOT cartoon.
+
+NOT flat design.
+
+NOT generic stock photo.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. QUY TẮC GIỮ ĐÚNG REFERENCE COMPOSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ưu tiên hình học và bố cục hơn việc tự sáng tạo thêm vật thể.
+
+BẮT BUỘC giữ các đặc điểm sau:
+
+1.
+Background sáng và có gradient mạnh.
+
+2.
+Negative space lớn ở phần trên.
+
+3.
+Hero product nằm ở vùng giữa-phía dưới.
+
+4.
+Hero product nghiêng:
+đáy trái → đầu phải.
+
+5.
+Platform nghiêng:
+trái cao → phải thấp.
+
+6.
+Fruit cluster tập trung quanh phần dưới của sản phẩm.
+
+7.
+Một số fruit slices nằm gần camera.
+
+8.
+Leaves bay phía sau và blurred.
+
+9.
+Strong warm-neutral commercial key light từ upper-left.
+
+10.
+Glossy reflection chiếm foreground phía dưới.
+
+11.
+Asymmetrical but balanced composition.
+
+12.
+Shallow depth of field.
+
+13.
+Không làm background quá phức tạp.
+
+14.
+Không thêm splash lớn.
+
+15.
+Không thêm con người.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. YÊU CẦU KẾT QUẢ CUỐI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Poster cuối cùng phải tạo cảm giác:
+
+Fresh.
+Juicy.
+Premium.
+Bright.
+Optimistic.
+Energetic.
+Glossy.
+Clean.
+Modern.
+Commercial.
+
+Nhìn giống một ảnh quảng cáo sản phẩm thực tế được art-direct kỹ lưỡng.
+
+Ngay trong 1 giây đầu tiên người xem phải nhìn vào hero product.
+
+Sản phẩm phải hòa nhập hoàn hảo với môi trường nhưng vẫn tách rõ khỏi background.
+
+Không được có cảm giác sản phẩm bị “dán” vào ảnh.
+
+Trái cây và sản phẩm phải chia sẻ cùng một hệ thống ánh sáng.
+
+Shadow, reflection, color bounce và perspective phải đồng nhất.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. NEGATIVE PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+wrong product,
+redesigned packaging,
+altered packaging,
+incorrect label,
+fake label,
+fake logo,
+changed brand,
+misspelled brand,
+warped typography,
+unreadable product label,
+duplicated product,
+multiple products,
+deformed bottle,
+deformed can,
+incorrect bottle proportions,
+incorrect can proportions,
+stretched packaging,
+compressed packaging,
+cropped hero product,
+hidden logo,
+fruit covering logo,
+fruit covering product name,
+random text,
+gibberish text,
+extra slogans,
+duplicated slogan,
+
+perfectly upright product,
+vertical product,
+product leaning in the opposite direction,
+horizontal product,
+extreme product rotation,
+
+flat horizontal platform,
+straight platform edge,
+platform without diagonal perspective,
+missing acrylic platform,
+matte platform,
+no reflection,
+perfect mirror reflection,
+incorrect reflection,
+floating product,
+
+symmetrical fruit arrangement,
+fruit arranged in a perfect circle,
+too many fruits,
+tiny repetitive fruits,
+plastic fruits,
+fake fruit texture,
+dry fruit,
+rotten fruit,
+unrealistic fruit,
+neon fruit,
+
+sharp background leaves,
+too many leaves,
+identical leaves,
+fake plastic leaves,
+leaves covering the product,
+
+giant water splash,
+water explosion,
+excessive liquid,
+jelly water,
+solid glass splash,
+
+flat lighting,
+dull lighting,
+dark lighting,
+dramatic noir lighting,
+low-key photography,
+underexposed image,
+black shadows,
+harsh ugly shadows,
+burned highlights,
+overexposed label,
+
+sunset,
+golden hour,
+orange haze,
+brown haze,
+sepia,
+vintage grading,
+dirty whites,
+yellow whites,
+
+flat background,
+single-color background,
+dark vignette,
+busy background,
+realistic outdoor landscape,
+room interior,
+tabletop lifestyle scene,
+
+fisheye,
+ultra wide angle,
+extreme perspective distortion,
+top-down shot,
+extreme low angle,
+warped product geometry,
+
+excessive blur,
+blurry product,
+blurry logo,
+blurry label,
+everything in focus,
+fake gaussian blur,
+
+cartoon,
+illustration,
+anime,
+3D toy style,
+plastic render,
+cheap CGI,
+generic stock image,
+minimalist poster,
+flat design,
+
+hands,
+people,
+faces,
+mascot,
+unrelated props,
+extra packaging,
+extra brand,
+watermark,
+signature.

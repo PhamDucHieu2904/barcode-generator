@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="barcode.css">
 <link rel="stylesheet" href="pdf.css?v=20260720-1">
 <link rel="stylesheet" href="responsive.css">
+<link rel="stylesheet" href="prompt-generator.css">
 <link rel="icon" type="image/png" href="web-icon.png">
 </head>
 <body>
@@ -44,7 +45,8 @@
 
     <div class="nav-divider"></div>
 
-    <button class="nav-btn" data-section="ai-tool" data-url="https://bg.hotai.dev/">AI Remove BG</button>
+    <button class="nav-btn" data-section="ai-tool" disabled aria-disabled="true" title="Tạm tắt — website hiện không còn hoạt động">AI Remove BG</button>
+    <button class="nav-btn" data-section="prompt-generator">Promt Generator</button>
   </div>
 </nav>
 
@@ -192,6 +194,21 @@
       </div>
     </div>
 
+  </section>
+
+  <section id="section-prompt-generator" class="app-section" aria-labelledby="prompt-page-title">
+    <header class="prompt-page-header">
+      <div><p class="prompt-eyebrow">MASTER PROMT LIBRARY</p><h1 id="prompt-page-title">Promt Generator</h1></div>
+      <nav class="prompt-category-nav" aria-label="Phân loại prompt theo dòng sản phẩm">
+        <button type="button" class="prompt-category-btn active" data-prompt-category="juice" aria-pressed="true">Juice</button>
+        <button type="button" class="prompt-category-btn" data-prompt-category="coffee" aria-pressed="false">Coffee</button>
+        <button type="button" class="prompt-category-btn" data-prompt-category="energy" aria-pressed="false">Tăng lực</button>
+        <button type="button" class="prompt-category-btn" data-prompt-category="aloe-vera" aria-pressed="false">Aloe vera</button>
+      </nav>
+      <p>Chọn mẫu, điền thông tin và tạo promt của bạn.</p>
+    </header>
+    <div id="prompt-library" class="prompt-library" aria-live="polite"></div>
+    <p id="prompt-category-empty" class="prompt-category-empty" hidden>Chưa có prompt trong dòng này. Các mẫu mới sẽ được thêm vào đây.</p>
   </section>
 
   <section id="section-ai-tool" class="app-section">
@@ -529,6 +546,25 @@
 <script src="js/edit-pdf-scan-effects.js?v=20260720-4"></script>
 <script src="js/edit-pdf-ai.js?v=20260720-5"></script>
 <script src="js/edit-pdf.js"></script>
+<dialog id="prompt-dialog" class="prompt-dialog" aria-labelledby="prompt-dialog-title" aria-describedby="prompt-dialog-help">
+  <div class="prompt-dialog-heading">
+    <div><p class="prompt-eyebrow">PROMT CỦA BẠN</p><h2 id="prompt-dialog-title"></h2></div>
+    <button type="button" id="prompt-dialog-close" class="prompt-close" aria-label="Đóng bảng promt">&times;</button>
+  </div>
+  <p id="prompt-dialog-help">Có thể chỉnh sửa nội dung bên dưới trước khi copy. Nhớ đính kèm ảnh sản phẩm trên trang tạo ảnh.</p>
+  <textarea id="prompt-output" aria-label="Nội dung promt" spellcheck="false"></textarea>
+  <div class="prompt-output-meta"><span id="prompt-template-meta">MASTER PROMT</span><span id="prompt-character-count"></span></div>
+  <div class="prompt-actions">
+    <button type="button" id="prompt-copy" class="prompt-primary">Copy Promt</button>
+    <button type="button" data-prompt-provider="gemini">Use on Gemini <span aria-hidden="true">↗</span></button>
+    <button type="button" data-prompt-provider="dola">Use on Dola <span aria-hidden="true">↗</span></button>
+  </div>
+  <p class="prompt-handoff-help">Các nút Use on sẽ copy promt và mở trang mới. Dán bằng Ctrl+V (Mac: ⌘V), rồi thêm ảnh sản phẩm. Trên Dola, chọn Seedream 5.0 Pro nếu có trong tài khoản của bạn.</p>
+  <p id="prompt-status" class="prompt-status" role="status" aria-live="polite"></p>
+  <a id="prompt-open-fallback" class="prompt-open-fallback" target="_blank" rel="noopener noreferrer" hidden>Mở trang tạo ảnh ↗</a>
+</dialog>
+<script src="js/prompt-templates.js"></script>
+<script src="js/prompt-generator.js"></script>
 <script src="js/app.js"></script>
 <!-- Font select populated by _populateFontSelect() in edit-pdf.js -->
 </body>

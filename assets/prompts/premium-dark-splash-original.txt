@@ -1,0 +1,563 @@
+MASTER PROMPT — POSTER QUẢNG CÁO ĐỒ UỐNG CAO CẤP
+Hãy tạo một poster quảng cáo đồ uống cao cấp theo phong cách commercial advertising, sử dụng hình ảnh sản phẩm tôi upload làm sản phẩm chính và là tham chiếu bắt buộc.
+
+1. SẢN PHẨM THAM CHIẾU — ƯU TIÊN CAO NHẤT
+Sử dụng chính xác sản phẩm trong hình ảnh tôi cung cấp làm hero product.
+Phải giữ sản phẩm nhận diện được, chính xác và trung thành với ảnh gốc, bao gồm:
+
+giữ nguyên hình dáng bao bì
+giữ nguyên tỷ lệ lon/chai
+giữ nguyên nắp, thân, đáy, cổ chai nếu có
+giữ nguyên thiết kế label
+giữ nguyên logo thương hiệu
+giữ nguyên màu sắc trên bao bì
+giữ nguyên hình minh họa và các graphic hiện có trên label
+giữ nguyên hướng và tỷ lệ của artwork in trên sản phẩm
+không thiết kế lại bao bì
+không tự tạo label mới
+không đổi thương hiệu
+không đơn giản hóa sản phẩm
+không làm méo lon/chai
+không thêm chữ ngẫu nhiên lên bao bì
+Kết quả cuối cùng phải có cảm giác như sản phẩm thật của tôi được chụp trong một chiến dịch quảng cáo chuyên nghiệp, ngân sách cao.
+
+
+2. THÔNG TIN SẢN PHẨM
+Loại sản phẩm:
+[NƯỚC TRÁI CÂY]
+Hương vị chính:
+[Tamarind]
+Trái cây hoặc nguyên liệu chính:
+[Tamarind]
+Nguyên liệu phụ:
+[lá Tamarind]
+Hoa hoặc thành phần botanical:
+[KHÔNG CÓ]
+Màu chủ đạo của campaign:
+[Cam]
+Màu nhấn phụ:
+[trắng]
+Mood mong muốn:
+[CAO CẤP / TỰ NHIÊN / SANG TRỌNG / NĂNG ĐỘNG / THANH KHIẾT]
+
+
+3. ĐỊNH HƯỚNG HÌNH ẢNH
+Thiết kế một poster quảng cáo đồ uống hiện đại, cao cấp, năng động và có cảm giác rất refreshing.
+Phong cách tổng thể là sự kết hợp của:
+nhiếp ảnh sản phẩm cao cấp + CGI nước chân thực + food photography + cinematic lighting + FMCG advertising + luxury commercial retouching.
+Bố cục phải khiến mắt người xem nhìn ngay vào sản phẩm.
+Thứ tự ưu tiên thị giác:
+1. SẢN PHẨM CHÍNH
+2. NƯỚC SPLASH
+3. TRÁI CÂY / NGUYÊN LIỆU
+4. SLOGAN
+5. CÁC CHI TIẾT KHÔNG KHÍ
+Không làm bố cục quá chật hoặc quá nhiều chi tiết.
+Sản phẩm phải luôn là yếu tố mạnh nhất.
+
+
+4. BỐ CỤC
+Tạo poster dọc tỷ lệ:
+4:5
+Có thể dùng cho kích thước:
+1080 × 1350 px
+Đặt sản phẩm chính ở:
+trung tâm hoặc hơi lệch sang bên phải khung hình.
+Sản phẩm chiếm khoảng:
+50–65% chiều cao toàn poster.
+Cho sản phẩm nghiêng nhẹ khoảng:
+8–18 độ
+để tạo cảm giác động, hiện đại và cao cấp.
+Không dựng sản phẩm đứng quá thẳng theo kiểu packshot đơn giản.
+Sản phẩm có thể:
+
+hơi lơ lửng phía trên pedestal
+hoặc vừa chạm nhẹ vào pedestal
+Không crop mất những phần quan trọng của sản phẩm.
+Phải giữ label dễ nhìn.
+
+
+5. KHU VỰC DÀNH CHO SLOGAN (TIẾNG ANH)
+Chừa một vùng sạch ở: góc trên bên trái để đặt headline.
+Tự tạo một slogan ngắn hoàn toàn bằng tiếng Anh phù hợp với:
+
+loại đồ uống
+
+hương vị
+
+hình ảnh sản phẩm
+
+mood tổng thể
+
+Slogan nên:
+
+viết bằng Tiếng Anh (English only)
+
+có khoảng 2–4 dòng ngắn
+
+từ ngữ súc tích, dễ nhớ, hiện đại
+
+phù hợp với quảng cáo quốc tế
+
+có cảm giác premium
+
+thể hiện sự tươi mát, hương vị hoặc năng lượng
+
+không dùng những câu corporate quá dài
+
+Nhịp điệu có thể theo dạng:
+FRESH.
+BOLD.
+DIFFERENT.
+(Hoặc: PURE TASTE. PURE ENERGY.)
+
+Chỉ dùng cấu trúc làm cảm hứng, không copy nguyên câu này. AI phải tự tạo câu mới bằng TIẾNG ANH sao cho phù hợp với sản phẩm thực tế.
+Bên dưới slogan có thể thêm một dòng ngắn bằng tiếng Anh mô tả: [HƯƠNG VỊ] • [LOẠI SẢN PHẨM]
+Ví dụ: Peach Tea • Refreshing Drink hoặc một tagline rất ngắn phù hợp.
+
+6. TYPOGRAPHY
+Typography theo phong cách:
+
+sans-serif hiện đại
+bold
+geometric
+editorial advertising
+dễ đọc
+mạnh
+sạch
+sang
+cao cấp
+Headline nên sử dụng:
+
+chủ yếu màu trắng
+có thể nhấn 1 từ bằng màu campaign
+Ví dụ:
+70% chữ trắng
+30% chữ highlight theo màu hương vị
+Không để chữ đè lên:
+
+sản phẩm
+trái cây
+splash
+chi tiết quan trọng
+Nếu AI không render chữ tốt, hãy:
+chừa vùng typography sạch và đẹp, không tạo fake text hoặc chữ lỗi.
+
+
+7. HERO PRODUCT
+Render sản phẩm theo phong cách:
+high-end commercial studio product photography
+Sản phẩm phải cực kỳ sắc nét.
+Thêm lớp condensation nhẹ trên bề mặt:
+
+giọt nước rất nhỏ
+một số giọt trung bình
+một vài vệt nước chảy xuống tự nhiên
+độ phản xạ và khúc xạ chân thực
+cảm giác lạnh
+Sản phẩm phải tạo cảm giác:
+vừa được lấy ra khỏi tủ lạnh.
+Không để nước che logo hoặc text quan trọng.
+Nếu sản phẩm là lon:
+
+ánh kim chân thực
+phản xạ nhôm
+highlight theo chiều cong thân lon
+Nếu sản phẩm là chai PET:
+
+phản xạ nhựa chân thực
+xuyên sáng nhẹ
+highlights mềm
+Nếu là chai thủy tinh:
+
+refraction chân thực
+độ dày kính hợp lý
+phản chiếu môi trường studio
+
+
+8. NƯỚC SPLASH
+Tạo một dòng nước splash photorealistic cực kỳ đẹp bao quanh sản phẩm.
+Splash phải:
+
+bắt đầu từ phía sau hoặc phía dưới sản phẩm
+quấn xung quanh sản phẩm
+tạo cảm giác chuyển động spiral
+có dòng nước lớn chạy quanh phần thân dưới hoặc giữa
+có crown splash ở phía sau phần đầu sản phẩm
+Tạo dòng splash theo dạng:
+C-shape / spiral / circular flow
+để ôm lấy sản phẩm nhưng không che sản phẩm.
+Nước phải có:
+
+độ trong suốt cao
+bề mặt bóng
+refraction chân thực
+surface tension
+các membrane nước mỏng
+các cạnh nước sắc
+micro droplets
+các giọt nước bay trong không khí
+micro bubbles
+highlight sáng
+reflection hợp lý
+Màu nước:
+[TRONG SUỐT / HỒNG NHẠT / ĐỎ / CAM / VÀNG / XANH LÁ / XANH DƯƠNG / TÍM / MÀU THEO HƯƠNG VỊ]
+Nước chủ yếu vẫn phải giữ độ trong.
+Không tạo:
+
+nước quá đặc
+nước giống thạch
+nước giống nhựa
+splash quá dày
+splash che mất label
+Splash phải có tác dụng:
+đóng khung và làm nổi bật sản phẩm.
+
+
+9. TRÁI CÂY VÀ NGUYÊN LIỆU
+Đặt các nguyên liệu thật tương ứng với hương vị sản phẩm.
+Nguyên liệu chính:
+[TRÁI CÂY / NGUYÊN LIỆU CHÍNH]
+Nguyên liệu phụ:
+[NGUYÊN LIỆU PHỤ]
+Hoa:
+[LOẠI HOA]
+Lá hoặc thảo mộc:
+[LÁ / MINT / LÁ TRÀ / LÁ CHANH / KHÔNG CÓ]
+Số lượng gợi ý:
+
+1 nguyên liệu hero lớn
+2–4 nguyên liệu trung bình
+một vài chi tiết nhỏ
+Có thể sử dụng:
+
+trái nguyên
+trái cắt đôi
+lát trái cây
+wedge
+miếng nhỏ
+tùy theo loại nguyên liệu.
+Trái cây phải:
+
+đúng hình dáng thực tế
+đúng màu sắc
+chín vừa đẹp
+mọng nước
+realistic
+juicy
+hấp dẫn
+đúng texture
+Phần mặt cắt phải có:
+
+độ ẩm
+phản chiếu nhẹ
+texture tự nhiên
+cấu trúc ruột đúng loại trái cây
+Không tạo quá nhiều trái cây.
+Không xếp thành một đống.
+Trái cây chỉ đóng vai trò hỗ trợ sản phẩm.
+
+
+10. VỊ TRÍ TRÁI CÂY
+Bố trí nguyên liệu theo đường chuyển động chéo quanh sản phẩm.
+Gợi ý bố cục:
+
+Phía trên
+1–2 lá hoặc botanical nhỏ bay nhẹ.
+
+Bên trái giữa
+Một fruit hoặc flower lớn nằm gần splash.
+
+Bên phải giữa
+Một lát trái cây hoặc ingredient hỗ trợ cân bằng hình.
+
+Góc trái dưới
+Một wedge trái cây ở foreground.
+
+Góc phải dưới
+Có thể có một nguyên liệu foreground blur nhẹ để tăng chiều sâu.
+Không đặt trái cây thành vòng tròn quá đều.
+Không tạo cảm giác symmetrical.
+Ưu tiên bố cục bất đối xứng nhưng cân bằng.
+
+
+11. PEDESTAL
+Đặt sản phẩm phía trên một pedestal cao cấp.
+Pedestal nên là:
+transparent acrylic / crystal pedestal
+Hình dạng:
+
+tròn
+hoặc oval nhẹ
+Đặc điểm:
+
+acrylic dày
+trong suốt
+cạnh đánh bóng
+refraction đẹp
+ánh sáng xuyên qua
+phản xạ màu campaign
+phong cách luxury display
+Pedestal nằm ở:
+trung tâm phía dưới poster.
+Splash có thể tương tác nhẹ với pedestal.
+
+
+12. MẶT SÀN
+Sử dụng:
+dark glossy reflective studio floor
+Tạo reflection mềm của:
+
+sản phẩm
+pedestal
+trái cây
+ánh sáng
+Reflection không được giống gương hoàn hảo.
+Nên hơi mờ nhẹ để realistic hơn.
+Có thể thêm:
+
+một lớp nước rất mỏng
+vài giọt nước nhỏ
+vùng ẩm nhẹ gần pedestal
+để tăng cảm giác lạnh và refreshing.
+
+
+13. BACKGROUND
+Background là gradient tối cao cấp theo màu của sản phẩm.
+Sử dụng cấu trúc:
+
+góc ngoài rất tối
+vùng giữa có màu campaign đậm
+phía sau sản phẩm sáng hơn
+halo ánh sáng sau sản phẩm
+vignette nhẹ
+shadow sâu
+Ví dụ:
+
+Strawberry
+đỏ burgundy đậm → crimson → strawberry red glow
+
+Mango
+burnt orange → amber → golden orange
+
+Lime
+dark forest green → emerald → luminous lime
+
+Blueberry
+navy → indigo → violet blue glow
+
+Peach
+deep coral → peach pink → warm apricot
+
+Coconut
+dark teal / deep green → emerald → tropical green-white glow
+Tự động điều chỉnh sao cho phù hợp với:
+màu packaging + hương vị sản phẩm.
+
+
+14. ÁNH SÁNG
+Thiết lập cinematic studio lighting cao cấp.
+
+Main light
+Softbox lớn từ:
+góc trên bên trái
+
+Rim light
+Ánh sáng màu từ:
+phía sau bên phải
+
+Background light
+Radial glow phía sau sản phẩm.
+
+Accent light
+Một luồng sáng diagonal mảnh đi từ phía phải vào.
+
+Bottom light
+Bounce light nhẹ từ phía dưới để làm sáng pedestal và đáy sản phẩm.
+Lighting phải giúp phân tách rõ:
+
+foreground
+hero product
+splash
+nguyên liệu
+background
+Không tạo fog dày.
+Nếu có atmosphere thì chỉ dùng rất nhẹ.
+
+
+15. CHIỀU SÂU
+Tạo ba lớp rõ ràng.
+
+Foreground
+Một vài fruit hoặc ingredient gần camera, blur nhẹ.
+
+Midground
+Sản phẩm + splash chính + pedestal + ingredient chính.
+Phần này cực kỳ sắc nét.
+
+Background
+Một số giọt nước, lá hoặc ingredient nhỏ.
+Có thể mềm hơn một chút.
+
+
+16. CAMERA
+Phong cách camera:
+full-frame commercial product photography
+Lens equivalent:
+70–100mm
+Camera nằm thấp hơn tâm sản phẩm một chút để tạo:
+subtle heroic perspective
+Không dùng:
+
+fisheye
+ultrawide
+distortion lớn
+Depth of field phải tự nhiên.
+Sản phẩm sắc nét gần như toàn bộ.
+Foreground và background có blur nhẹ.
+
+
+17. MICRO DETAILS
+Thêm các chi tiết nhỏ để hình không có cảm giác AI:
+
+micro water droplets
+condensation
+splash particles
+micro bubbles
+fruit moisture
+leaf veins
+realistic surface texture
+specular highlights
+reflections
+tiny shadows
+contact shadows
+rim lights
+light refraction
+liquid membrane
+water tension
+các giọt nước nhỏ bay trong không khí
+Những chi tiết này phải tinh tế.
+Không phủ kín khung hình.
+Phải giữ khoảng thở.
+
+
+18. COLOR GRADING
+Color grading theo phong cách commercial beverage cao cấp.
+Sử dụng:
+
+black sâu
+shadow có màu
+saturation vừa mạnh
+highlight sáng nhưng không cháy
+contrast cao nhưng kiểm soát
+màu trái cây mọng
+liquid sáng và trong
+packaging giữ đúng màu gốc
+Toàn bộ hình phải có:
+một hệ màu thống nhất dựa trên hương vị và bao bì.
+
+
+19. CHẤT LƯỢNG HÌNH ẢNH
+Kết quả phải phù hợp cho:
+
+poster quảng cáo quốc tế
+key visual sản phẩm
+supermarket campaign
+social media campaign
+product launch
+catalog cover
+POSM
+FMCG advertising
+print advertising
+Hình ảnh phải đạt cảm giác:
+award-winning commercial product photography
+Kết hợp:
+studio photography + high-end CGI + liquid simulation + professional retouching
+Không được có cảm giác:
+generic AI image.
+Phải giống như sản phẩm được thực hiện bởi:
+art director chuyên nghiệp + photographer + food stylist + retoucher + CGI liquid artist.
+
+
+20. NHỮNG ELEMENT TUYỆT ĐỐI KHÔNG TẠO
+KHÔNG tạo:
+
+logo phụ ở góc poster
+logo thương hiệu lặp lại bên ngoài sản phẩm
+Shop Now
+CTA button
+icon lợi ích
+nhóm icon benefit
+badge
+discount box
+giảm giá %
+coupon
+logo sàn thương mại điện tử
+logo marketplace
+availability badge
+QR code
+website
+social media icon
+interface element
+UI button
+fake certification icon
+icon trang trí không cần thiết
+thêm một sản phẩm khác
+nhiều sản phẩm trùng lặp
+Poster chỉ nên có:
+sản phẩm chính + slogan + subtitle nhỏ + splash + nguyên liệu + lá/hoa + pedestal + background + lighting + atmospheric details.
+
+
+21. QUY TẮC BẮT BUỘC VỚI HÌNH SẢN PHẨM
+Hãy coi sản phẩm upload là một:
+IMMUTABLE PRODUCT REFERENCE
+Có nghĩa là:
+
+không reinterpret
+không redesign
+không đổi logo
+không tạo sản phẩm tương tự
+không thay packaging
+không đổi tỷ lệ
+không bóp méo
+không đổi label
+không đổi artwork
+không tự thêm chữ lên sản phẩm
+Môi trường xung quanh được phép sáng tạo.
+Nhưng sản phẩm phải được giữ chính xác nhất có thể.
+Thứ tự ưu tiên:
+**ĐỘ CHÍNH XÁC SẢN PHẨM
+
+BỐ CỤC
+SPLASH
+NGUYÊN LIỆU
+DECORATION**
+
+
+22. MỤC TIÊU HÌNH ẢNH CUỐI CÙNG
+Tạo một poster đồ uống dọc cao cấp với:
+
+một sản phẩm hero duy nhất
+sản phẩm hơi nghiêng
+nằm nổi bật phía trên pedestal acrylic trong suốt
+splash nước lớn quấn theo đường spiral quanh sản phẩm
+crown splash ở phía sau
+trái cây và nguyên liệu đúng hương vị
+condensation lạnh trên sản phẩm
+ánh sáng cinematic
+background gradient tối
+glow theo màu flavor
+foreground có chiều sâu
+reflection trên mặt sàn
+khoảng trống đẹp phía trên bên trái dành cho headline
+slogan ngắn tự động tạo theo sản phẩm
+cảm giác refreshing
+commercial
+premium
+photorealistic
+cực kỳ chi tiết
+bố cục sạch
+không rối
+không giống ảnh AI thông thường
+Phong cách cuối cùng:
+Photorealistic beverage advertising, cinematic product photography, premium FMCG campaign, dramatic liquid splash, realistic fresh ingredients, luxury studio lighting, sophisticated composition, commercial retouching, high contrast, realistic reflections, realistic liquid physics, sharp hero product, 8K visual fidelity.
