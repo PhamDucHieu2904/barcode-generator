@@ -15,6 +15,12 @@
   const maxSizeInput = document.getElementById('image-filter-max-size');
   const spacingInput = document.getElementById('image-filter-spacing');
   const contrastInput = document.getElementById('image-filter-contrast');
+  const shapeDropdown = document.getElementById('image-filter-shape-dropdown');
+  const shapeTrigger = document.getElementById('image-filter-shape-trigger');
+  const shapeTriggerIcon = document.getElementById('image-filter-shape-trigger-icon');
+  const shapeValue = document.getElementById('image-filter-shape-value');
+  const shapeMenu = document.getElementById('image-filter-shape-menu');
+  const shapeOptions = Array.from(document.querySelectorAll('[data-dot-shape]'));
   const resetButton = document.getElementById('image-filter-reset');
   const exportButton = document.getElementById('image-filter-export');
   const exportSvgButton = document.getElementById('image-filter-export-svg');
@@ -41,6 +47,7 @@
   let sourceImage = null;
   let sourceName = 'image';
   let renderFrame = 0;
+  let selectedShape = 'circle';
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -101,6 +108,90 @@
     };
   }
 
+  const shapeIconMarkup = {
+    circle: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" fill="currentColor" /></svg>',
+    triangle: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5 13.25 13.5H2.75L8 2.5Z" fill="currentColor" /></svg>',
+    square: '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="3" width="10" height="10" rx="1" fill="currentColor" /></svg>',
+    diamond: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 2.5 5.5 5.5L8 13.5 2.5 8 8 2.5Z" fill="currentColor" /></svg>',
+  };
+
+  const shapeLabels = {
+    circle: 'Circle',
+    triangle: 'Triangle',
+    square: 'Square',
+    diamond: 'Diamond',
+  };
+
+  function updateShapeSelection() {
+    shapeTriggerIcon.innerHTML = shapeIconMarkup[selectedShape];
+    shapeValue.textContent = shapeLabels[selectedShape];
+    shapeOptions.forEach(function (option) {
+      const active = option.dataset.dotShape === selectedShape;
+      option.classList.toggle('is-active', active);
+      option.setAttribute('aria-selected', String(active));
+    });
+  }
+
+  function closeShapeMenu(restoreFocus) {
+    shapeMenu.hidden = true;
+    shapeTrigger.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) shapeTrigger.focus();
+  }
+
+  function openShapeMenu(focusSelected) {
+    shapeMenu.hidden = false;
+    shapeTrigger.setAttribute('aria-expanded', 'true');
+    if (focusSelected) {
+      const selectedOption = shapeOptions.find(function (option) {
+        return option.dataset.dotShape === selectedShape;
+      });
+      if (selectedOption) selectedOption.focus();
+    }
+  }
+
+  function setShape(shape, shouldRender) {
+    if (!shapeLabels[shape]) return;
+    selectedShape = shape;
+    updateShapeSelection();
+    closeShapeMenu(false);
+    if (shouldRender !== false) scheduleRender();
+  }
+
+  function drawDot(context, shape, x, y, diameter) {
+    const half = diameter / 2;
+    context.beginPath();
+    if (shape === 'triangle') {
+      context.moveTo(x, y - half);
+      context.lineTo(x + half, y + half);
+      context.lineTo(x - half, y + half);
+    } else if (shape === 'square') {
+      context.rect(x - half, y - half, diameter, diameter);
+    } else if (shape === 'diamond') {
+      context.moveTo(x, y - half);
+      context.lineTo(x + half, y);
+      context.lineTo(x, y + half);
+      context.lineTo(x - half, y);
+    } else {
+      context.arc(x, y, half, 0, Math.PI * 2);
+    }
+    context.closePath();
+    context.fill();
+  }
+
+  function svgDot(shape, x, y, diameter) {
+    const half = diameter / 2;
+    if (shape === 'triangle') {
+      return '<polygon points="' + x.toFixed(2) + ',' + (y - half).toFixed(2) + ' ' + (x + half).toFixed(2) + ',' + (y + half).toFixed(2) + ' ' + (x - half).toFixed(2) + ',' + (y + half).toFixed(2) + '"/>';
+    }
+    if (shape === 'square') {
+      return '<rect x="' + (x - half).toFixed(2) + '" y="' + (y - half).toFixed(2) + '" width="' + diameter.toFixed(2) + '" height="' + diameter.toFixed(2) + '"/>';
+    }
+    if (shape === 'diamond') {
+      return '<polygon points="' + x.toFixed(2) + ',' + (y - half).toFixed(2) + ' ' + (x + half).toFixed(2) + ',' + y.toFixed(2) + ' ' + x.toFixed(2) + ',' + (y + half).toFixed(2) + ' ' + (x - half).toFixed(2) + ',' + y.toFixed(2) + '"/>';
+    }
+    return '<circle cx="' + x.toFixed(2) + '" cy="' + y.toFixed(2) + '" r="' + half.toFixed(2) + '"/>';
+  }
+
   function renderHalftone() {
     if (!sourceImage) return;
 
@@ -144,9 +235,7 @@
         const diameter = minSize + (maxSize - minSize) * darkness;
         if (diameter <= 0.01) continue;
 
-        outputContext.beginPath();
-        outputContext.arc(x, y, diameter / 2, 0, Math.PI * 2);
-        outputContext.fill();
+        drawDot(outputContext, selectedShape, x, y, diameter);
       }
     }
 
@@ -159,6 +248,7 @@
     maxSizeInput.value = defaults.maxSize;
     spacingInput.value = defaults.spacing;
     contrastInput.value = defaults.contrast;
+    setShape('circle', false);
     updateLabels();
     if (sourceImage) renderHalftone();
   }
@@ -210,7 +300,7 @@
         const darkness = 1 - luminance / 255;
         const diameter = minSize + (maxSize - minSize) * darkness;
         if (diameter > 0.01) {
-          circles.push('<circle cx="' + x.toFixed(2) + '" cy="' + y.toFixed(2) + '" r="' + (diameter / 2).toFixed(2) + '"/>');
+          circles.push(svgDot(selectedShape, x, y, diameter));
         }
       }
     }
@@ -235,6 +325,46 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     status.textContent = 'Đã export SVG';
   }
+
+  shapeTrigger.addEventListener('click', function () {
+    if (shapeMenu.hidden) openShapeMenu(true);
+    else closeShapeMenu(false);
+  });
+
+  shapeTrigger.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      openShapeMenu(true);
+    }
+  });
+
+  shapeOptions.forEach(function (option, index) {
+    option.addEventListener('click', function () {
+      setShape(option.dataset.dotShape);
+      shapeTrigger.focus();
+    });
+    option.addEventListener('keydown', function (event) {
+      let nextIndex = index;
+      if (event.key === 'ArrowDown') nextIndex = (index + 1) % shapeOptions.length;
+      if (event.key === 'ArrowUp') nextIndex = (index - 1 + shapeOptions.length) % shapeOptions.length;
+      if (event.key === 'Home') nextIndex = 0;
+      if (event.key === 'End') nextIndex = shapeOptions.length - 1;
+      if (nextIndex !== index) {
+        event.preventDefault();
+        shapeOptions[nextIndex].focus();
+      } else if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        option.click();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        closeShapeMenu(true);
+      }
+    });
+  });
+
+  document.addEventListener('click', function (event) {
+    if (!shapeDropdown.contains(event.target)) closeShapeMenu(false);
+  });
 
   fileInput.addEventListener('change', function (event) {
     loadImage(event.target.files[0]);
@@ -270,5 +400,6 @@
   resetButton.addEventListener('click', resetSettings);
   exportButton.addEventListener('click', exportPng);
   exportSvgButton.addEventListener('click', exportSvg);
+  updateShapeSelection();
   updateLabels();
 })();

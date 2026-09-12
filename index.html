@@ -235,10 +235,41 @@
         </label>
         <input id="image-filter-file" class="image-filter-file-input" type="file" accept="image/*" />
 
-        <label class="image-filter-label" for="image-filter-effect">Effect</label>
-        <select id="image-filter-effect" class="image-filter-select">
-          <option value="color-halftone">Color Halftone</option>
-        </select>
+        <div class="image-filter-control-group image-filter-effect-control">
+          <label class="image-filter-label" for="image-filter-effect">Effect</label>
+          <select id="image-filter-effect" class="image-filter-select">
+            <option value="color-halftone">Color Halftone</option>
+          </select>
+        </div>
+
+        <div class="image-filter-control-group image-filter-shape-control">
+          <span class="image-filter-label" id="image-filter-shape-label">Dot shape</span>
+          <div class="image-filter-shape-dropdown" id="image-filter-shape-dropdown">
+            <button type="button" class="image-filter-shape-trigger" id="image-filter-shape-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="image-filter-shape-label image-filter-shape-value">
+              <span class="image-filter-shape-icon" id="image-filter-shape-trigger-icon" aria-hidden="true"></span>
+              <span id="image-filter-shape-value">Circle</span>
+              <svg class="image-filter-shape-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+            <div class="image-filter-shape-menu" id="image-filter-shape-menu" role="listbox" aria-labelledby="image-filter-shape-label" hidden>
+              <button type="button" class="image-filter-shape-option is-active" role="option" aria-selected="true" data-dot-shape="circle">
+                <svg class="image-filter-shape-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5" fill="currentColor" /></svg>
+                <span>Circle</span>
+              </button>
+              <button type="button" class="image-filter-shape-option" role="option" aria-selected="false" data-dot-shape="triangle">
+                <svg class="image-filter-shape-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5 13.25 13.5H2.75L8 2.5Z" fill="currentColor" /></svg>
+                <span>Triangle</span>
+              </button>
+              <button type="button" class="image-filter-shape-option" role="option" aria-selected="false" data-dot-shape="square">
+                <svg class="image-filter-shape-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="3" width="10" height="10" rx="1" fill="currentColor" /></svg>
+                <span>Square</span>
+              </button>
+              <button type="button" class="image-filter-shape-option" role="option" aria-selected="false" data-dot-shape="diamond">
+                <svg class="image-filter-shape-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="m8 2.5 5.5 5.5L8 13.5 2.5 8 8 2.5Z" fill="currentColor" /></svg>
+                <span>Diamond</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div class="image-filter-control-group">
           <div class="image-filter-label-row">
