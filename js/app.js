@@ -52,6 +52,7 @@
     pdf:       document.getElementById('section-pdf'),
     'ai-tool': document.getElementById('section-ai-tool'),
     'prompt-generator': document.getElementById('section-prompt-generator'),
+    'image-filter': document.getElementById('section-image-filter'),
   };
 
   function activateSection(sectionKey) {

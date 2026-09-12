@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="pdf.css?v=20260720-1">
 <link rel="stylesheet" href="responsive.css">
 <link rel="stylesheet" href="prompt-generator.css">
+<link rel="stylesheet" href="image-filter.css">
 <link rel="icon" type="image/png" href="web-icon.png">
 </head>
 <body>
@@ -47,6 +48,7 @@
 
     <button class="nav-btn" data-section="ai-tool" disabled aria-disabled="true" title="Tạm tắt — website hiện không còn hoạt động">AI Remove BG</button>
     <button class="nav-btn" data-section="prompt-generator">Promt Generator</button>
+    <button class="nav-btn" data-section="image-filter">Image Filter</button>
   </div>
 </nav>
 
@@ -209,6 +211,98 @@
     </header>
     <div id="prompt-library" class="prompt-library" aria-live="polite"></div>
     <p id="prompt-category-empty" class="prompt-category-empty" hidden>Chưa có prompt trong dòng này. Các mẫu mới sẽ được thêm vào đây.</p>
+  </section>
+
+  <section id="section-image-filter" class="app-section" aria-labelledby="image-filter-title">
+    <header class="image-filter-header">
+      <div>
+        <p class="image-filter-eyebrow">IMAGE FILTER LAB</p>
+        <h1 id="image-filter-title">Image Filter</h1>
+      </div>
+      <p>Chuyển ảnh thành halftone một màu, tùy chỉnh kích thước hạt và tải ảnh kết quả.</p>
+    </header>
+
+    <div class="image-filter-workspace">
+      <aside class="image-filter-controls" aria-label="Điều khiển hiệu ứng ảnh">
+        <div class="image-filter-control-heading">
+          <span class="image-filter-section-label">FILTER</span>
+          <span class="image-filter-status" id="image-filter-status" role="status" aria-live="polite">Chưa có ảnh</span>
+        </div>
+
+        <label class="image-filter-file-button" for="image-filter-file">
+          <span aria-hidden="true">＋</span>
+          <span>Import image</span>
+        </label>
+        <input id="image-filter-file" class="image-filter-file-input" type="file" accept="image/*" />
+
+        <label class="image-filter-label" for="image-filter-effect">Effect</label>
+        <select id="image-filter-effect" class="image-filter-select">
+          <option value="color-halftone">Color Halftone</option>
+        </select>
+
+        <div class="image-filter-control-group">
+          <div class="image-filter-label-row">
+            <label class="image-filter-label" for="image-filter-color">Halftone color</label>
+            <output id="image-filter-color-value" for="image-filter-color">#F56E5E</output>
+          </div>
+          <div class="image-filter-color-control">
+            <input id="image-filter-color" type="color" value="#F56E5E" aria-label="Màu halftone" />
+            <span>Chọn màu hiển thị cho các hạt</span>
+          </div>
+        </div>
+
+        <div class="image-filter-control-group">
+          <div class="image-filter-label-row">
+            <label class="image-filter-label" for="image-filter-min-size">Minimum dot size</label>
+            <output id="image-filter-min-size-value" for="image-filter-min-size">0 px</output>
+          </div>
+          <input id="image-filter-min-size" class="image-filter-range" type="range" min="0" max="20" value="0" step="0.5" />
+        </div>
+
+        <div class="image-filter-control-group">
+          <div class="image-filter-label-row">
+            <label class="image-filter-label" for="image-filter-max-size">Maximum dot size</label>
+            <output id="image-filter-max-size-value" for="image-filter-max-size">12 px</output>
+          </div>
+          <input id="image-filter-max-size" class="image-filter-range" type="range" min="1" max="40" value="12" step="0.5" />
+        </div>
+
+        <div class="image-filter-control-group">
+          <div class="image-filter-label-row">
+            <label class="image-filter-label" for="image-filter-spacing">Dot spacing</label>
+            <output id="image-filter-spacing-value" for="image-filter-spacing">16 px</output>
+          </div>
+          <input id="image-filter-spacing" class="image-filter-range" type="range" min="4" max="48" value="16" step="1" />
+        </div>
+
+        <div class="image-filter-control-group">
+          <div class="image-filter-label-row">
+            <label class="image-filter-label" for="image-filter-contrast">Contrast</label>
+            <output id="image-filter-contrast-value" for="image-filter-contrast">100%</output>
+          </div>
+          <input id="image-filter-contrast" class="image-filter-range" type="range" min="50" max="180" value="100" step="1" />
+        </div>
+
+        <div class="image-filter-actions">
+          <button type="button" class="image-filter-secondary-btn" id="image-filter-reset" disabled>Reset</button>
+          <button type="button" class="image-filter-export-btn" id="image-filter-export" disabled>Export PNG</button>
+          <button type="button" class="image-filter-svg-btn" id="image-filter-export-svg" disabled>Export SVG</button>
+        </div>
+        <p class="image-filter-help">Vùng tối sẽ tạo hạt lớn hơn. Ảnh được xử lý ngay trên trình duyệt.</p>
+      </aside>
+
+      <div class="image-filter-preview-area">
+        <div class="image-filter-dropzone" id="image-filter-dropzone" tabindex="0" role="button" aria-label="Import ảnh bằng cách chọn file hoặc kéo thả vào đây">
+          <canvas id="image-filter-canvas" aria-label="Preview ảnh halftone"></canvas>
+          <div class="image-filter-empty" id="image-filter-empty">
+            <span class="image-filter-empty-icon" aria-hidden="true">◌</span>
+            <strong>Drop an image here</strong>
+            <span>hoặc bấm Import image để bắt đầu</span>
+          </div>
+        </div>
+        <div class="image-filter-preview-meta" id="image-filter-preview-meta">PNG · Chưa có ảnh được chọn</div>
+      </div>
+    </div>
   </section>
 
   <section id="section-ai-tool" class="app-section">
@@ -546,6 +640,7 @@
 <script src="js/edit-pdf-scan-effects.js?v=20260720-4"></script>
 <script src="js/edit-pdf-ai.js?v=20260720-5"></script>
 <script src="js/edit-pdf.js"></script>
+<script src="js/image-filter.js"></script>
 <dialog id="prompt-dialog" class="prompt-dialog" aria-labelledby="prompt-dialog-title" aria-describedby="prompt-dialog-help">
   <div class="prompt-dialog-heading">
     <div><p class="prompt-eyebrow">PROMT CỦA BẠN</p><h2 id="prompt-dialog-title"></h2></div>
