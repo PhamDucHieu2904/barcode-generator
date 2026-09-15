@@ -15,6 +15,13 @@
   const maxSizeInput = document.getElementById('image-filter-max-size');
   const spacingInput = document.getElementById('image-filter-spacing');
   const contrastInput = document.getElementById('image-filter-contrast');
+  const ppiInput = document.getElementById('image-filter-ppi');
+  const inputPixelsValue = document.getElementById('image-filter-input-pixels');
+  const inputMmValue = document.getElementById('image-filter-input-mm');
+  const artboardValue = document.getElementById('image-filter-artboard');
+  const minSizeMmInput = document.getElementById('image-filter-min-size-mm');
+  const maxSizeMmInput = document.getElementById('image-filter-max-size-mm');
+  const spacingMmInput = document.getElementById('image-filter-spacing-mm');
   const shapeDropdown = document.getElementById('image-filter-shape-dropdown');
   const shapeTrigger = document.getElementById('image-filter-shape-trigger');
   const shapeTriggerIcon = document.getElementById('image-filter-shape-trigger-icon');
@@ -39,8 +46,10 @@
     maxSize: '12',
     spacing: '16',
     contrast: '100',
+    ppi: '300',
   };
 
+  const millimetersPerInch = 25.4;
   // Prevent white or near-white backgrounds from receiving minimum-size dots.
   const backgroundLuminanceCutoff = 250;
 
@@ -53,7 +62,45 @@
     return Math.min(max, Math.max(min, value));
   }
 
-  function updateLabels() {
+  function getPpi() {
+    const value = Number(ppiInput.value);
+    return Number.isFinite(value) && value > 0 ? clamp(value, 36, 2400) : Number(defaults.ppi);
+  }
+
+  function formatMeasure(value) {
+    if (!Number.isFinite(value)) return '—';
+    return value.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+  }
+
+  function pxToMm(px) {
+    return px * millimetersPerInch / getPpi();
+  }
+
+  function mmToPx(mm) {
+    return mm * getPpi() / millimetersPerInch;
+  }
+
+  function formatPixelSize(width, height) {
+    return Math.round(width) + ' × ' + Math.round(height) + ' px';
+  }
+
+  function formatMmSize(width, height) {
+    return formatMeasure(pxToMm(width)) + ' × ' + formatMeasure(pxToMm(height)) + ' mm';
+  }
+
+  function updateImageInfo() {
+    if (!sourceImage) {
+      inputPixelsValue.textContent = '—';
+      inputMmValue.textContent = '—';
+      artboardValue.textContent = '—';
+      return;
+    }
+    inputPixelsValue.textContent = formatPixelSize(sourceImage.naturalWidth, sourceImage.naturalHeight);
+    inputMmValue.textContent = formatMmSize(sourceImage.naturalWidth, sourceImage.naturalHeight);
+    artboardValue.textContent = formatPixelSize(canvas.width, canvas.height);
+  }
+
+  function updateLabels(syncMmValues) {
     const min = Number(minSizeInput.value);
     const max = Math.max(min, Number(maxSizeInput.value));
     if (Number(maxSizeInput.value) < min) maxSizeInput.value = String(min);
@@ -63,10 +110,31 @@
     maxSizeValue.textContent = max + ' px';
     spacingValue.textContent = spacingInput.value + ' px';
     contrastValue.textContent = contrastInput.value + '%';
+    if (syncMmValues !== false) {
+      minSizeMmInput.value = formatMeasure(pxToMm(min));
+      maxSizeMmInput.value = formatMeasure(pxToMm(max));
+      spacingMmInput.value = formatMeasure(pxToMm(Number(spacingInput.value)));
+    }
+    updateImageInfo();
   }
 
-  function scheduleRender() {
-    updateLabels();
+  function applyMmInput(mmInput, pxInput) {
+    const millimeters = Number(mmInput.value);
+    if (!Number.isFinite(millimeters) || millimeters < 0) {
+      updateLabels(true);
+      return;
+    }
+    const minPx = Number(pxInput.min || 0);
+    const maxPx = Number(pxInput.max || 1000);
+    const step = Number(pxInput.step || 1);
+    const rawPixels = clamp(mmToPx(millimeters), minPx, maxPx);
+    const pixels = Math.round(rawPixels / step) * step;
+    pxInput.value = String(pixels);
+    scheduleRender(true);
+  }
+
+  function scheduleRender(syncMmValues) {
+    updateLabels(syncMmValues);
     if (!sourceImage) return;
     cancelAnimationFrame(renderFrame);
     renderFrame = requestAnimationFrame(renderHalftone);
@@ -239,6 +307,7 @@
       }
     }
 
+    updateImageInfo();
     meta.textContent = 'PNG · ' + width + ' × ' + height + ' px · ' + spacing + ' px grid';
   }
 
@@ -248,6 +317,7 @@
     maxSizeInput.value = defaults.maxSize;
     spacingInput.value = defaults.spacing;
     contrastInput.value = defaults.contrast;
+    ppiInput.value = defaults.ppi;
     setShape('circle', false);
     updateLabels();
     if (sourceImage) renderHalftone();
@@ -397,6 +467,14 @@
   [colorInput, minSizeInput, maxSizeInput, spacingInput, contrastInput].forEach(function (input) {
     input.addEventListener('input', scheduleRender);
   });
+  ppiInput.addEventListener('input', function () { updateLabels(true); });
+  ppiInput.addEventListener('change', function () {
+    ppiInput.value = String(getPpi());
+    updateLabels(true);
+  });
+  minSizeMmInput.addEventListener('change', function () { applyMmInput(minSizeMmInput, minSizeInput); });
+  maxSizeMmInput.addEventListener('change', function () { applyMmInput(maxSizeMmInput, maxSizeInput); });
+  spacingMmInput.addEventListener('change', function () { applyMmInput(spacingMmInput, spacingInput); });
   resetButton.addEventListener('click', resetSettings);
   exportButton.addEventListener('click', exportPng);
   exportSvgButton.addEventListener('click', exportSvg);

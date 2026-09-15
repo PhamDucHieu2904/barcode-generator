@@ -282,28 +282,65 @@
           </div>
         </div>
 
+        <div class="image-filter-info-strip" aria-label="Input image information">
+          <div class="image-filter-info-item">
+            <span>Input pixels</span>
+            <strong id="image-filter-input-pixels">—</strong>
+          </div>
+          <div class="image-filter-info-item">
+            <span>Input size</span>
+            <strong id="image-filter-input-mm">—</strong>
+          </div>
+          <div class="image-filter-info-item image-filter-ppi-item">
+            <label for="image-filter-ppi">PPI (DPI)</label>
+            <div class="image-filter-ppi-control">
+              <input id="image-filter-ppi" type="number" min="36" max="2400" step="1" value="300" aria-label="Pixels per inch" />
+              <span>PPI</span>
+            </div>
+          </div>
+          <div class="image-filter-info-item">
+            <span>Artboard</span>
+            <strong id="image-filter-artboard">—</strong>
+          </div>
+        </div>
+
         <div class="image-filter-control-group">
           <div class="image-filter-label-row">
             <label class="image-filter-label" for="image-filter-min-size">Minimum dot size</label>
-            <output id="image-filter-min-size-value" for="image-filter-min-size">0 px</output>
+            <div class="image-filter-unit-values">
+              <output id="image-filter-min-size-value" for="image-filter-min-size">0 px</output>
+              <span class="image-filter-unit-divider">/</span>
+              <input id="image-filter-min-size-mm" class="image-filter-mm-input" type="number" min="0" step="0.01" value="0" aria-label="Minimum dot size in millimeters" />
+              <span class="image-filter-mm-suffix">mm</span>
+            </div>
           </div>
-          <input id="image-filter-min-size" class="image-filter-range" type="range" min="0" max="20" value="0" step="0.5" />
+          <input id="image-filter-min-size" class="image-filter-range" type="range" min="0" max="20" value="0" step="0.1" />
         </div>
 
         <div class="image-filter-control-group">
           <div class="image-filter-label-row">
             <label class="image-filter-label" for="image-filter-max-size">Maximum dot size</label>
-            <output id="image-filter-max-size-value" for="image-filter-max-size">12 px</output>
+            <div class="image-filter-unit-values">
+              <output id="image-filter-max-size-value" for="image-filter-max-size">12 px</output>
+              <span class="image-filter-unit-divider">/</span>
+              <input id="image-filter-max-size-mm" class="image-filter-mm-input" type="number" min="0" step="0.01" value="1.02" aria-label="Maximum dot size in millimeters" />
+              <span class="image-filter-mm-suffix">mm</span>
+            </div>
           </div>
-          <input id="image-filter-max-size" class="image-filter-range" type="range" min="1" max="40" value="12" step="0.5" />
+          <input id="image-filter-max-size" class="image-filter-range" type="range" min="1" max="40" value="12" step="0.1" />
         </div>
 
         <div class="image-filter-control-group">
           <div class="image-filter-label-row">
             <label class="image-filter-label" for="image-filter-spacing">Dot spacing</label>
-            <output id="image-filter-spacing-value" for="image-filter-spacing">16 px</output>
+            <div class="image-filter-unit-values">
+              <output id="image-filter-spacing-value" for="image-filter-spacing">16 px</output>
+              <span class="image-filter-unit-divider">/</span>
+              <input id="image-filter-spacing-mm" class="image-filter-mm-input" type="number" min="0" step="0.01" value="1.35" aria-label="Dot spacing in millimeters" />
+              <span class="image-filter-mm-suffix">mm</span>
+            </div>
           </div>
-          <input id="image-filter-spacing" class="image-filter-range" type="range" min="4" max="48" value="16" step="1" />
+          <input id="image-filter-spacing" class="image-filter-range" type="range" min="4" max="48" value="16" step="0.1" />
         </div>
 
         <div class="image-filter-control-group">
